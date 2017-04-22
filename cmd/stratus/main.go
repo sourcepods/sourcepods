@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
-
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -22,6 +22,10 @@ func main() {
 		Name:   "dev",
 		Usage:  "Runs gitloud in development mode",
 		Action: actionDev,
+		Flags: []cli.Flag{
+			cli.IntFlag{Name: "port", Usage: "The port to run gitloud on", Value: 3000},
+			cli.StringFlag{Name: "env", Usage: "Set the env gitloud runs in", Value: "development"},
+		},
 	}}
 
 	if err := app.Run(os.Args); err != nil {
@@ -30,16 +34,26 @@ func main() {
 }
 
 func actionDev(c *cli.Context) error {
+	portFlag := c.Int("port")
+	envFlag := c.Bool("env")
+
+	env := []string{
+		fmt.Sprintf("ADDR=:%d", portFlag),
+		fmt.Sprintf("ENV=%s", envFlag),
+	}
+
 	var g group.Group
-	g.Add(RunGitloud, func(err error) {
+	g.Add(RunGitloud(env), func(err error) {
 		if err != nil {
 			log.Fatal(err)
+			return
 		}
 	})
 
 	g.Add(RunWebpack, func(err error) {
 		if err != nil {
 			log.Fatal(err)
+			return
 		}
 	})
 
@@ -47,35 +61,39 @@ func actionDev(c *cli.Context) error {
 }
 
 // RunGitloud runs a development server and restarts it with a new build if files change.
-func RunGitloud() error {
-	builds := make(chan bool)
+func RunGitloud(env []string) func() error {
+	return func() error {
+		builds := make(chan bool)
 
-	go BuildForever(builds)
+		go BuildForever(builds)
 
-	go func() {
-		build()
-		builds <- true
-	}()
-
-	var cmd *exec.Cmd
-	for {
-		<-builds
-		if cmd != nil {
-			cmd.Process.Kill()
-		}
-		cmd = exec.Command("./dist/gitloud", "web")
 		go func() {
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			if err := cmd.Run(); err != nil {
-				log.Println(err)
-				return
-			}
+			build()
+			builds <- true
 		}()
-	}
 
-	return nil
+		var cmd *exec.Cmd
+		for {
+			<-builds
+			if cmd != nil {
+				cmd.Process.Kill()
+			}
+
+			cmd = exec.Command("./dist/gitloud")
+			go func() {
+				cmd.Env = env
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				if err := cmd.Run(); err != nil {
+					log.Println(err)
+					return
+				}
+			}()
+		}
+
+		return nil
+	}
 }
 
 // BuildForever watches the filesystem and builds a new binary if something changes.
@@ -108,6 +126,7 @@ func BuildForever(builds chan bool) {
 	}()
 
 	err = watcher.Add("./cmd/gitloud/main.go")
+	err = watcher.Add("./cmd/gitloud/web.go")
 	if err != nil {
 		log.Println(err)
 		return
