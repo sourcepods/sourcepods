@@ -1,11 +1,13 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
+	"log"
 	"math/rand"
 	"net/http"
 	"time"
 
+	"github.com/gitloud/gitloud"
 	"github.com/gorilla/mux"
 )
 
@@ -13,36 +15,103 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func UserList(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(time.Duration(rand.Intn(1500)) * time.Millisecond)
-	fmt.Fprintln(w, "users")
+type UserStore interface {
+	List() ([]gitloud.User, error)
+	GetUser(string) (gitloud.User, error)
+	CreateUser(gitloud.User) error
+	UpdateUser(string, gitloud.User) error
+	DeleteUser(string) error
 }
 
-func UserCreate(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(time.Duration(rand.Intn(1500)) * time.Millisecond)
-	fmt.Fprintln(w, "user created")
+func WriteJson(w http.ResponseWriter, v interface{}, code int) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		http.Error(w, "failed to marshal to json", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(data)
 }
 
-func User(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+func UserList(store UserStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		users, err := store.List()
+		if err != nil {
+			http.Error(w, "failed to list users", http.StatusInternalServerError)
+			return
+		}
 
-	time.Sleep(time.Duration(rand.Intn(1500)) * time.Millisecond)
-	fmt.Fprintln(w, "user", id)
+		WriteJson(w, users, http.StatusOK)
+	}
 }
 
-func UserUpdate(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+func User(store UserStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		username := vars["username"]
 
-	time.Sleep(time.Duration(rand.Intn(1500)) * time.Millisecond)
-	fmt.Fprintf(w, "user %s updated", id)
+		user, err := store.GetUser(username)
+		if err != nil {
+			http.Error(w, "failed to get user by username", http.StatusInternalServerError)
+			return
+		}
+
+		WriteJson(w, user, http.StatusOK)
+	}
 }
 
-func UserDelete(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+func UserCreate(store UserStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var user gitloud.User
 
-	time.Sleep(time.Duration(rand.Intn(1500)) * time.Millisecond)
-	fmt.Fprintf(w, "user %s deleted", id)
+		defer r.Body.Close()
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			log.Println(err)
+			http.Error(w, "failed to unmarshal user", http.StatusBadRequest)
+			return
+		}
+
+		if err := store.CreateUser(user); err != nil {
+			log.Println(err)
+			http.Error(w, "failed create user", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func UserUpdate(store UserStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		username := vars["username"]
+
+		var user gitloud.User
+
+		defer r.Body.Close()
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			log.Println(err)
+			http.Error(w, "failed to unmarshal user", http.StatusBadRequest)
+			return
+		}
+
+		if err := store.UpdateUser(username, user); err != nil {
+			log.Println(err)
+			http.Error(w, "failed create user", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func UserDelete(store UserStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		username := vars["username"]
+
+		if err := store.DeleteUser(username); err != nil {
+			log.Println(err)
+			http.Error(w, "failed to delete user", http.StatusBadRequest)
+			return
+		}
+	}
 }
