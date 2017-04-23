@@ -1,0 +1,30 @@
+{
+  "name": "gitloud",
+  "version": "0.0.0",
+  "description": "git flying loudly in the cloud!",
+  "main": "webpack.config.js",
+  "dependencies": {
+    "vue": "^2.2.6",
+    "webpack": "^2.4.1"
+  },
+  "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-loader": "^7.0.0",
+    "css-loader": "^0.28.0",
+    "vue-loader": "^11.3.4",
+    "vue-template-compiler": "^2.2.6"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/metalmatze/gitloud.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/metalmatze/gitloud/issues"
+  },
+  "homepage": "https://github.com/metalmatze/gitloud#readme"
+}
