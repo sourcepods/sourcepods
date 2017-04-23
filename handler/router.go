@@ -9,6 +9,7 @@ import (
 	"github.com/gobuffalo/packr"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func NewRouter(logger log.Logger, box packr.Box, userStore UserStore) *mux.Router {
@@ -27,6 +28,8 @@ func NewRouter(logger log.Logger, box packr.Box, userStore UserStore) *mux.Route
 		api.Handle("/users/{username}", middlewares.ThenFunc(UserUpdate(userStore))).Methods(http.MethodPut)
 		api.Handle("/users/{username}", middlewares.ThenFunc(UserDelete(userStore))).Methods(http.MethodDelete)
 	}
+
+	r.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
 
 	r.PathPrefix("/").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
 
