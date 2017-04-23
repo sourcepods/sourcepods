@@ -1,10 +1,13 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
+
+	"github.com/gobuffalo/packr"
 )
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "gitloud")
+func HomeHandler(box packr.Box) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Write(box.Bytes("index.html"))
+	}
 }

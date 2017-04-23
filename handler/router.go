@@ -6,17 +6,18 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/gobuffalo/packr"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
 )
 
-func NewRouter(logger log.Logger, userStore UserStore) *mux.Router {
+func NewRouter(logger log.Logger, box packr.Box, userStore UserStore) *mux.Router {
 	r := mux.NewRouter()
 
 	// instantiate default middlewares
 	middlewares := alice.New(LoggerMiddleware(logger))
 
-	r.Handle("/", middlewares.ThenFunc(HomeHandler)).Methods(http.MethodGet)
+	r.Handle("/", middlewares.ThenFunc(HomeHandler(box))).Methods(http.MethodGet)
 
 	api := r.PathPrefix("/api").Subrouter()
 	{
@@ -27,7 +28,7 @@ func NewRouter(logger log.Logger, userStore UserStore) *mux.Router {
 		api.Handle("/users/{username}", middlewares.ThenFunc(UserDelete(userStore))).Methods(http.MethodDelete)
 	}
 
-	r.PathPrefix("/").Handler(middlewares.Then(http.FileServer(http.Dir("./public/")))).Methods(http.MethodGet)
+	r.PathPrefix("/").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
 
 	return r
 }
