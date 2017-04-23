@@ -68,8 +68,9 @@ func RunGitloud(env []string) func() error {
 		go BuildForever(builds)
 
 		go func() {
-			build()
-			builds <- true
+			if err := build(); err == nil {
+				builds <- true
+			}
 		}()
 
 		var cmd *exec.Cmd
@@ -98,7 +99,7 @@ func RunGitloud(env []string) func() error {
 
 // BuildForever watches the filesystem and builds a new binary if something changes.
 // It notifies a channel that a build was created
-func BuildForever(builds chan bool) {
+func BuildForever(builds chan<- bool) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Println(err)
@@ -127,6 +128,9 @@ func BuildForever(builds chan bool) {
 
 	err = watcher.Add("./cmd/gitloud/main.go")
 	err = watcher.Add("./cmd/gitloud/web.go")
+	err = watcher.Add("./handler/user.go")
+	err = watcher.Add("./store/user_inmemory.go")
+	err = watcher.Add("./user.go")
 	if err != nil {
 		log.Println(err)
 		return
