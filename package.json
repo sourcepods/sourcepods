@@ -4,7 +4,9 @@
   "description": "git flying loudly in the cloud!",
   "main": "webpack.config.js",
   "dependencies": {
+    "axios": "^0.16.1",
     "vue": "^2.2.6",
+    "vuex": "^2.3.1",
     "webpack": "^2.4.1"
   },
   "devDependencies": {
