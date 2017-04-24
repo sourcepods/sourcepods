@@ -1,7 +1,5 @@
 <template>
     <div>
-        <h3>{{ name }}</h3>
-
         <p>users:</p>
         <ul>
             <li v-for="user in users">{{ user.name }} - {{ user.email }}</li>
@@ -10,14 +8,10 @@
 </template>
 
 <script>
-    import axios from 'axios';
-
     export default {
-        name: 'app',
-        data () {
-            return {
-                name: 'gitloud',
-            }
+        name: 'user-list',
+        data() {
+            return {}
         },
         computed: {
             users() {
@@ -36,8 +30,5 @@
     }
 </script>
 
-<style scoped>
-    h3, p, li {
-        font-family: sans-serif;
-    }
+<style>
 </style>
