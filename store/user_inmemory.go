@@ -39,7 +39,7 @@ func NewUserInMemory() *UserInMemory {
 }
 
 func (s *UserInMemory) List() ([]gitloud.User, error) {
-	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
+	time.Sleep(time.Duration(rand.Intn(200)) * time.Millisecond)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -47,7 +47,7 @@ func (s *UserInMemory) List() ([]gitloud.User, error) {
 }
 
 func (s *UserInMemory) GetUser(username string) (gitloud.User, error) {
-	time.Sleep(time.Duration(rand.Intn(500)) * time.Millisecond)
+	time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -61,7 +61,7 @@ func (s *UserInMemory) GetUser(username string) (gitloud.User, error) {
 }
 
 func (s *UserInMemory) CreateUser(user gitloud.User) error {
-	time.Sleep(time.Duration(rand.Intn(1500)) * time.Millisecond)
+	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -71,7 +71,7 @@ func (s *UserInMemory) CreateUser(user gitloud.User) error {
 }
 
 func (s *UserInMemory) UpdateUser(username string, updateUser gitloud.User) error {
-	time.Sleep(time.Duration(rand.Intn(500)) * time.Millisecond)
+	time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -85,7 +85,7 @@ func (s *UserInMemory) UpdateUser(username string, updateUser gitloud.User) erro
 }
 
 func (s *UserInMemory) DeleteUser(username string) error {
-	time.Sleep(time.Duration(rand.Intn(500)) * time.Millisecond)
+	time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
