@@ -31,7 +31,9 @@ func NewRouter(logger log.Logger, box packr.Box, userStore UserStore) *mux.Route
 
 	r.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
 
-	r.PathPrefix("/").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+	r.PathPrefix("/js").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+
+	r.NotFoundHandler = HomeHandler(box)
 
 	return r
 }
