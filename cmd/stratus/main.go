@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -126,17 +127,32 @@ func BuildForever(builds chan<- bool) {
 		}
 	}()
 
-	err = watcher.Add("./cmd/gitloud/main.go")
-	err = watcher.Add("./cmd/gitloud/web.go")
-	err = watcher.Add("./handler/user.go")
-	err = watcher.Add("./store/user_inmemory.go")
-	err = watcher.Add("./user.go")
+	files, err := findGoFiles()
 	if err != nil {
 		log.Println(err)
-		return
+	}
+
+	for _, file := range files {
+		if err := watcher.Add(filepath.Join(".", file)); err != nil {
+			log.Println(err)
+		}
 	}
 
 	select {}
+}
+
+func findGoFiles() ([]string, error) {
+	var files []string
+	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+		if strings.HasPrefix(path, "cmd/stratus") { // don't watch stratus itself
+			return nil
+		}
+		if strings.HasSuffix(path, ".go") {
+			files = append(files, path)
+		}
+		return nil
+	})
+	return files, err
 }
 
 func build() error {
