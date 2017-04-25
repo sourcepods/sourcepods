@@ -11,12 +11,17 @@ import (
 	"github.com/gitloud/gitloud"
 	"github.com/gitloud/gitloud/store"
 	"github.com/go-kit/kit/log"
+	"github.com/gobuffalo/packr"
 	"github.com/stretchr/testify/assert"
+)
+
+var (
+	box = packr.NewBox("../public")
 )
 
 func TestUserList(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), userStore)
+	r := NewRouter(log.NewNopLogger(), box, userStore)
 
 	ts := httptest.NewServer(r)
 	defer ts.Close()
@@ -39,7 +44,7 @@ func TestUserList(t *testing.T) {
 
 func TestUser(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), userStore)
+	r := NewRouter(log.NewNopLogger(), box, userStore)
 
 	ts := httptest.NewServer(r)
 	defer ts.Close()
@@ -62,7 +67,7 @@ func TestUser(t *testing.T) {
 
 func TestUserCreate(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), userStore)
+	r := NewRouter(log.NewNopLogger(), box, userStore)
 
 	ts := httptest.NewServer(r)
 	defer ts.Close()
@@ -94,7 +99,7 @@ func TestUserCreate(t *testing.T) {
 
 func TestUserUpdate(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), userStore)
+	r := NewRouter(log.NewNopLogger(), box, userStore)
 
 	ts := httptest.NewServer(r)
 	defer ts.Close()
@@ -128,7 +133,7 @@ func TestUserUpdate(t *testing.T) {
 
 func TestUserDelete(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), userStore)
+	r := NewRouter(log.NewNopLogger(), box, userStore)
 
 	ts := httptest.NewServer(r)
 	defer ts.Close()
