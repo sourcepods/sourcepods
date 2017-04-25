@@ -10,12 +10,13 @@ Vue.use(VueRouter);
 const router = new VueRouter({
     mode: 'history',
     routes: [
-        {path: "/", component: UserList}
+        {path: "/", component: UserList},
     ],
 });
 
 new Vue({
     el: '#app',
     store: store,
+    router: router,
     render: h => h(App)
 });
