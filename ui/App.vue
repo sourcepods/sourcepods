@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h3>{{ name }}</h3>
+        <h1>{{ name }}</h1>
 
         <router-view></router-view>
     </div>
@@ -8,7 +8,6 @@
 
 <script>
     export default {
-        name: 'app',
         data () {
             return {
                 name: 'gitloud',
@@ -18,7 +17,7 @@
 </script>
 
 <style scoped>
-    h3, p, li {
+    div {
         font-family: sans-serif;
     }
 </style>
