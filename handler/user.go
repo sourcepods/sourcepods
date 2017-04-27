@@ -3,17 +3,11 @@ package handler
 import (
 	"encoding/json"
 	"log"
-	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/gitloud/gitloud"
 	"github.com/gorilla/mux"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 type UserStore interface {
 	List() ([]gitloud.User, error)
