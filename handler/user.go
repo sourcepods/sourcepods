@@ -73,6 +73,12 @@ func UserCreate(store UserStore) http.HandlerFunc {
 			return
 		}
 
+		if err := user.Validate(); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		if err := store.CreateUser(user); err != nil {
 			log.Println(err)
 			http.Error(w, "failed create user", http.StatusInternalServerError)
@@ -92,6 +98,12 @@ func UserUpdate(store UserStore) http.HandlerFunc {
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			log.Println(err)
 			http.Error(w, "failed to unmarshal user", http.StatusBadRequest)
+			return
+		}
+
+		if err := user.Validate(); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
