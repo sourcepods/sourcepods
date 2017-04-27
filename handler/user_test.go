@@ -1,11 +1,8 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/gitloud/gitloud"
@@ -20,47 +17,25 @@ var (
 )
 
 func TestUserList(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), box, userStore)
-
-	ts := httptest.NewServer(r)
-	defer ts.Close()
-
-	res, err := http.Get(ts.URL + "/api/users")
-	assert.NoError(t, err)
-
-	content, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	assert.NoError(t, err)
+	res, content := request(t, http.MethodGet, "/api/users", nil)
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
 	assert.JSONEq(
 		t,
-		`[{"id":"abcd-efgh-1234-5678","username":"metalmatze","name":"Matthias Loibl","email":"mail@matthiasloibl.com"},{"id":"bcde-fghi-2345-6789","username":"tboerger","name":"Thomas Boerger","email":"thomas@webhippie.de"}]`,
+		`[{"id":"25558000-2565-48dc-84eb-18754da2b0a2","username":"metalmatze","name":"Matthias Loibl","email":"metalmatze@example.com"},{"id":"911d24ae-ad9b-4e50-bf23-9dcbdc8134c6","username":"tboerger","name":"Thomas Boerger","email":"tboerger@example.com"}]`,
 		string(content),
 	)
 }
 
 func TestUser(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), box, userStore)
-
-	ts := httptest.NewServer(r)
-	defer ts.Close()
-
-	res, err := http.Get(ts.URL + "/api/users/metalmatze")
-	assert.NoError(t, err)
-
-	content, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	assert.NoError(t, err)
+	res, content := request(t, http.MethodGet, "/api/users/metalmatze", nil)
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
 	assert.JSONEq(
 		t,
-		`{"id":"abcd-efgh-1234-5678","username":"metalmatze","name":"Matthias Loibl","email":"mail@matthiasloibl.com"}`,
+		`{"id":"25558000-2565-48dc-84eb-18754da2b0a2","username":"metalmatze","name":"Matthias Loibl","email":"metalmatze@example.com"}`,
 		string(content),
 	)
 }
@@ -69,11 +44,8 @@ func TestUserCreate(t *testing.T) {
 	userStore := store.NewUserInMemory()
 	r := NewRouter(log.NewNopLogger(), box, userStore)
 
-	ts := httptest.NewServer(r)
-	defer ts.Close()
-
 	payloadUser := gitloud.User{
-		ID:       "cdef-ghij-3456-7890",
+		ID:       "28195928-2e77-431b-b1fc-43f543cfdc2a",
 		Username: "foobar",
 		Name:     "Foo Bar",
 		Email:    "foobar@example.com",
@@ -82,12 +54,7 @@ func TestUserCreate(t *testing.T) {
 	payload, err := json.Marshal(payloadUser)
 	assert.NoError(t, err)
 
-	res, err := http.Post(ts.URL+"/api/users", "application/json", bytes.NewReader(payload))
-	assert.NoError(t, err)
-
-	content, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	assert.NoError(t, err)
+	res, content := requestWithRouter(t, r, http.MethodPost, "/api/users", payload)
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "", string(content))
@@ -101,26 +68,16 @@ func TestUserUpdate(t *testing.T) {
 	userStore := store.NewUserInMemory()
 	r := NewRouter(log.NewNopLogger(), box, userStore)
 
-	ts := httptest.NewServer(r)
-	defer ts.Close()
-
 	user, err := userStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
-	newEmail := "me@metalmatze.de"
+	newEmail := "matze@example.com"
 	user.Email = newEmail
 
 	payload, err := json.Marshal(user)
 	assert.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPut, ts.URL+"/api/users/metalmatze", bytes.NewReader(payload))
-	assert.NoError(t, err)
-
-	res, err := http.DefaultClient.Do(req)
-
-	content, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	assert.NoError(t, err)
+	res, content := requestWithRouter(t, r, http.MethodPut, "/api/users/metalmatze", payload)
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "", string(content))
@@ -135,20 +92,10 @@ func TestUserDelete(t *testing.T) {
 	userStore := store.NewUserInMemory()
 	r := NewRouter(log.NewNopLogger(), box, userStore)
 
-	ts := httptest.NewServer(r)
-	defer ts.Close()
-
 	_, err := userStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodDelete, ts.URL+"/api/users/metalmatze", nil)
-	assert.NoError(t, err)
-
-	res, err := http.DefaultClient.Do(req)
-
-	content, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	assert.NoError(t, err)
+	res, content := requestWithRouter(t, r, http.MethodDelete, "/api/users/metalmatze", nil)
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "", string(content))
