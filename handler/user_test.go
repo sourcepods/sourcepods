@@ -1,4 +1,4 @@
-package handler
+package handler_test
 
 import (
 	"encoding/json"
@@ -6,19 +6,17 @@ import (
 	"testing"
 
 	"github.com/gitloud/gitloud"
+	"github.com/gitloud/gitloud/handler"
 	"github.com/gitloud/gitloud/store"
 	"github.com/go-kit/kit/log"
-	"github.com/gobuffalo/packr"
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	box = packr.NewBox("../public")
-)
-
 func TestUserList(t *testing.T) {
-	res, content := request(t, http.MethodGet, "/api/users", nil)
+	r := DefaultTestRouter()
+	res, content, err := Request(r, http.MethodGet, "/api/users", nil)
 
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
 	assert.JSONEq(
@@ -29,8 +27,10 @@ func TestUserList(t *testing.T) {
 }
 
 func TestUser(t *testing.T) {
-	res, content := request(t, http.MethodGet, "/api/users/metalmatze", nil)
+	r := DefaultTestRouter()
+	res, content, err := Request(r, http.MethodGet, "/api/users/metalmatze", nil)
 
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
 	assert.JSONEq(
@@ -40,9 +40,19 @@ func TestUser(t *testing.T) {
 	)
 }
 
+func TestUserNotFound(t *testing.T) {
+	r := DefaultTestRouter()
+	res, content, err := Request(r, http.MethodGet, "/api/users/foobar", nil)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusNotFound, res.StatusCode)
+	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.JSONEq(t, NotFoundJsonString, string(content))
+}
+
 func TestUserCreate(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), box, userStore)
+	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
 
 	payloadUser := gitloud.User{
 		ID:       "28195928-2e77-431b-b1fc-43f543cfdc2a",
@@ -54,8 +64,9 @@ func TestUserCreate(t *testing.T) {
 	payload, err := json.Marshal(payloadUser)
 	assert.NoError(t, err)
 
-	res, content := requestWithRouter(t, r, http.MethodPost, "/api/users", payload)
+	res, content, err := Request(r, http.MethodPost, "/api/users", payload)
 
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "", string(content))
 
@@ -66,7 +77,7 @@ func TestUserCreate(t *testing.T) {
 
 func TestUserUpdate(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), box, userStore)
+	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
 
 	user, err := userStore.GetUser("metalmatze")
 	assert.NoError(t, err)
@@ -77,8 +88,9 @@ func TestUserUpdate(t *testing.T) {
 	payload, err := json.Marshal(user)
 	assert.NoError(t, err)
 
-	res, content := requestWithRouter(t, r, http.MethodPut, "/api/users/metalmatze", payload)
+	res, content, err := Request(r, http.MethodPut, "/api/users/metalmatze", payload)
 
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "", string(content))
 
@@ -88,19 +100,55 @@ func TestUserUpdate(t *testing.T) {
 	assert.Equal(t, newEmail, user.Email)
 }
 
+func TestUserUpdateBadRequest(t *testing.T) {
+	r := DefaultTestRouter()
+	res, content, err := Request(r, http.MethodPut, "/api/users/metalmatze", nil)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.JSONEq(t, `{"message":"failed to unmarshal user"}`, string(content))
+}
+
+func TestUserUpdateNotFound(t *testing.T) {
+	userStore := store.NewUserInMemory()
+	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+
+	user, err := userStore.GetUser("metalmatze")
+	assert.NoError(t, err)
+
+	payload, err := json.Marshal(user)
+	assert.NoError(t, err)
+
+	res, content, err := Request(r, http.MethodPut, "/api/users/foobar", payload)
+
+	assert.NoError(t, err)
+	assertNotFoundJson(t, res, content)
+}
+
 func TestUserDelete(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), box, userStore)
+	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
 
 	_, err := userStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
-	res, content := requestWithRouter(t, r, http.MethodDelete, "/api/users/metalmatze", nil)
+	res, content, err := Request(r, http.MethodDelete, "/api/users/metalmatze", nil)
 
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "", string(content))
 
 	// Test if store was really updated
 	_, err = userStore.GetUser("metalmatze")
 	assert.Equal(t, err, store.UserNotFound)
+}
+
+func TestUserDeleteNotFound(t *testing.T) {
+	userStore := store.NewUserInMemory()
+	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+
+	res, content, err := Request(r, http.MethodDelete, "/api/users/foobar", nil)
+	assert.NoError(t, err)
+	assertNotFoundJson(t, res, content)
 }

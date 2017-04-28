@@ -1,4 +1,4 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
@@ -6,39 +6,57 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/gitloud/gitloud/handler"
 	"github.com/gitloud/gitloud/store"
 	"github.com/go-kit/kit/log"
+	"github.com/gobuffalo/packr"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
 
+const NotFoundJsonString = `{"error":"Not Found"}`
+
+var (
+	box            = packr.NewBox("../public")
+	httpTestClient = &http.Client{Timeout: 5 * time.Second}
+)
+
 func TestApiNotFound(t *testing.T) {
-	res, content := request(t, http.MethodGet, "/api/404", nil)
-
-	assert.Equal(t, http.StatusNotFound, res.StatusCode)
-	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
-	assert.JSONEq(t, `{"error":"Not Found"}`, string(content))
+	r := DefaultTestRouter()
+	res, content, err := Request(r, http.MethodGet, "/api/404", nil)
+	assert.NoError(t, err)
+	assertNotFoundJson(t, res, content)
 }
 
-func request(t *testing.T, method string, url string, payload []byte) (*http.Response, []byte) {
+func DefaultTestRouter() *mux.Router {
 	userStore := store.NewUserInMemory()
-	r := NewRouter(log.NewNopLogger(), box, userStore)
-
-	return requestWithRouter(t, r, method, url, payload)
+	return handler.NewRouter(log.NewNopLogger(), box, userStore)
 }
 
-func requestWithRouter(t *testing.T, h http.Handler, method string, url string, payload []byte) (*http.Response, []byte) {
-	ts := httptest.NewServer(h)
+func Request(r *mux.Router, method string, url string, payload []byte) (*http.Response, []byte, error) {
+	ts := httptest.NewServer(r)
 	defer ts.Close()
 
 	req, err := http.NewRequest(method, ts.URL+url, bytes.NewReader(payload))
-	assert.NoError(t, err)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := httpTestClient.Do(req)
 
 	content, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
-	assert.NoError(t, err)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	return res, content
+	return res, content, nil
+}
+
+func assertNotFoundJson(t *testing.T, res *http.Response, content []byte) {
+	assert.Equal(t, http.StatusNotFound, res.StatusCode)
+	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.JSONEq(t, NotFoundJsonString, string(content))
 }

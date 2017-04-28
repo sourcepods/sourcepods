@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gitloud/gitloud"
+	"github.com/gitloud/gitloud/store"
 	"github.com/gorilla/mux"
 )
 
@@ -48,7 +49,7 @@ func User(store UserStore) http.HandlerFunc {
 
 		user, err := store.GetUser(username)
 		if err != nil {
-			http.Error(w, "failed to get user by username", http.StatusInternalServerError)
+			WriteJson(w, NotFoundJson, http.StatusNotFound)
 			return
 		}
 
@@ -81,7 +82,7 @@ func UserCreate(store UserStore) http.HandlerFunc {
 	}
 }
 
-func UserUpdate(store UserStore) http.HandlerFunc {
+func UserUpdate(s UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		username := vars["username"]
@@ -91,7 +92,7 @@ func UserUpdate(store UserStore) http.HandlerFunc {
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			log.Println(err)
-			http.Error(w, "failed to unmarshal user", http.StatusBadRequest)
+			WriteJson(w, map[string]string{"message": "failed to unmarshal user"}, http.StatusBadRequest)
 			return
 		}
 
@@ -101,20 +102,25 @@ func UserUpdate(store UserStore) http.HandlerFunc {
 			return
 		}
 
-		if err := store.UpdateUser(username, user); err != nil {
-			log.Println(err)
-			http.Error(w, "failed create user", http.StatusInternalServerError)
+		err := s.UpdateUser(username, user)
+		if err == store.UserNotFound {
+			WriteJson(w, NotFoundJson, http.StatusNotFound)
 			return
 		}
 	}
 }
 
-func UserDelete(store UserStore) http.HandlerFunc {
+func UserDelete(s UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		username := vars["username"]
 
-		if err := store.DeleteUser(username); err != nil {
+		err := s.DeleteUser(username)
+		if err == store.UserNotFound {
+			WriteJson(w, NotFoundJson, http.StatusNotFound)
+			return
+		}
+		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to delete user", http.StatusBadRequest)
 			return

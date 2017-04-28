@@ -12,6 +12,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+var (
+	NotFoundJson = map[string]string{"error": http.StatusText(http.StatusNotFound)}
+)
+
 func NewRouter(logger log.Logger, box packr.Box, userStore UserStore) *mux.Router {
 	r := mux.NewRouter()
 
@@ -29,7 +33,7 @@ func NewRouter(logger log.Logger, box packr.Box, userStore UserStore) *mux.Route
 		api.Handle("/users/{username}", middlewares.ThenFunc(UserDelete(userStore))).Methods(http.MethodDelete)
 
 		api.NotFoundHandler = middlewares.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
-			WriteJson(w, map[string]string{"error": http.StatusText(http.StatusNotFound)}, http.StatusNotFound)
+			WriteJson(w, NotFoundJson, http.StatusNotFound)
 		})
 	}
 
