@@ -1,6 +1,9 @@
 <template>
     <div>
         <h4>{{user.username}}</h4>
+
+        <gravatar :email="user.email" default-img="mm"></gravatar>
+
         <table>
             <tr>
                 <td>id</td>
@@ -19,7 +22,12 @@
 </template>
 
 <script>
+    import Gravatar from 'vue-gravatar';
+
     export default {
+        components:{
+            gravatar: Gravatar,
+        },
         created() {
             this.$store.dispatch('fetchUser', this.$route.params.username);
         },

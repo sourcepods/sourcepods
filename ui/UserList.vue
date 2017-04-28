@@ -2,7 +2,14 @@
     <div>
         <p>users:</p>
         <ul>
-            <li v-for="user in users">{{ user.name }} - {{ user.email }}</li>
+            <li v-for="user in users">
+                {{ user.name }} - {{ user.email }} -
+
+
+                <router-link :to="`/users/${user.username}`">profile</router-link>
+                <router-link :to="`/users/${user.username}/edit`">edit</router-link>
+                <span @click="deleteUser(user)">delete</span>
+            </li>
         </ul>
     </div>
 </template>
@@ -28,6 +35,13 @@
                 .catch((err) => {
                     console.log(err);
                 })
+        },
+        methods: {
+            deleteUser(user) {
+                if (confirm(`Do you really want to delete ${user.username}?`)) {
+                    this.$store.dispatch('deleteUser', user.username);
+                }
+            }
         }
     }
 </script>
