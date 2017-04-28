@@ -13,8 +13,8 @@ import (
 type UserStore interface {
 	List() ([]gitloud.User, error)
 	GetUser(string) (gitloud.User, error)
-	CreateUser(gitloud.User) error
-	UpdateUser(string, gitloud.User) error
+	CreateUser(gitloud.User) (gitloud.User, error)
+	UpdateUser(string, gitloud.User) (gitloud.User, error)
 	DeleteUser(string) error
 }
 
@@ -74,11 +74,14 @@ func UserCreate(store UserStore) http.HandlerFunc {
 			return
 		}
 
-		if err := store.CreateUser(user); err != nil {
+		user, err := store.CreateUser(user)
+		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed create user", http.StatusInternalServerError)
 			return
 		}
+
+		WriteJson(w, user, http.StatusOK)
 	}
 }
 
@@ -102,11 +105,13 @@ func UserUpdate(s UserStore) http.HandlerFunc {
 			return
 		}
 
-		err := s.UpdateUser(username, user)
+		user, err := s.UpdateUser(username, user)
 		if err == store.UserNotFound {
 			WriteJson(w, NotFoundJson, http.StatusNotFound)
 			return
 		}
+
+		WriteJson(w, user, http.StatusOK)
 	}
 }
 

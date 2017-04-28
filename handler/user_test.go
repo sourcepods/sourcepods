@@ -68,7 +68,7 @@ func TestUserCreate(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
-	assert.Equal(t, "", string(content))
+	assert.Equal(t, string(payload), string(content))
 
 	user, err := userStore.GetUser(payloadUser.Username)
 	assert.NoError(t, err)
@@ -92,7 +92,7 @@ func TestUserUpdate(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
-	assert.Equal(t, "", string(content))
+	assert.Equal(t, string(payload), string(content))
 
 	// Test if store was really updated
 	user, err = userStore.GetUser("metalmatze")

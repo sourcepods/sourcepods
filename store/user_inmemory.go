@@ -50,24 +50,24 @@ func (s *UserInMemory) GetUser(username string) (gitloud.User, error) {
 	return gitloud.User{}, UserNotFound
 }
 
-func (s *UserInMemory) CreateUser(user gitloud.User) error {
+func (s *UserInMemory) CreateUser(user gitloud.User) (gitloud.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.users = append(s.users, user)
 
-	return nil
+	return user, nil
 }
 
-func (s *UserInMemory) UpdateUser(username string, updateUser gitloud.User) error {
+func (s *UserInMemory) UpdateUser(username string, updatedUser gitloud.User) (gitloud.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for i, user := range s.users {
 		if user.Username == username {
-			s.users[i] = updateUser
-			return nil
+			s.users[i] = updatedUser
+			return updatedUser, nil
 		}
 	}
-	return UserNotFound
+	return updatedUser, UserNotFound
 }
 
 func (s *UserInMemory) DeleteUser(username string) error {
