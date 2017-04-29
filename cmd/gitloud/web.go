@@ -12,24 +12,25 @@ import (
 	"github.com/urfave/cli"
 )
 
-func ActionWeb(config Config) cli.ActionFunc {
-	return func(c *cli.Context) error {
-		// Create the logger based on the environment: production/development/test
-		logger := newLogger(config.Env)
+func ActionWeb(c *cli.Context) error {
+	addr := c.String("addr")
+	env := c.String("env")
 
-		// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
-		// The path is relative to this file.
-		box := packr.NewBox("../../public")
+	// Create the logger based on the environment: production/development/test
+	logger := newLogger(env)
 
-		// Create a simple store running in memory for example purposes
-		userStore := store.NewUserInMemory()
+	// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
+	// The path is relative to this file.
+	box := packr.NewBox("../../public")
 
-		// Create the http router and return it for use
-		r := handler.NewRouter(logger, box, userStore)
+	// Create a simple store running in memory for example purposes
+	userStore := store.NewUserInMemory()
 
-		level.Info(logger).Log("msg", "starting gitloud", "addr", config.Addr)
-		return http.ListenAndServe(config.Addr, r)
-	}
+	// Create the http router and return it for use
+	r := handler.NewRouter(logger, box, userStore)
+
+	level.Info(logger).Log("msg", "starting gitloud", "addr", addr)
+	return http.ListenAndServe(addr, r)
 }
 
 func newLogger(env string) log.Logger {

@@ -4,29 +4,31 @@ import (
 	"log"
 	"os"
 
-	"github.com/alexflint/go-arg"
 	"github.com/urfave/cli"
 )
 
 const DefaultEnv = "production"
 
-type Config struct {
-	Addr string `arg:"env:ADDR" json:"addr"`
-	Env  string `arg:"env:ENV" json:"env"`
-}
-
 func main() {
-	config := Config{
-		Addr: ":3000",
-		Env:  DefaultEnv,
-	}
-	arg.MustParse(&config)
-
 	app := cli.NewApp()
 	app.Name = "gitloud"
 	app.Usage = "git flying loudly in the cloud!"
 
-	app.Action = ActionWeb(config)
+	app.Action = ActionWeb
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:   "addr",
+			EnvVar: "GITLOUD_ADDR",
+			Usage:  "The address gitloud runs on",
+			Value:  ":3000",
+		},
+		cli.StringFlag{
+			Name:   "env",
+			EnvVar: "GITLOUD_ENV",
+			Usage:  "The environment gitloud should run in",
+			Value:  DefaultEnv,
+		},
+	}
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
