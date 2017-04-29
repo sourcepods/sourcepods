@@ -54,7 +54,7 @@ func TestUserCreate(t *testing.T) {
 	userStore := store.NewUserInMemory()
 	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
 
-	payloadUser := gitloud.User{
+	payloadUser := gitpod.User{
 		ID:       "28195928-2e77-431b-b1fc-43f543cfdc2a",
 		Username: "foobar",
 		Name:     "Foo Bar",

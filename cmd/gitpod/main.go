@@ -11,21 +11,21 @@ const DefaultEnv = "production"
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "gitloud"
+	app.Name = "gitpod"
 	app.Usage = "git flying loudly in the cloud!"
 
 	app.Action = ActionWeb
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "addr",
-			EnvVar: "GITLOUD_ADDR",
-			Usage:  "The address gitloud runs on",
+			EnvVar: "GITPOD_ADDR",
+			Usage:  "The address gitpod runs on",
 			Value:  ":3000",
 		},
 		cli.StringFlag{
 			Name:   "env",
-			EnvVar: "GITLOUD_ENV",
-			Usage:  "The environment gitloud should run in",
+			EnvVar: "GITPOD_ENV",
+			Usage:  "The environment gitpod should run in",
 			Value:  DefaultEnv,
 		},
 	}

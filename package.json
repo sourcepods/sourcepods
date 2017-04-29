@@ -1,5 +1,5 @@
 {
-  "name": "gitloud",
+  "name": "gitpod",
   "version": "0.0.0",
   "description": "git flying loudly in the cloud!",
   "main": "webpack.config.js",
@@ -23,12 +23,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/metalmatze/gitloud.git"
+    "url": "git+https://github.com/gitpods/gitpod.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/metalmatze/gitloud/issues"
+    "url": "https://github.com/gitpods/gitpod/issues"
   },
-  "homepage": "https://github.com/metalmatze/gitloud#readme"
+  "homepage": "https://github.com/gitpods/gitpod#readme"
 }

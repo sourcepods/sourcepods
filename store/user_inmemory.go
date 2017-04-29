@@ -11,12 +11,12 @@ var UserNotFound = errors.New("user not found")
 
 type UserInMemory struct {
 	mu    sync.RWMutex
-	users []gitloud.User
+	users []gitpod.User
 }
 
 func NewUserInMemory() *UserInMemory {
 	return &UserInMemory{
-		users: []gitloud.User{{
+		users: []gitpod.User{{
 			ID:       "25558000-2565-48dc-84eb-18754da2b0a2",
 			Username: "metalmatze",
 			Name:     "Matthias Loibl",
@@ -32,13 +32,13 @@ func NewUserInMemory() *UserInMemory {
 	}
 }
 
-func (s *UserInMemory) List() ([]gitloud.User, error) {
+func (s *UserInMemory) List() ([]gitpod.User, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.users, nil
 }
 
-func (s *UserInMemory) GetUser(username string) (gitloud.User, error) {
+func (s *UserInMemory) GetUser(username string) (gitpod.User, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for _, user := range s.users {
@@ -47,10 +47,10 @@ func (s *UserInMemory) GetUser(username string) (gitloud.User, error) {
 		}
 	}
 
-	return gitloud.User{}, UserNotFound
+	return gitpod.User{}, UserNotFound
 }
 
-func (s *UserInMemory) CreateUser(user gitloud.User) (gitloud.User, error) {
+func (s *UserInMemory) CreateUser(user gitpod.User) (gitpod.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.users = append(s.users, user)
@@ -58,7 +58,7 @@ func (s *UserInMemory) CreateUser(user gitloud.User) (gitloud.User, error) {
 	return user, nil
 }
 
-func (s *UserInMemory) UpdateUser(username string, updatedUser gitloud.User) (gitloud.User, error) {
+func (s *UserInMemory) UpdateUser(username string, updatedUser gitpod.User) (gitpod.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for i, user := range s.users {

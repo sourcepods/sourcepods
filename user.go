@@ -1,4 +1,4 @@
-package gitloud
+package gitpod
 
 import (
 	"gopkg.in/asaskevich/govalidator.v6"

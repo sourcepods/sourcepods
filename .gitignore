@@ -1,5 +1,5 @@
 *-packr.go
 
-/dist/gitloud
+/dist/gitpod
 /node_modules/
 /public/js/build.js

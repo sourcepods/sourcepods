@@ -1,4 +1,4 @@
-package gitloud
+package gitpod
 
 import (
 	"testing"

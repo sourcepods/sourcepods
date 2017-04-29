@@ -1,4 +1,4 @@
-# gitloud
+# gitpod
 
 Access via three things:
  * UI

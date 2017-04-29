@@ -21,11 +21,11 @@ func main() {
 
 	app.Commands = []cli.Command{{
 		Name:   "dev",
-		Usage:  "Runs gitloud in development mode",
+		Usage:  "Runs gitpod in development mode",
 		Action: actionDev,
 		Flags: []cli.Flag{
-			cli.IntFlag{Name: "port", Usage: "The port to run gitloud on", Value: 3000},
-			cli.StringFlag{Name: "env", Usage: "Set the env gitloud runs in", Value: "development"},
+			cli.IntFlag{Name: "port", Usage: "The port to run gitpod on", Value: 3000},
+			cli.StringFlag{Name: "env", Usage: "Set the env gitpod runs in", Value: "development"},
 		},
 	}}
 
@@ -39,12 +39,12 @@ func actionDev(c *cli.Context) error {
 	envFlag := c.Bool("env")
 
 	env := []string{
-		fmt.Sprintf("ADDR=:%d", portFlag),
-		fmt.Sprintf("ENV=%s", envFlag),
+		fmt.Sprintf("GITPOD_ADDR=:%d", portFlag),
+		fmt.Sprintf("GITPOD_ENV=%s", envFlag),
 	}
 
 	var g group.Group
-	g.Add(RunGitloud(env), func(err error) {
+	g.Add(RunGitpod(env), func(err error) {
 		if err != nil {
 			log.Fatal(err)
 			return
@@ -61,8 +61,8 @@ func actionDev(c *cli.Context) error {
 	return g.Run()
 }
 
-// RunGitloud runs a development server and restarts it with a new build if files change.
-func RunGitloud(env []string) func() error {
+// RunGitpod runs a development server and restarts it with a new build if files change.
+func RunGitpod(env []string) func() error {
 	return func() error {
 		builds := make(chan bool)
 
@@ -81,7 +81,7 @@ func RunGitloud(env []string) func() error {
 				cmd.Process.Kill()
 			}
 
-			cmd = exec.Command("./dist/gitloud")
+			cmd = exec.Command("./dist/gitpod")
 			go func() {
 				cmd.Env = env
 				cmd.Stdin = os.Stdin
@@ -156,7 +156,7 @@ func findGoFiles() ([]string, error) {
 }
 
 func build() error {
-	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dist/gitloud", "./cmd/gitloud")
+	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dist/gitpod", "./cmd/gitpod")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

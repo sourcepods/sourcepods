@@ -11,10 +11,10 @@ import (
 )
 
 type UserStore interface {
-	List() ([]gitloud.User, error)
-	GetUser(string) (gitloud.User, error)
-	CreateUser(gitloud.User) (gitloud.User, error)
-	UpdateUser(string, gitloud.User) (gitloud.User, error)
+	List() ([]gitpod.User, error)
+	GetUser(string) (gitpod.User, error)
+	CreateUser(gitpod.User) (gitpod.User, error)
+	UpdateUser(string, gitpod.User) (gitpod.User, error)
 	DeleteUser(string) error
 }
 
@@ -59,7 +59,7 @@ func User(store UserStore) http.HandlerFunc {
 
 func UserCreate(store UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var user gitloud.User
+		var user gitpod.User
 
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -90,7 +90,7 @@ func UserUpdate(s UserStore) http.HandlerFunc {
 		vars := mux.Vars(r)
 		username := vars["username"]
 
-		var user gitloud.User
+		var user gitpod.User
 
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {

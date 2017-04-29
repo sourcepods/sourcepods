@@ -29,7 +29,7 @@ func ActionWeb(c *cli.Context) error {
 	// Create the http router and return it for use
 	r := handler.NewRouter(logger, box, userStore)
 
-	level.Info(logger).Log("msg", "starting gitloud", "addr", addr)
+	level.Info(logger).Log("msg", "starting gitpod", "addr", addr)
 	return http.ListenAndServe(addr, r)
 }
 
