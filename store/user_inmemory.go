@@ -3,7 +3,7 @@ package store
 import (
 	"sync"
 
-	"github.com/gitloud/gitloud"
+	"github.com/gitpods/gitpod"
 	"github.com/go-errors/errors"
 )
 

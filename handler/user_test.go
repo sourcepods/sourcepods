@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gitloud/gitloud"
-	"github.com/gitloud/gitloud/handler"
-	"github.com/gitloud/gitloud/store"
+	"github.com/gitpods/gitpod"
+	"github.com/gitpods/gitpod/handler"
+	"github.com/gitpods/gitpod/store"
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
 )

@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gitloud/gitloud"
-	"github.com/gitloud/gitloud/store"
+	"github.com/gitpods/gitpod"
+	"github.com/gitpods/gitpod/store"
 	"github.com/gorilla/mux"
 )
 

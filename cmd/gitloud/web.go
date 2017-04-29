@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gitloud/gitloud/handler"
-	"github.com/gitloud/gitloud/store"
+	"github.com/gitpods/gitpod/handler"
+	"github.com/gitpods/gitpod/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/gobuffalo/packr"
