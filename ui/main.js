@@ -2,10 +2,10 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 
 import {store} from "./store";
-import App from "./App.vue";
-import UserList from "./UserList.vue";
-import UserProfile from "./UserProfile.vue";
-import UserEdit from "./UserEdit.vue";
+import App from "./app.vue";
+import UserList from "./user/list.vue";
+import UserProfile from "./user/profile.vue";
+import UserEdit from "./user/edit.vue";
 
 Vue.use(VueRouter);
 
