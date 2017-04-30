@@ -24,32 +24,35 @@ func ActionWeb(c *cli.Context) error {
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
 
-	var server *http.Server
+	// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
+	// The path is relative to this file.
+	box := packr.NewBox("../../public")
+
+	// Create a simple store running in memory for example purposes
+	userStore := store.NewUserInMemory()
+
+	// Create the http router and return it for use
+	r := handler.NewRouter(logger, box, userStore)
+
+	server := &http.Server{Addr: addr, Handler: r}
 
 	var gr group.Group
-	gr.Add(func() error {
-		// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
-		// The path is relative to this file.
-		box := packr.NewBox("../../public")
+	{
+		gr.Add(func() error {
+			level.Info(logger).Log("msg", "starting gitpod", "addr", addr)
+			return server.ListenAndServe()
+		}, func(err error) {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			log.With(logger, "grouperr", err)
 
-		// Create a simple store running in memory for example purposes
-		userStore := store.NewUserInMemory()
-
-		// Create the http router and return it for use
-		r := handler.NewRouter(logger, box, userStore)
-
-		level.Info(logger).Log("msg", "starting gitpod", "addr", addr)
-
-		server := &http.Server{Addr: addr, Handler: r}
-		return server.ListenAndServe()
-	}, func(err error) {
-		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-		server.Shutdown(ctx)
-		level.Info(logger).Log(
-			"msg", "http server shutdown gracefully",
-			"err", err,
-		)
-	})
+			if err := server.Shutdown(ctx); err != nil {
+				level.Error(logger).Log("msg", "failed to shutdown http server gracefully", "err", err)
+				return
+			}
+			level.Info(logger).Log("msg", "http server shutdown gracefully")
+		})
+	}
 
 	return gr.Run()
 }
