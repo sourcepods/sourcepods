@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gitpods/gitpod/handler"
@@ -18,9 +19,10 @@ import (
 func ActionWeb(c *cli.Context) error {
 	addr := c.String("addr")
 	env := c.String("env")
+	loglevel := c.String("loglevel")
 
 	// Create the logger based on the environment: production/development/test
-	logger := newLogger(env)
+	logger := newLogger(env, loglevel)
 
 	var server *http.Server
 
@@ -52,14 +54,24 @@ func ActionWeb(c *cli.Context) error {
 	return gr.Run()
 }
 
-func newLogger(env string) log.Logger {
+func newLogger(env string, loglevel string) log.Logger {
 	var logger log.Logger
-	if env == DefaultEnv {
+
+	if env == ProductionEnv {
 		logger = log.NewJSONLogger(log.NewSyncWriter(os.Stdout))
-		logger = level.NewFilter(logger, level.AllowInfo())
 	} else {
 		logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout))
-		logger = level.NewFilter(logger, level.AllowAll())
+	}
+
+	switch strings.ToLower(loglevel) {
+	case "debug":
+		logger = level.NewFilter(logger, level.AllowDebug())
+	case "warn":
+		logger = level.NewFilter(logger, level.AllowWarn())
+	case "error":
+		logger = level.NewFilter(logger, level.AllowError())
+	default:
+		logger = level.NewFilter(logger, level.AllowInfo())
 	}
 
 	return log.With(logger, "ts", log.DefaultTimestampUTC)

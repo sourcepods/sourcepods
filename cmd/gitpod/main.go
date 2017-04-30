@@ -7,7 +7,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-const DefaultEnv = "production"
+const ProductionEnv = "production"
 
 func main() {
 	app := cli.NewApp()
@@ -26,7 +26,13 @@ func main() {
 			Name:   "env",
 			EnvVar: "GITPOD_ENV",
 			Usage:  "The environment gitpod should run in",
-			Value:  DefaultEnv,
+			Value:  ProductionEnv,
+		},
+		cli.StringFlag{
+			Name:   "loglevel",
+			EnvVar: "GITPOD_LOGLEVEL",
+			Usage:  "The log level to filter logs with before printing",
+			Value:  "info",
 		},
 	}
 

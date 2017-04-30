@@ -24,8 +24,9 @@ func main() {
 		Usage:  "Runs gitpod in development mode",
 		Action: actionDev,
 		Flags: []cli.Flag{
-			cli.IntFlag{Name: "port", Usage: "The port to run gitpod on", Value: 3000},
+			cli.StringFlag{Name: "addr", Usage: "The address to run gitpod on", Value: ":3000"},
 			cli.StringFlag{Name: "env", Usage: "Set the env gitpod runs in", Value: "development"},
+			cli.StringFlag{Name: "loglevel", Usage: "The log level to filter logs with before printing", Value: "debug"},
 		},
 	}}
 
@@ -35,12 +36,14 @@ func main() {
 }
 
 func actionDev(c *cli.Context) error {
-	portFlag := c.Int("port")
-	envFlag := c.Bool("env")
+	addrFlag := c.String("addr")
+	envFlag := c.String("env")
+	loglevelFlag := c.String("loglevel")
 
 	env := []string{
-		fmt.Sprintf("GITPOD_ADDR=:%d", portFlag),
+		fmt.Sprintf("GITPOD_ADDR=%s", addrFlag),
 		fmt.Sprintf("GITPOD_ENV=%s", envFlag),
+		fmt.Sprintf("GITPOD_LOGLEVEL=%s", loglevelFlag),
 	}
 
 	var g group.Group
