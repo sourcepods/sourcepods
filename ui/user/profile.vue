@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="uk-container">
         <h4>{{user.username}}</h4>
 
         <gravatar :email="user.email" default-img="mm"></gravatar>

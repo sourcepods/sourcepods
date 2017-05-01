@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="uk-container">
         <p>users:</p>
         <ul>
             <li v-for="user in users">
