@@ -41,6 +41,7 @@ func NewRouter(logger log.Logger, box packr.Box, userStore UserStore) *mux.Route
 
 	r.PathPrefix("/js").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
 	r.PathPrefix("/css").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+	r.PathPrefix("/img").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
 
 	r.NotFoundHandler = HomeHandler(box)
 

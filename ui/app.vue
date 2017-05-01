@@ -4,8 +4,7 @@
 			<div class="uk-navbar-left">
 
 				<router-link class="uk-navbar-item uk-logo" to="/">
-					<img src="http://seeklogo.com/images/K/kubernetes-logo-3A67038EAB-seeklogo.com.png" alt=""
-						 style="height: 46px;">
+					<img src="/img/logo.svg" alt="" style="height: 46px;">
 				</router-link>
 
 				<ul class="uk-navbar-nav">
