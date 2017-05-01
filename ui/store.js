@@ -40,8 +40,7 @@ export const store = new Vuex.Store({
 		}
 	},
 	actions: {
-		fetchUsers(ctx)
-		{
+		fetchUsers(ctx) {
 			axios.get('/api/users')
 				.then((res) => {
 					ctx.commit('addUsers', res.data);
@@ -50,8 +49,7 @@ export const store = new Vuex.Store({
 					alert(err);
 				})
 		},
-		fetchUser(ctx, username)
-		{
+		fetchUser(ctx, username) {
 			axios.get(`/api/users/${username}`)
 				.then((res) => {
 					ctx.commit('addUser', res.data);
@@ -60,18 +58,19 @@ export const store = new Vuex.Store({
 					alert(err);
 				})
 		},
-		updateUser(ctx, user)
-		{
-			axios.put(`/api/users/${user.username}`, user)
-				.then((res) => {
-					ctx.commit('updateUser', res.data);
-				})
-				.catch((err) => {
-					alert(err);
-				})
+		updateUser(ctx, user) {
+			return new Promise((resolve, reject) => {
+				axios.put(`/api/users/${user.username}`, user)
+					.then((res) => {
+						ctx.commit('updateUser', res.data);
+						resolve(res.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
 		},
-		deleteUser(ctx, username)
-		{
+		deleteUser(ctx, username) {
 			axios.delete(`/api/users/${username}`)
 				.then((res) => {
 					ctx.dispatch('fetchUsers');

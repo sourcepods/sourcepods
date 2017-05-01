@@ -37,6 +37,8 @@
 </template>
 
 <script>
+	import UIkit from 'uikit';
+
 	export default {
 		data(){
 			return {}
@@ -52,7 +54,14 @@
 		},
 		methods: {
 			saveUser() {
-				this.$store.dispatch('updateUser', this.user);
+				this.$store.dispatch('updateUser', this.user)
+					.then((user) => {
+						this.$router.push(`/users/${user.username}`);
+						UIkit.notification('User updated', {status: 'success', pos: 'bottom-right'});
+					})
+					.catch((err) => {
+						UIkit.notification('Updating user failed', {status: 'danger', pos:'bottom-right'})
+					})
 			}
 		}
 	}
