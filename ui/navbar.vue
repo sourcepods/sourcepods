@@ -31,7 +31,16 @@
 					<router-link to="/users/metalmatze">
 						<img src="https://www.gravatar.com/avatar/915d80f0d9b6678fad4d1ab36dfc8960?s=46&d=mm"
 							 class="uk-border-circle"/>
+						<span uk-icon="icon: more-vertical"></span>
 					</router-link>
+					<div class="uk-navbar-dropdown">
+						<ul class="uk-nav uk-navbar-dropdown-nav">
+							<li><router-link to="/users/metalmatze">Profile</router-link></li>
+							<li><router-link to="/settings/profile">Settings</router-link></li>
+							<li class="uk-nav-divider"></li>
+							<li><router-link to="/login">Sign out</router-link></li>
+						</ul>
+					</div>
 				</li>
 			</ul>
 
