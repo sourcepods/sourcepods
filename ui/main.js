@@ -10,17 +10,17 @@ import UserEdit from "./user/edit.vue";
 Vue.use(VueRouter);
 
 const router = new VueRouter({
-    mode: 'history',
-    routes: [
-        {path: "/", component: UserList},
-        {path: "/users/:username", component: UserProfile},
-        {path: "/users/:username/edit", component: UserEdit},
-    ],
+	mode: 'history',
+	routes: [
+		{path: "/", component: UserList},
+		{path: "/users/:username", component: UserProfile},
+		{path: "/users/:username/edit", component: UserEdit},
+	],
 });
 
 new Vue({
-    el: '#app',
-    store: store,
-    router: router,
-    render: h => h(App)
+	el: '#app',
+	store: store,
+	router: router,
+	render: h => h(App)
 });

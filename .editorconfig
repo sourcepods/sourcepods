@@ -11,17 +11,13 @@ trim_trailing_whitespace = true
 indent_style = tab
 indent_size = 8
 
-[*.{tmpl,html}]
+[*.{html,js,css,vue}]
 indent_style = tab
 indent_size = 4
 
-[*.{less,yml}]
+[*.yml]
 indent_style = space
-indent_size = 4
-
-[*.js]
-indent_style = space
-indent_size = 4
+indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = true
