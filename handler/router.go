@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/kit/metrics"
 	"github.com/gobuffalo/packr"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
@@ -16,32 +17,45 @@ var (
 	NotFoundJson = map[string]string{"error": http.StatusText(http.StatusNotFound)}
 )
 
-func NewRouter(logger log.Logger, box packr.Box, userStore UserStore) *mux.Router {
-	r := mux.NewRouter()
+// TODO: Refactor this to possibly a struct with instances of interfaces
+type Store interface {
+	LoginStore
+	UserStore
+}
+
+type RouterMetrics struct {
+	LoginAttempts metrics.Counter
+}
+
+func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store Store) *mux.Router {
+	r := mux.NewRouter().StrictSlash(true)
 
 	// instantiate default middlewares
 	middlewares := alice.New(LoggerMiddleware(logger))
 
 	r.Handle("/", middlewares.ThenFunc(HomeHandler(box))).Methods(http.MethodGet)
+	r.Handle("/favicon.ico", middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+	r.Handle("/favicon.png", middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+	r.PathPrefix("/js").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+	r.PathPrefix("/css").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+	r.PathPrefix("/img").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+
+	r.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
 
 	api := r.PathPrefix("/api").Subrouter()
 	{
-		api.Handle("/users", middlewares.ThenFunc(UserList(userStore))).Methods(http.MethodGet)
-		api.Handle("/users", middlewares.ThenFunc(UserCreate(userStore))).Methods(http.MethodPost)
-		api.Handle("/users/{username}", middlewares.ThenFunc(User(userStore))).Methods(http.MethodGet)
-		api.Handle("/users/{username}", middlewares.ThenFunc(UserUpdate(userStore))).Methods(http.MethodPut)
-		api.Handle("/users/{username}", middlewares.ThenFunc(UserDelete(userStore))).Methods(http.MethodDelete)
+		api.Handle("/authorize", middlewares.ThenFunc(Authorize(logger, metrics.LoginAttempts, store))).Methods(http.MethodPost)
+
+		api.Handle("/users", middlewares.ThenFunc(UserList(store))).Methods(http.MethodGet)
+		api.Handle("/users", middlewares.ThenFunc(UserCreate(store))).Methods(http.MethodPost)
+		api.Handle("/users/{username}", middlewares.ThenFunc(User(store))).Methods(http.MethodGet)
+		api.Handle("/users/{username}", middlewares.ThenFunc(UserUpdate(store))).Methods(http.MethodPut)
+		api.Handle("/users/{username}", middlewares.ThenFunc(UserDelete(store))).Methods(http.MethodDelete)
 
 		api.NotFoundHandler = middlewares.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 			WriteJson(w, NotFoundJson, http.StatusNotFound)
 		})
 	}
-
-	r.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
-
-	r.PathPrefix("/js").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
-	r.PathPrefix("/css").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
-	r.PathPrefix("/img").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
 
 	r.NotFoundHandler = HomeHandler(box)
 

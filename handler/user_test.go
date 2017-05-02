@@ -52,7 +52,7 @@ func TestUserNotFound(t *testing.T) {
 
 func TestUserCreate(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+	r := handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, userStore)
 
 	payloadUser := gitpod.User{
 		ID:       "28195928-2e77-431b-b1fc-43f543cfdc2a",
@@ -77,7 +77,7 @@ func TestUserCreate(t *testing.T) {
 
 func TestUserUpdate(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+	r := handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, userStore)
 
 	user, err := userStore.GetUser("metalmatze")
 	assert.NoError(t, err)
@@ -112,7 +112,7 @@ func TestUserUpdateBadRequest(t *testing.T) {
 
 func TestUserUpdateNotFound(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+	r := handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, userStore)
 
 	user, err := userStore.GetUser("metalmatze")
 	assert.NoError(t, err)
@@ -128,7 +128,7 @@ func TestUserUpdateNotFound(t *testing.T) {
 
 func TestUserDelete(t *testing.T) {
 	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+	r := handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, userStore)
 
 	_, err := userStore.GetUser("metalmatze")
 	assert.NoError(t, err)
@@ -145,8 +145,7 @@ func TestUserDelete(t *testing.T) {
 }
 
 func TestUserDeleteNotFound(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+	r := DefaultTestRouter()
 
 	res, content, err := Request(r, http.MethodDelete, "/api/users/foobar", nil)
 	assert.NoError(t, err)
