@@ -11,8 +11,10 @@ import (
 	"github.com/gitpods/gitpod/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/kit/metrics/prometheus"
 	"github.com/gobuffalo/packr"
 	"github.com/oklog/oklog/pkg/group"
+	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
 )
 
@@ -78,4 +80,14 @@ func newLogger(env string, loglevel string) log.Logger {
 	}
 
 	return log.With(logger, "ts", log.DefaultTimestampUTC)
+}
+
+func prometheusMetrics() handler.RouterMetrics {
+	return handler.RouterMetrics{
+		LoginAttempts: prometheus.NewCounterFrom(stdprometheus.CounterOpts{
+			Namespace: "gitpod",
+			Name:      "login_attempts_total",
+			Help:      "Number of attempts to login and their status",
+		}, []string{"status"}),
+	}
 }
