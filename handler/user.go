@@ -19,14 +19,14 @@ type UserStore interface {
 	DeleteUser(string) error
 }
 
-func WriteJson(w http.ResponseWriter, v interface{}, code int) {
+func jsonResponse(w http.ResponseWriter, v interface{}, code int) {
 	data, err := json.Marshal(v)
 	if err != nil {
 		http.Error(w, "failed to marshal to json", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
 	w.Write(data)
 }
@@ -39,7 +39,7 @@ func UserList(logger log.Logger, store UserStore) http.HandlerFunc {
 			return
 		}
 
-		WriteJson(w, users, http.StatusOK)
+		jsonResponse(w, users, http.StatusOK)
 	}
 }
 
@@ -50,11 +50,11 @@ func User(logger log.Logger, store UserStore) http.HandlerFunc {
 
 		user, err := store.GetUser(username)
 		if err != nil {
-			WriteJson(w, NotFoundJson, http.StatusNotFound)
+			jsonResponse(w, NotFoundJson, http.StatusNotFound)
 			return
 		}
 
-		WriteJson(w, user, http.StatusOK)
+		jsonResponse(w, user, http.StatusOK)
 	}
 }
 
@@ -85,7 +85,7 @@ func UserCreate(logger log.Logger, store UserStore) http.HandlerFunc {
 			return
 		}
 
-		WriteJson(w, user, http.StatusOK)
+		jsonResponse(w, user, http.StatusOK)
 	}
 }
 
@@ -102,7 +102,7 @@ func UserUpdate(logger log.Logger, s UserStore) http.HandlerFunc {
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			msg := "failed to unmarshal user"
 			level.Warn(logger).Log("msg", msg, "err", err)
-			WriteJson(w, map[string]string{"message": msg}, http.StatusBadRequest)
+			jsonResponse(w, map[string]string{"message": msg}, http.StatusBadRequest)
 			return
 		}
 
@@ -114,11 +114,11 @@ func UserUpdate(logger log.Logger, s UserStore) http.HandlerFunc {
 
 		user, err := s.UpdateUser(username, user)
 		if err == store.UserNotFound {
-			WriteJson(w, NotFoundJson, http.StatusNotFound)
+			jsonResponse(w, NotFoundJson, http.StatusNotFound)
 			return
 		}
 
-		WriteJson(w, user, http.StatusOK)
+		jsonResponse(w, user, http.StatusOK)
 	}
 }
 
@@ -131,7 +131,7 @@ func UserDelete(logger log.Logger, s UserStore) http.HandlerFunc {
 
 		err := s.DeleteUser(username)
 		if err == store.UserNotFound {
-			WriteJson(w, NotFoundJson, http.StatusNotFound)
+			jsonResponse(w, NotFoundJson, http.StatusNotFound)
 			return
 		}
 		if err != nil {

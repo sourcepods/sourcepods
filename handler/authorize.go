@@ -38,7 +38,7 @@ func Authorize(logger log.Logger, loginAttempts metrics.Counter, s LoginStore) h
 		if err := json.NewDecoder(r.Body).Decode(&form); err != nil {
 			level.Warn(logger).Log("msg", "failed to unmarshal form", "err", err)
 			loginAttempts.With("status", loginAttemptFailed).Add(1)
-			WriteJson(w, map[string]string{"message": "failed to unmarshal form"}, http.StatusBadRequest)
+			jsonResponse(w, map[string]string{"message": "failed to unmarshal form"}, http.StatusBadRequest)
 			return
 		}
 
@@ -46,13 +46,13 @@ func Authorize(logger log.Logger, loginAttempts metrics.Counter, s LoginStore) h
 		if err == store.UserNotFound {
 			level.Debug(logger).Log("msg", "user by email doesn't exist", "email", form.Email)
 			loginAttempts.With("status", loginAttemptFailed).Add(1)
-			WriteJson(w, BadCredentialsJson, http.StatusUnauthorized)
+			jsonResponse(w, BadCredentialsJson, http.StatusUnauthorized)
 			return
 		}
 		if err != nil {
 			level.Warn(logger).Log("msg", "failed to get user by email", "err", err)
 			loginAttempts.With("status", loginAttemptFailed).Add(1)
-			WriteJson(w, BadCredentialsJson, http.StatusUnauthorized)
+			jsonResponse(w, BadCredentialsJson, http.StatusUnauthorized)
 			return
 		}
 
@@ -60,12 +60,12 @@ func Authorize(logger log.Logger, loginAttempts metrics.Counter, s LoginStore) h
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password)); err != nil {
 			level.Debug(logger).Log("msg", "login password doesn't match", "err", err)
 			loginAttempts.With("status", loginAttemptFailed).Add(1)
-			WriteJson(w, BadCredentialsJson, http.StatusUnauthorized)
+			jsonResponse(w, BadCredentialsJson, http.StatusUnauthorized)
 			return
 		}
 
 		loginAttempts.With("status", loginAttemptSuccess).Add(1)
 
-		WriteJson(w, user, http.StatusOK)
+		jsonResponse(w, user, http.StatusOK)
 	}
 }

@@ -53,7 +53,7 @@ func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store St
 		api.Handle("/users/{username}", middlewares.ThenFunc(UserDelete(logger, store))).Methods(http.MethodDelete)
 
 		api.NotFoundHandler = middlewares.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
-			WriteJson(w, NotFoundJson, http.StatusNotFound)
+			jsonResponse(w, NotFoundJson, http.StatusNotFound)
 		})
 	}
 
