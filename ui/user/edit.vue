@@ -57,10 +57,10 @@
 				this.$store.dispatch('updateUser', this.user)
 					.then((user) => {
 						this.$router.push(`/users/${user.username}`);
-						UIkit.notification('User updated', {status: 'success', pos: 'bottom-right'});
+						UIkit.notification('User updated', {status: 'success', pos: 'bottom-center'});
 					})
 					.catch((err) => {
-						UIkit.notification('Updating user failed', {status: 'danger', pos:'bottom-right'})
+						UIkit.notification('Updating user failed', {status: 'danger', pos:'bottom-center'})
 					})
 			}
 		}
