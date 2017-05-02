@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/kit/metrics"
 	"github.com/gobuffalo/packr"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
@@ -22,7 +23,11 @@ type Store interface {
 	UserStore
 }
 
-func NewRouter(logger log.Logger, box packr.Box, store Store) *mux.Router {
+type RouterMetrics struct {
+	LoginAttempts metrics.Counter
+}
+
+func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store Store) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 
 	// instantiate default middlewares
@@ -30,6 +35,7 @@ func NewRouter(logger log.Logger, box packr.Box, store Store) *mux.Router {
 
 	r.Handle("/", middlewares.ThenFunc(HomeHandler(box))).Methods(http.MethodGet)
 	r.Handle("/favicon.ico", middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+	r.Handle("/favicon.png", middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
 	r.PathPrefix("/js").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
 	r.PathPrefix("/css").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
 	r.PathPrefix("/img").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
@@ -38,7 +44,7 @@ func NewRouter(logger log.Logger, box packr.Box, store Store) *mux.Router {
 
 	api := r.PathPrefix("/api").Subrouter()
 	{
-		api.Handle("/authorize", middlewares.ThenFunc(Authorize(logger, store))).Methods(http.MethodPost)
+		api.Handle("/authorize", middlewares.ThenFunc(Authorize(logger, metrics.LoginAttempts, store))).Methods(http.MethodPost)
 
 		api.Handle("/users", middlewares.ThenFunc(UserList(store))).Methods(http.MethodGet)
 		api.Handle("/users", middlewares.ThenFunc(UserCreate(store))).Methods(http.MethodPost)

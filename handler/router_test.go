@@ -11,6 +11,7 @@ import (
 	"github.com/gitpods/gitpod/handler"
 	"github.com/gitpods/gitpod/store"
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/metrics/discard"
 	"github.com/gobuffalo/packr"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -30,9 +31,17 @@ func TestApiNotFound(t *testing.T) {
 	assertNotFoundJson(t, res, content)
 }
 
+// Helpers
+
+func DiscardMetrics() handler.RouterMetrics {
+	return handler.RouterMetrics{
+		LoginAttempts: discard.NewCounter(),
+	}
+}
+
 func DefaultTestRouter() *mux.Router {
 	userStore := store.NewUserInMemory()
-	return handler.NewRouter(log.NewNopLogger(), box, userStore)
+	return handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, userStore)
 }
 
 func Request(r *mux.Router, method string, url string, payload []byte) (*http.Response, []byte, error) {

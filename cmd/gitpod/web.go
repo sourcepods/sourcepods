@@ -32,7 +32,7 @@ func ActionWeb(c *cli.Context) error {
 	userStore := store.NewUserInMemory()
 
 	// Create the http router and return it for use
-	r := handler.NewRouter(logger, box, userStore)
+	r := handler.NewRouter(logger, prometheusMetrics(), box, userStore)
 
 	server := &http.Server{Addr: addr, Handler: r}
 

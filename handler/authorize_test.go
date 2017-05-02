@@ -4,15 +4,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gitpods/gitpod/handler"
-	"github.com/gitpods/gitpod/store"
-	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthorize(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+	r := DefaultTestRouter()
 
 	payload := `{"email":"metalmatze@example.com", "password":"kubernetes"}`
 
@@ -27,8 +23,7 @@ func TestAuthorize(t *testing.T) {
 }
 
 func TestAuthorizeBadRequest(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+	r := DefaultTestRouter()
 
 	res, content, err := Request(r, http.MethodPost, "/api/authorize", nil)
 	assert.NoError(t, err)
@@ -38,8 +33,7 @@ func TestAuthorizeBadRequest(t *testing.T) {
 }
 
 func TestAuthorizeWrongEmail(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+	r := DefaultTestRouter()
 
 	payload := `{"email":"foobar@example.com", "password":"kubernetes"}`
 
@@ -51,8 +45,7 @@ func TestAuthorizeWrongEmail(t *testing.T) {
 }
 
 func TestAuthorizeWrongPassword(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), box, userStore)
+	r := DefaultTestRouter()
 
 	payload := `{"email":"metalmatze@example.com", "password":"foobar"}`
 
