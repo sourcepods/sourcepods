@@ -2,11 +2,12 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/gitpods/gitpod"
 	"github.com/gitpods/gitpod/store"
+	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 	"github.com/gorilla/mux"
 )
 
@@ -30,7 +31,7 @@ func WriteJson(w http.ResponseWriter, v interface{}, code int) {
 	w.Write(data)
 }
 
-func UserList(store UserStore) http.HandlerFunc {
+func UserList(logger log.Logger, store UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := store.List()
 		if err != nil {
@@ -42,7 +43,7 @@ func UserList(store UserStore) http.HandlerFunc {
 	}
 }
 
-func User(store UserStore) http.HandlerFunc {
+func User(logger log.Logger, store UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		username := vars["username"]
@@ -57,27 +58,30 @@ func User(store UserStore) http.HandlerFunc {
 	}
 }
 
-func UserCreate(store UserStore) http.HandlerFunc {
+func UserCreate(logger log.Logger, store UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var user gitpod.User
+		logger = log.With(logger, "handler", "UserCreate")
 
+		var user gitpod.User
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			log.Println(err)
-			http.Error(w, "failed to unmarshal user", http.StatusBadRequest)
+			msg := "failed to unmarshal user"
+			level.Warn(logger).Log("msg", msg, "err", err)
+			http.Error(w, msg, http.StatusBadRequest)
 			return
 		}
 
 		if err := user.Validate(); err != nil {
-			log.Println(err)
+			level.Debug(logger).Log("msg", "user invalid", "err", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		user, err := store.CreateUser(user)
 		if err != nil {
-			log.Println(err)
-			http.Error(w, "failed create user", http.StatusInternalServerError)
+			msg := "failed create user"
+			level.Warn(logger).Log("msg", msg)
+			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
 
@@ -85,8 +89,10 @@ func UserCreate(store UserStore) http.HandlerFunc {
 	}
 }
 
-func UserUpdate(s UserStore) http.HandlerFunc {
+func UserUpdate(logger log.Logger, s UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger = log.With(logger, "handler", "UserUpdate")
+
 		vars := mux.Vars(r)
 		username := vars["username"]
 
@@ -94,13 +100,14 @@ func UserUpdate(s UserStore) http.HandlerFunc {
 
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			log.Println(err)
-			WriteJson(w, map[string]string{"message": "failed to unmarshal user"}, http.StatusBadRequest)
+			msg := "failed to unmarshal user"
+			level.Warn(logger).Log("msg", msg, "err", err)
+			WriteJson(w, map[string]string{"message": msg}, http.StatusBadRequest)
 			return
 		}
 
 		if err := user.Validate(); err != nil {
-			log.Println(err)
+			level.Debug(logger).Log("msg", "user invalid", "err", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -115,8 +122,10 @@ func UserUpdate(s UserStore) http.HandlerFunc {
 	}
 }
 
-func UserDelete(s UserStore) http.HandlerFunc {
+func UserDelete(logger log.Logger, s UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger = log.With(logger, "handler", "UserDelete")
+
 		vars := mux.Vars(r)
 		username := vars["username"]
 
@@ -126,8 +135,9 @@ func UserDelete(s UserStore) http.HandlerFunc {
 			return
 		}
 		if err != nil {
-			log.Println(err)
-			http.Error(w, "failed to delete user", http.StatusBadRequest)
+			msg := "failed to delete user"
+			level.Warn(logger).Log("msg", msg, "err", err)
+			http.Error(w, msg, http.StatusBadRequest)
 			return
 		}
 	}

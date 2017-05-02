@@ -46,11 +46,11 @@ func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store St
 	{
 		api.Handle("/authorize", middlewares.ThenFunc(Authorize(logger, metrics.LoginAttempts, store))).Methods(http.MethodPost)
 
-		api.Handle("/users", middlewares.ThenFunc(UserList(store))).Methods(http.MethodGet)
-		api.Handle("/users", middlewares.ThenFunc(UserCreate(store))).Methods(http.MethodPost)
-		api.Handle("/users/{username}", middlewares.ThenFunc(User(store))).Methods(http.MethodGet)
-		api.Handle("/users/{username}", middlewares.ThenFunc(UserUpdate(store))).Methods(http.MethodPut)
-		api.Handle("/users/{username}", middlewares.ThenFunc(UserDelete(store))).Methods(http.MethodDelete)
+		api.Handle("/users", middlewares.ThenFunc(UserList(logger, store))).Methods(http.MethodGet)
+		api.Handle("/users", middlewares.ThenFunc(UserCreate(logger, store))).Methods(http.MethodPost)
+		api.Handle("/users/{username}", middlewares.ThenFunc(User(logger, store))).Methods(http.MethodGet)
+		api.Handle("/users/{username}", middlewares.ThenFunc(UserUpdate(logger, store))).Methods(http.MethodPut)
+		api.Handle("/users/{username}", middlewares.ThenFunc(UserDelete(logger, store))).Methods(http.MethodDelete)
 
 		api.NotFoundHandler = middlewares.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 			WriteJson(w, NotFoundJson, http.StatusNotFound)
