@@ -55,11 +55,10 @@
 		},
 		methods: {
 			login() {
-				this.failed = false;
-				axios.post(`/api/authorize`, {email: this.email, password: this.password})
-					.then((res) => {
-						console.log(res);
-
+				this.failed = false; // reset the alert for a new try
+				this.$store.dispatch('loginUser', {email: this.email, password: this.password})
+					.then((user) => {
+						this.$router.push('/');
 					})
 					.catch((err) => {
 						if (err.response.status === 401) {

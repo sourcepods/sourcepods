@@ -4,6 +4,7 @@ import axios from "axios";
 export const store = new Vuex.Store({
 	strict: process.env.NODE_ENV !== 'production',
 	state: {
+		user: {},
 		users: [],
 	},
 	getters: {
@@ -40,7 +41,20 @@ export const store = new Vuex.Store({
 		}
 	},
 	actions: {
-		fetchUsers(ctx) {
+		loginUser(ctx, payload) {
+			debugger
+			return new Promise((resolve, reject) => {
+				axios.post(`/api/authorize`, payload)
+					.then((res) => {
+						resolve(res.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
+		},
+		fetchUsers(ctx)
+		{
 			axios.get('/api/users')
 				.then((res) => {
 					ctx.commit('addUsers', res.data);
@@ -49,7 +63,8 @@ export const store = new Vuex.Store({
 					alert(err);
 				})
 		},
-		fetchUser(ctx, username) {
+		fetchUser(ctx, username)
+		{
 			axios.get(`/api/users/${username}`)
 				.then((res) => {
 					ctx.commit('addUser', res.data);
@@ -58,7 +73,8 @@ export const store = new Vuex.Store({
 					alert(err);
 				})
 		},
-		updateUser(ctx, user) {
+		updateUser(ctx, user)
+		{
 			return new Promise((resolve, reject) => {
 				axios.put(`/api/users/${user.username}`, user)
 					.then((res) => {
@@ -70,7 +86,8 @@ export const store = new Vuex.Store({
 					})
 			})
 		},
-		deleteUser(ctx, username) {
+		deleteUser(ctx, username)
+		{
 			axios.delete(`/api/users/${username}`)
 				.then((res) => {
 					ctx.dispatch('fetchUsers');
