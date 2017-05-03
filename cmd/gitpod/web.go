@@ -18,10 +18,39 @@ import (
 	"github.com/urfave/cli"
 )
 
+const (
+	FlagAddr     = "addr"
+	FlagEnv      = "env"
+	FlagLogLevel = "loglevel"
+
+	ProductionEnv = "production"
+)
+
+var FlagsWeb = []cli.Flag{
+	cli.StringFlag{
+		Name:   FlagAddr,
+		EnvVar: "GITPOD_ADDR",
+		Usage:  "The address gitpod runs on",
+		Value:  ":3000",
+	},
+	cli.StringFlag{
+		Name:   FlagEnv,
+		EnvVar: "GITPOD_ENV",
+		Usage:  "The environment gitpod should run in",
+		Value:  ProductionEnv,
+	},
+	cli.StringFlag{
+		Name:   FlagLogLevel,
+		EnvVar: "GITPOD_LOGLEVEL",
+		Usage:  "The log level to filter logs with before printing",
+		Value:  "info",
+	},
+}
+
 func ActionWeb(c *cli.Context) error {
-	addr := c.String("addr")
-	env := c.String("env")
-	loglevel := c.String("loglevel")
+	addr := c.String(FlagAddr)
+	env := c.String(FlagEnv)
+	loglevel := c.String(FlagLogLevel)
 
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
