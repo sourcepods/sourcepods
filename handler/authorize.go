@@ -34,7 +34,6 @@ func Authorize(logger log.Logger, loginAttempts metrics.Counter, s LoginStore) h
 	return func(w http.ResponseWriter, r *http.Request) {
 		var form loginForm
 
-		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&form); err != nil {
 			level.Warn(logger).Log("msg", "failed to unmarshal form", "err", err)
 			loginAttempts.With("status", loginAttemptFailed).Add(1)

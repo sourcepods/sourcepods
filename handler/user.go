@@ -63,7 +63,6 @@ func UserCreate(logger log.Logger, store UserStore) http.HandlerFunc {
 		logger = log.With(logger, "handler", "UserCreate")
 
 		var user gitpod.User
-		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			msg := "failed to unmarshal user"
 			level.Warn(logger).Log("msg", msg, "err", err)
@@ -98,7 +97,6 @@ func UserUpdate(logger log.Logger, s UserStore) http.HandlerFunc {
 
 		var user gitpod.User
 
-		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			msg := "failed to unmarshal user"
 			level.Warn(logger).Log("msg", msg, "err", err)
