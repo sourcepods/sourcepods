@@ -27,7 +27,7 @@ type RouterMetrics struct {
 	LoginAttempts metrics.Counter
 }
 
-func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store Store) *mux.Router {
+func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store Store) http.Handler {
 	r := mux.NewRouter().StrictSlash(true)
 
 	// instantiate default middlewares
@@ -59,6 +59,9 @@ func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store St
 	}
 
 	r.NotFoundHandler = HomeHandler(box)
+
+	// TODO: Wrap your handlers with context.ClearHandler as or else you will leak memory!
+	//r = gorillacontext.ClearHandler(handler)
 
 	return r
 }

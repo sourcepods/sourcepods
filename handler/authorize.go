@@ -9,6 +9,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics"
+	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,6 +20,7 @@ const (
 
 var (
 	BadCredentialsJson = map[string]string{"message": "Bad credentials"}
+	cookieStore        = sessions.NewCookieStore([]byte("secret"))
 )
 
 type LoginStore interface {

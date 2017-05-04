@@ -22,6 +22,7 @@ const (
 	FlagAddr     = "addr"
 	FlagEnv      = "env"
 	FlagLogLevel = "loglevel"
+	FlagSecret   = "secret"
 
 	ProductionEnv = "production"
 )
@@ -45,12 +46,19 @@ var FlagsWeb = []cli.Flag{
 		Usage:  "The log level to filter logs with before printing",
 		Value:  "info",
 	},
+	cli.StringFlag{
+		Name:   FlagSecret,
+		EnvVar: "GITPOD_SECRET",
+		Usage:  "This secret is going to be used to generate cookies",
+		Value:  "secret", // TODO: Remove this to force users to pass a real secret, no default
+	},
 }
 
 func ActionWeb(c *cli.Context) error {
 	addr := c.String(FlagAddr)
 	env := c.String(FlagEnv)
 	loglevel := c.String(FlagLogLevel)
+	//secret := c.String(FlagSecret) TODO: Use this
 
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
