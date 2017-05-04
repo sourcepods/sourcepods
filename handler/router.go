@@ -45,6 +45,7 @@ func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store St
 	api := r.PathPrefix("/api").Subrouter()
 	{
 		api.Handle("/authorize", middlewares.ThenFunc(Authorize(logger, metrics.LoginAttempts, store))).Methods(http.MethodPost)
+		api.Handle("/user", middlewares.ThenFunc(AuthorizedUser(logger, store))).Methods(http.MethodGet)
 
 		api.Handle("/users", middlewares.ThenFunc(UserList(logger, store))).Methods(http.MethodGet)
 		api.Handle("/users", middlewares.ThenFunc(UserCreate(logger, store))).Methods(http.MethodPost)

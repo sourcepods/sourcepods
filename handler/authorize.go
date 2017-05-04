@@ -68,3 +68,21 @@ func Authorize(logger log.Logger, loginAttempts metrics.Counter, s LoginStore) h
 		jsonResponse(w, user, http.StatusOK)
 	}
 }
+
+func AuthorizedUser(logger log.Logger, s LoginStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := s.GetUserByEmail("metalmatze@example.com") // TODO: Get username or id from some token
+		if err == store.UserNotFound {
+			jsonResponse(w, NotFoundJson, http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			msg := "failed to get user"
+			level.Warn(logger).Log("msg", msg, "err", err)
+			jsonResponse(w, map[string]string{"message": msg}, http.StatusInternalServerError)
+			return
+		}
+
+		jsonResponse(w, user, http.StatusOK)
+	}
+}

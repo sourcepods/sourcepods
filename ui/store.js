@@ -4,7 +4,7 @@ import axios from "axios";
 export const store = new Vuex.Store({
 	strict: process.env.NODE_ENV !== 'production',
 	state: {
-		user: {},
+		user: null,
 		users: [],
 	},
 	getters: {
@@ -19,6 +19,9 @@ export const store = new Vuex.Store({
 		}
 	},
 	mutations: {
+		setUser(state, user) {
+			state.user = user;
+		},
 		addUsers(state, users) {
 			state.users = users;
 		},
@@ -41,11 +44,21 @@ export const store = new Vuex.Store({
 		}
 	},
 	actions: {
-		loginUser(ctx, payload) {
-			debugger
+		fetchAuthenticatedUser(ctx) {
+			axios.get(`/api/user`)
+				.then((res) => {
+					ctx.commit('setUser', res.data);
+					resolve(res.data);
+				})
+				.catch((err) => {
+					reject(err);
+				})
+		},
+		authenticateUser(ctx, payload) {
 			return new Promise((resolve, reject) => {
 				axios.post(`/api/authorize`, payload)
 					.then((res) => {
+						ctx.commit('setUser', res.data);
 						resolve(res.data);
 					})
 					.catch((err) => {
@@ -53,8 +66,7 @@ export const store = new Vuex.Store({
 					})
 			})
 		},
-		fetchUsers(ctx)
-		{
+		fetchUsers(ctx) {
 			axios.get('/api/users')
 				.then((res) => {
 					ctx.commit('addUsers', res.data);
@@ -63,8 +75,7 @@ export const store = new Vuex.Store({
 					alert(err);
 				})
 		},
-		fetchUser(ctx, username)
-		{
+		fetchUser(ctx, username) {
 			axios.get(`/api/users/${username}`)
 				.then((res) => {
 					ctx.commit('addUser', res.data);
@@ -73,8 +84,7 @@ export const store = new Vuex.Store({
 					alert(err);
 				})
 		},
-		updateUser(ctx, user)
-		{
+		updateUser(ctx, user) {
 			return new Promise((resolve, reject) => {
 				axios.put(`/api/users/${user.username}`, user)
 					.then((res) => {
@@ -86,8 +96,7 @@ export const store = new Vuex.Store({
 					})
 			})
 		},
-		deleteUser(ctx, username)
-		{
+		deleteUser(ctx, username) {
 			axios.delete(`/api/users/${username}`)
 				.then((res) => {
 					ctx.dispatch('fetchUsers');
