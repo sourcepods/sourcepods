@@ -13,6 +13,7 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics/prometheus"
 	"github.com/gobuffalo/packr"
+	"github.com/gorilla/sessions"
 	"github.com/oklog/oklog/pkg/group"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
@@ -22,6 +23,7 @@ const (
 	FlagAddr     = "addr"
 	FlagEnv      = "env"
 	FlagLogLevel = "loglevel"
+	FlagSecret   = "secret"
 
 	ProductionEnv = "production"
 )
@@ -45,12 +47,19 @@ var FlagsWeb = []cli.Flag{
 		Usage:  "The log level to filter logs with before printing",
 		Value:  "info",
 	},
+	cli.StringFlag{
+		Name:   FlagSecret,
+		EnvVar: "GITPOD_SECRET",
+		Usage:  "This secret is going to be used to generate cookies",
+		Value:  "secret", // TODO: Remove this to force users to pass a real secret, no default
+	},
 }
 
 func ActionWeb(c *cli.Context) error {
 	addr := c.String(FlagAddr)
 	env := c.String(FlagEnv)
 	loglevel := c.String(FlagLogLevel)
+	secret := c.String(FlagSecret)
 
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
@@ -59,11 +68,20 @@ func ActionWeb(c *cli.Context) error {
 	// The path is relative to this file.
 	box := packr.NewBox("../../public")
 
+	cookieStore := sessions.NewFilesystemStore("/tmp/gitpods_sessions", []byte(secret))
+
 	// Create a simple store running in memory for example purposes
 	userStore := store.NewUserInMemory()
 
+	// Create a routerStore by passing concrete implementations to interfaces for the router.
+	routerStore := handler.RouterStore{
+		CookieStore: cookieStore,
+		UserStore:   userStore,
+		LoginStore:  userStore,
+	}
+
 	// Create the http router and return it for use
-	r := handler.NewRouter(logger, prometheusMetrics(), box, userStore)
+	r := handler.NewRouter(logger, prometheusMetrics(), box, routerStore)
 
 	server := &http.Server{Addr: addr, Handler: r}
 

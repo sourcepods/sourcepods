@@ -8,17 +8,18 @@ import (
 	"github.com/gitpods/gitpod"
 	"github.com/gitpods/gitpod/handler"
 	"github.com/gitpods/gitpod/store"
-	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserList(t *testing.T) {
-	r := DefaultTestRouter()
+	routerStore := DefaultRouterStore()
+	r := DefaultTestAuthRouterWithStore(routerStore)
+
 	res, content, err := Request(r, http.MethodGet, "/api/users", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
-	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
 	assert.JSONEq(
 		t,
 		`[{"id":"25558000-2565-48dc-84eb-18754da2b0a2","username":"metalmatze","name":"Matthias Loibl","email":"metalmatze@example.com"},{"id":"911d24ae-ad9b-4e50-bf23-9dcbdc8134c6","username":"tboerger","name":"Thomas Boerger","email":"tboerger@example.com"}]`,
@@ -26,13 +27,21 @@ func TestUserList(t *testing.T) {
 	)
 }
 
-func TestUser(t *testing.T) {
+func TestUserListUnauthorized(t *testing.T) {
 	r := DefaultTestRouter()
+	res, content, err := Request(r, http.MethodGet, "/api/users", nil)
+
+	assert.NoError(t, err)
+	assertUnauthorized(t, res, content)
+}
+
+func TestUser(t *testing.T) {
+	r := DefaultTestAuthRouter()
 	res, content, err := Request(r, http.MethodGet, "/api/users/metalmatze", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
-	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
 	assert.JSONEq(
 		t,
 		`{"id":"25558000-2565-48dc-84eb-18754da2b0a2","username":"metalmatze","name":"Matthias Loibl","email":"metalmatze@example.com"}`,
@@ -41,18 +50,18 @@ func TestUser(t *testing.T) {
 }
 
 func TestUserNotFound(t *testing.T) {
-	r := DefaultTestRouter()
+	r := DefaultTestAuthRouter()
 	res, content, err := Request(r, http.MethodGet, "/api/users/foobar", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNotFound, res.StatusCode)
-	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
-	assert.JSONEq(t, NotFoundJsonString, string(content))
+	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
+	assert.JSONEq(t, string(handler.JsonNotFound), string(content))
 }
 
 func TestUserCreate(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, userStore)
+	routerStore := DefaultRouterStore()
+	r := DefaultTestAuthRouterWithStore(routerStore)
 
 	payloadUser := gitpod.User{
 		ID:       "28195928-2e77-431b-b1fc-43f543cfdc2a",
@@ -70,16 +79,16 @@ func TestUserCreate(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, string(payload), string(content))
 
-	user, err := userStore.GetUser(payloadUser.Username)
+	user, err := routerStore.UserStore.GetUser(payloadUser.Username)
 	assert.NoError(t, err)
 	assert.Equal(t, payloadUser, user)
 }
 
 func TestUserUpdate(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, userStore)
+	routerStore := DefaultRouterStore()
+	r := DefaultTestAuthRouterWithStore(routerStore)
 
-	user, err := userStore.GetUser("metalmatze")
+	user, err := routerStore.UserStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
 	newEmail := "matze@example.com"
@@ -95,26 +104,26 @@ func TestUserUpdate(t *testing.T) {
 	assert.Equal(t, string(payload), string(content))
 
 	// Test if store was really updated
-	user, err = userStore.GetUser("metalmatze")
+	user, err = routerStore.UserStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 	assert.Equal(t, newEmail, user.Email)
 }
 
 func TestUserUpdateBadRequest(t *testing.T) {
-	r := DefaultTestRouter()
+	r := DefaultTestAuthRouter()
 	res, content, err := Request(r, http.MethodPut, "/api/users/metalmatze", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, res.StatusCode)
-	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
 	assert.JSONEq(t, `{"message":"failed to unmarshal user"}`, string(content))
 }
 
 func TestUserUpdateNotFound(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, userStore)
+	routerStore := DefaultRouterStore()
+	r := DefaultTestAuthRouterWithStore(routerStore)
 
-	user, err := userStore.GetUser("metalmatze")
+	user, err := routerStore.UserStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
 	payload, err := json.Marshal(user)
@@ -127,10 +136,10 @@ func TestUserUpdateNotFound(t *testing.T) {
 }
 
 func TestUserDelete(t *testing.T) {
-	userStore := store.NewUserInMemory()
-	r := handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, userStore)
+	routerStore := DefaultRouterStore()
+	r := DefaultTestAuthRouterWithStore(routerStore)
 
-	_, err := userStore.GetUser("metalmatze")
+	_, err := routerStore.UserStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
 	res, content, err := Request(r, http.MethodDelete, "/api/users/metalmatze", nil)
@@ -140,12 +149,12 @@ func TestUserDelete(t *testing.T) {
 	assert.Equal(t, "", string(content))
 
 	// Test if store was really updated
-	_, err = userStore.GetUser("metalmatze")
+	_, err = routerStore.UserStore.GetUser("metalmatze")
 	assert.Equal(t, err, store.UserNotFound)
 }
 
 func TestUserDeleteNotFound(t *testing.T) {
-	r := DefaultTestRouter()
+	r := DefaultTestAuthRouter()
 
 	res, content, err := Request(r, http.MethodDelete, "/api/users/foobar", nil)
 	assert.NoError(t, err)

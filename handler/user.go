@@ -25,10 +25,13 @@ func jsonResponse(w http.ResponseWriter, v interface{}, code int) {
 		http.Error(w, "failed to marshal to json", http.StatusInternalServerError)
 		return
 	}
+	jsonResponseBytes(w, data, code)
+}
 
+func jsonResponseBytes(w http.ResponseWriter, payload []byte, code int) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
-	w.Write(data)
+	w.Write(payload)
 }
 
 func UserList(logger log.Logger, store UserStore) http.HandlerFunc {
@@ -50,7 +53,7 @@ func User(logger log.Logger, store UserStore) http.HandlerFunc {
 
 		user, err := store.GetUser(username)
 		if err != nil {
-			jsonResponse(w, NotFoundJson, http.StatusNotFound)
+			jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
 			return
 		}
 
@@ -112,7 +115,7 @@ func UserUpdate(logger log.Logger, s UserStore) http.HandlerFunc {
 
 		user, err := s.UpdateUser(username, user)
 		if err == store.UserNotFound {
-			jsonResponse(w, NotFoundJson, http.StatusNotFound)
+			jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
 			return
 		}
 
@@ -129,7 +132,7 @@ func UserDelete(logger log.Logger, s UserStore) http.HandlerFunc {
 
 		err := s.DeleteUser(username)
 		if err == store.UserNotFound {
-			jsonResponse(w, NotFoundJson, http.StatusNotFound)
+			jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
 			return
 		}
 		if err != nil {
