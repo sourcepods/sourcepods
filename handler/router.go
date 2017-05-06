@@ -9,59 +9,68 @@ import (
 	"github.com/go-kit/kit/metrics"
 	"github.com/gobuffalo/packr"
 	"github.com/gorilla/mux"
-	"github.com/justinas/alice"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/gorilla/sessions"
+)
+
+const (
+	pathPrefixAPI = "/api"
 )
 
 var (
-	NotFoundJson = map[string]string{"error": http.StatusText(http.StatusNotFound)}
+	JsonUnauthorized   = []byte(`{"message":"Unauthorized"}`) // 401
+	JsonNotFound       = []byte(`{"error":"Not Found"}`)      // 404
+	JsonBadCredentials = []byte(`{"message":"Bad credentials"}`)
 )
 
-// TODO: Refactor this to possibly a struct with instances of interfaces
-type Store interface {
-	LoginStore
-	UserStore
+type RouterStore struct {
+	LoginStore  LoginStore
+	UserStore   UserStore
+	CookieStore sessions.Store
 }
 
 type RouterMetrics struct {
 	LoginAttempts metrics.Counter
 }
 
-func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store Store) http.Handler {
-	r := mux.NewRouter().StrictSlash(true)
+func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store RouterStore) *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
 
-	// instantiate default middlewares
-	middlewares := alice.New(LoggerMiddleware(logger))
+	router.Handle("/", HomeHandler(box)).Methods(http.MethodGet)
+	router.Handle("/favicon.ico", http.FileServer(box)).Methods(http.MethodGet)
+	router.Handle("/favicon.png", http.FileServer(box)).Methods(http.MethodGet)
+	router.PathPrefix("/js").Handler(http.FileServer(box)).Methods(http.MethodGet)
+	router.PathPrefix("/css").Handler(http.FileServer(box)).Methods(http.MethodGet)
+	router.PathPrefix("/img").Handler(http.FileServer(box)).Methods(http.MethodGet)
 
-	r.Handle("/", middlewares.ThenFunc(HomeHandler(box))).Methods(http.MethodGet)
-	r.Handle("/favicon.ico", middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
-	r.Handle("/favicon.png", middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
-	r.PathPrefix("/js").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
-	r.PathPrefix("/css").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
-	r.PathPrefix("/img").Handler(middlewares.Then(http.FileServer(box))).Methods(http.MethodGet)
+	{ // API
+		authorize := Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.LoginStore)
+		router.Path(pathPrefixAPI + "/authorize").Methods(http.MethodPost).Handler(authorize)
 
-	r.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
+		apiAuthRouter := NewAuthRouter(logger, metrics, store)
+		router.PathPrefix(pathPrefixAPI).Handler(Authorized(logger, store.CookieStore)(apiAuthRouter))
 
-	api := r.PathPrefix("/api").Subrouter()
-	{
-		api.Handle("/authorize", middlewares.ThenFunc(Authorize(logger, metrics.LoginAttempts, store))).Methods(http.MethodPost)
-		api.Handle("/user", middlewares.ThenFunc(AuthorizedUser(logger, store))).Methods(http.MethodGet)
-
-		api.Handle("/users", middlewares.ThenFunc(UserList(logger, store))).Methods(http.MethodGet)
-		api.Handle("/users", middlewares.ThenFunc(UserCreate(logger, store))).Methods(http.MethodPost)
-		api.Handle("/users/{username}", middlewares.ThenFunc(User(logger, store))).Methods(http.MethodGet)
-		api.Handle("/users/{username}", middlewares.ThenFunc(UserUpdate(logger, store))).Methods(http.MethodPut)
-		api.Handle("/users/{username}", middlewares.ThenFunc(UserDelete(logger, store))).Methods(http.MethodDelete)
-
-		api.NotFoundHandler = middlewares.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
-			jsonResponse(w, NotFoundJson, http.StatusNotFound)
-		})
 	}
 
-	r.NotFoundHandler = HomeHandler(box)
+	router.NotFoundHandler = HomeHandler(box)
 
-	// TODO: Wrap your handlers with context.ClearHandler as or else you will leak memory!
-	//r = gorillacontext.ClearHandler(handler)
+	//http.Handle("/", LoggerMiddleware(logger)(router)) TODO
+	return router
+}
+
+func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux.Router {
+	r := mux.NewRouter().StrictSlash(true)
+
+	r.Path(pathPrefixAPI + "/user").Methods(http.MethodGet).Handler(AuthorizedUser(logger, store.LoginStore))
+
+	r.Path(pathPrefixAPI + "/users").Methods(http.MethodGet).Handler(UserList(logger, store.UserStore))
+	r.Path(pathPrefixAPI + "/users").Methods(http.MethodPost).Handler(UserCreate(logger, store.UserStore))
+	r.Path(pathPrefixAPI + "/users/{username}").Methods(http.MethodGet).Handler(User(logger, store.UserStore))
+	r.Path(pathPrefixAPI + "/users/{username}").Methods(http.MethodPut).Handler(UserUpdate(logger, store.UserStore))
+	r.Path(pathPrefixAPI + "/users/{username}").Methods(http.MethodDelete).Handler(UserDelete(logger, store.UserStore))
+
+	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
+	})
 
 	return r
 }

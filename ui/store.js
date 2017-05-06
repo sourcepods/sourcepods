@@ -45,14 +45,16 @@ export const store = new Vuex.Store({
 	},
 	actions: {
 		fetchAuthenticatedUser(ctx) {
-			axios.get(`/api/user`)
-				.then((res) => {
-					ctx.commit('setUser', res.data);
-					resolve(res.data);
-				})
-				.catch((err) => {
-					reject(err);
-				})
+			return new Promise((resolve, reject) => {
+				axios.get(`/api/user`)
+					.then((res) => {
+						ctx.commit('setUser', res.data);
+						resolve(res.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
 		},
 		authenticateUser(ctx, payload) {
 			return new Promise((resolve, reject) => {

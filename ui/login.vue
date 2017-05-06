@@ -58,7 +58,8 @@
 				this.failed = false; // reset the alert for a new try
 				this.$store.dispatch('authenticateUser', {email: this.email, password: this.password})
 					.then((user) => {
-						this.$router.push('/');
+						// We actually need to reload the page, so we can use the cookie.
+						window.location.replace('/');
 					})
 					.catch((err) => {
 						if (err.response.status === 401) {

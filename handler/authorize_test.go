@@ -15,7 +15,8 @@ func TestAuthorize(t *testing.T) {
 	res, content, err := Request(r, http.MethodPost, "/api/authorize", []byte(payload))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
-	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
+	assert.Contains(t, res.Header.Get("Set-Cookie"), "_gitpods_session=")
 	assert.Equal(t,
 		`{"id":"25558000-2565-48dc-84eb-18754da2b0a2","username":"metalmatze","name":"Matthias Loibl","email":"metalmatze@example.com"}`,
 		string(content),
@@ -28,7 +29,7 @@ func TestAuthorizeBadRequest(t *testing.T) {
 	res, content, err := Request(r, http.MethodPost, "/api/authorize", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, res.StatusCode)
-	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
 	assert.Equal(t, `{"message":"failed to unmarshal form"}`, string(content))
 }
 
@@ -40,7 +41,7 @@ func TestAuthorizeWrongEmail(t *testing.T) {
 	res, content, err := Request(r, http.MethodPost, "/api/authorize", []byte(payload))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusUnauthorized, res.StatusCode)
-	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
 	assert.Equal(t, `{"message":"Bad credentials"}`, string(content))
 }
 
@@ -52,6 +53,6 @@ func TestAuthorizeWrongPassword(t *testing.T) {
 	res, content, err := Request(r, http.MethodPost, "/api/authorize", []byte(payload))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusUnauthorized, res.StatusCode)
-	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
 	assert.Equal(t, `{"message":"Bad credentials"}`, string(content))
 }
