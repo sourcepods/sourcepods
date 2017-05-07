@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gitpods/gitpod"
-	"github.com/gitpods/gitpod/handler"
-	"github.com/gitpods/gitpod/store"
+	"github.com/gitpods/gitpods"
+	"github.com/gitpods/gitpods/handler"
+	"github.com/gitpods/gitpods/store"
 	"github.com/stretchr/testify/assert"
 )
 

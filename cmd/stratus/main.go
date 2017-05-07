@@ -21,11 +21,11 @@ func main() {
 
 	app.Commands = []cli.Command{{
 		Name:   "dev",
-		Usage:  "Runs gitpod in development mode",
+		Usage:  "Runs gitpods in development mode",
 		Action: actionDev,
 		Flags: []cli.Flag{
-			cli.StringFlag{Name: "addr", Usage: "The address to run gitpod on", Value: ":3000"},
-			cli.StringFlag{Name: "env", Usage: "Set the env gitpod runs in", Value: "development"},
+			cli.StringFlag{Name: "addr", Usage: "The address to run gitpods on", Value: ":3000"},
+			cli.StringFlag{Name: "env", Usage: "Set the env gitpods runs in", Value: "development"},
 			cli.StringFlag{Name: "loglevel", Usage: "The log level to filter logs with before printing", Value: "debug"},
 		},
 	}}
@@ -41,9 +41,9 @@ func actionDev(c *cli.Context) error {
 	loglevelFlag := c.String("loglevel")
 
 	env := []string{
-		fmt.Sprintf("GITPOD_ADDR=%s", addrFlag),
-		fmt.Sprintf("GITPOD_ENV=%s", envFlag),
-		fmt.Sprintf("GITPOD_LOGLEVEL=%s", loglevelFlag),
+		fmt.Sprintf("GITPODS_ADDR=%s", addrFlag),
+		fmt.Sprintf("GITPODS_ENV=%s", envFlag),
+		fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
 	}
 
 	var g group.Group
@@ -84,7 +84,7 @@ func RunGitpod(env []string) func() error {
 				cmd.Process.Kill()
 			}
 
-			cmd = exec.Command("./dist/gitpod")
+			cmd = exec.Command("./dist/gitpods")
 			go func() {
 				cmd.Env = env
 				cmd.Stdin = os.Stdin
@@ -159,7 +159,7 @@ func findGoFiles() ([]string, error) {
 }
 
 func build() error {
-	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dist/gitpod", "./cmd/gitpod")
+	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dist/gitpods", "./cmd/gitpods")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

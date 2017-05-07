@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gitpods/gitpod/handler"
-	"github.com/gitpods/gitpod/store"
+	"github.com/gitpods/gitpods/handler"
+	"github.com/gitpods/gitpods/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics/prometheus"
@@ -31,25 +31,25 @@ const (
 var FlagsWeb = []cli.Flag{
 	cli.StringFlag{
 		Name:   FlagAddr,
-		EnvVar: "GITPOD_ADDR",
+		EnvVar: "GITPODS_ADDR",
 		Usage:  "The address gitpod runs on",
 		Value:  ":3000",
 	},
 	cli.StringFlag{
 		Name:   FlagEnv,
-		EnvVar: "GITPOD_ENV",
+		EnvVar: "GITPODS_ENV",
 		Usage:  "The environment gitpod should run in",
 		Value:  ProductionEnv,
 	},
 	cli.StringFlag{
 		Name:   FlagLogLevel,
-		EnvVar: "GITPOD_LOGLEVEL",
+		EnvVar: "GITPODS_LOGLEVEL",
 		Usage:  "The log level to filter logs with before printing",
 		Value:  "info",
 	},
 	cli.StringFlag{
 		Name:   FlagSecret,
-		EnvVar: "GITPOD_SECRET",
+		EnvVar: "GITPODS_SECRET",
 		Usage:  "This secret is going to be used to generate cookies",
 		Value:  "secret", // TODO: Remove this to force users to pass a real secret, no default
 	},

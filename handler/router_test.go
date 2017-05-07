@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gitpods/gitpod/handler"
-	"github.com/gitpods/gitpod/store"
+	"github.com/gitpods/gitpods/handler"
+	"github.com/gitpods/gitpods/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics/discard"
 	"github.com/gobuffalo/packr"

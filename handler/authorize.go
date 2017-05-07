@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gitpods/gitpod"
-	"github.com/gitpods/gitpod/store"
+	"github.com/gitpods/gitpods"
+	"github.com/gitpods/gitpods/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics"
@@ -25,8 +25,8 @@ const (
 )
 
 type LoginStore interface {
-	GetUser(string) (gitpod.User, error)
-	GetUserByEmail(string) (gitpod.User, error)
+	GetUser(string) (gitpods.User, error)
+	GetUserByEmail(string) (gitpods.User, error)
 }
 
 // Authorized users will have a user information in the next handlers.

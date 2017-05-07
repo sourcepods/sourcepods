@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gitpods/gitpod"
-	"github.com/gitpods/gitpod/store"
+	"github.com/gitpods/gitpods"
+	"github.com/gitpods/gitpods/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/gorilla/mux"
 )
 
 type UserStore interface {
-	List() ([]gitpod.User, error)
-	GetUser(string) (gitpod.User, error)
-	CreateUser(gitpod.User) (gitpod.User, error)
-	UpdateUser(string, gitpod.User) (gitpod.User, error)
+	List() ([]gitpods.User, error)
+	GetUser(string) (gitpods.User, error)
+	CreateUser(gitpods.User) (gitpods.User, error)
+	UpdateUser(string, gitpods.User) (gitpods.User, error)
 	DeleteUser(string) error
 }
 
@@ -65,7 +65,7 @@ func UserCreate(logger log.Logger, store UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger = log.With(logger, "handler", "UserCreate")
 
-		var user gitpod.User
+		var user gitpods.User
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			msg := "failed to unmarshal user"
 			level.Warn(logger).Log("msg", msg, "err", err)
@@ -98,7 +98,7 @@ func UserUpdate(logger log.Logger, s UserStore) http.HandlerFunc {
 		vars := mux.Vars(r)
 		username := vars["username"]
 
-		var user gitpod.User
+		var user gitpods.User
 
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			msg := "failed to unmarshal user"

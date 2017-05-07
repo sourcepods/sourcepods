@@ -1,4 +1,4 @@
-# gitpod
+# gitpods
 
 Access via three things:
  * UI

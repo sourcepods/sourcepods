@@ -23,12 +23,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gitpods/gitpod.git"
+    "url": "git+https://github.com/gitpods/gitpods.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/gitpods/gitpod/issues"
+    "url": "https://github.com/gitpods/gitpods/issues"
   },
-  "homepage": "https://github.com/gitpods/gitpod#readme"
+  "homepage": "https://github.com/gitpods/gitpods#readme"
 }

@@ -1,4 +1,4 @@
-package gitpod
+package gitpods
 
 import (
 	"testing"
