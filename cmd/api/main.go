@@ -9,11 +9,11 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "gitpod"
+	app.Name = "gitpods-api"
 	app.Usage = "git flying loudly in the cloud!"
 
-	app.Action = ActionWeb
-	app.Flags = FlagsWeb
+	app.Action = ActionAPI
+	app.Flags = FlagsAPI
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

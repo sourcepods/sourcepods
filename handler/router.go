@@ -7,13 +7,8 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics"
-	"github.com/gobuffalo/packr"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
-)
-
-const (
-	pathPrefixAPI = "/api"
 )
 
 var (
@@ -32,45 +27,30 @@ type RouterMetrics struct {
 	LoginAttempts metrics.Counter
 }
 
-func NewRouter(logger log.Logger, metrics RouterMetrics, box packr.Box, store RouterStore) *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
+func NewRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux.Router {
+	r := mux.NewRouter().StrictSlash(true)
 
-	router.Handle("/", HomeHandler(box)).Methods(http.MethodGet)
-	router.Handle("/favicon.ico", http.FileServer(box)).Methods(http.MethodGet)
-	router.Handle("/favicon.png", http.FileServer(box)).Methods(http.MethodGet)
-	router.PathPrefix("/js").Handler(http.FileServer(box)).Methods(http.MethodGet)
-	router.PathPrefix("/css").Handler(http.FileServer(box)).Methods(http.MethodGet)
-	router.PathPrefix("/img").Handler(http.FileServer(box)).Methods(http.MethodGet)
+	apiAuthRouter := NewAuthRouter(logger, metrics, store)
+	r.PathPrefix("/").Handler(Authorized(logger, store.CookieStore)(apiAuthRouter))
 
-	{ // API
-		authorize := Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.LoginStore)
-		router.Path(pathPrefixAPI + "/authorize").Methods(http.MethodPost).Handler(authorize)
+	r.Path("/authorize").Methods(http.MethodPost).Handler(Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.LoginStore))
+	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
+	})
 
-		apiAuthRouter := NewAuthRouter(logger, metrics, store)
-		router.PathPrefix(pathPrefixAPI).Handler(Authorized(logger, store.CookieStore)(apiAuthRouter))
-
-	}
-
-	router.NotFoundHandler = HomeHandler(box)
-
-	//http.Handle("/", LoggerMiddleware(logger)(router)) TODO
-	return router
+	return r
 }
 
 func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 
-	r.Path(pathPrefixAPI + "/user").Methods(http.MethodGet).Handler(AuthorizedUser(logger, store.LoginStore))
+	r.Path("/user").Methods(http.MethodGet).Handler(AuthorizedUser(logger, store.LoginStore))
 
-	r.Path(pathPrefixAPI + "/users").Methods(http.MethodGet).Handler(UserList(logger, store.UserStore))
-	r.Path(pathPrefixAPI + "/users").Methods(http.MethodPost).Handler(UserCreate(logger, store.UserStore))
-	r.Path(pathPrefixAPI + "/users/{username}").Methods(http.MethodGet).Handler(User(logger, store.UserStore))
-	r.Path(pathPrefixAPI + "/users/{username}").Methods(http.MethodPut).Handler(UserUpdate(logger, store.UserStore))
-	r.Path(pathPrefixAPI + "/users/{username}").Methods(http.MethodDelete).Handler(UserDelete(logger, store.UserStore))
-
-	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
-	})
+	r.Path("/users").Methods(http.MethodGet).Handler(UserList(logger, store.UserStore))
+	r.Path("/users").Methods(http.MethodPost).Handler(UserCreate(logger, store.UserStore))
+	r.Path("/users/{username}").Methods(http.MethodGet).Handler(User(logger, store.UserStore))
+	r.Path("/users/{username}").Methods(http.MethodPut).Handler(UserUpdate(logger, store.UserStore))
+	r.Path("/users/{username}").Methods(http.MethodDelete).Handler(UserDelete(logger, store.UserStore))
 
 	return r
 }

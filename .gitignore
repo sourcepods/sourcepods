@@ -1,6 +1,6 @@
 *-packr.go
 
-/dist/gitpods
+/dist/
 /node_modules/
 /public/css/
 /public/js/

@@ -12,7 +12,6 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics/prometheus"
-	"github.com/gobuffalo/packr"
 	"github.com/gorilla/sessions"
 	"github.com/oklog/oklog/pkg/group"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
@@ -28,7 +27,7 @@ const (
 	ProductionEnv = "production"
 )
 
-var FlagsWeb = []cli.Flag{
+var FlagsAPI = []cli.Flag{
 	cli.StringFlag{
 		Name:   FlagAddr,
 		EnvVar: "GITPODS_ADDR",
@@ -55,7 +54,7 @@ var FlagsWeb = []cli.Flag{
 	},
 }
 
-func ActionWeb(c *cli.Context) error {
+func ActionAPI(c *cli.Context) error {
 	addr := c.String(FlagAddr)
 	env := c.String(FlagEnv)
 	loglevel := c.String(FlagLogLevel)
@@ -63,10 +62,6 @@ func ActionWeb(c *cli.Context) error {
 
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
-
-	// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
-	// The path is relative to this file.
-	box := packr.NewBox("../../public")
 
 	cookieStore := sessions.NewFilesystemStore("/tmp/gitpods_sessions", []byte(secret))
 
@@ -81,7 +76,7 @@ func ActionWeb(c *cli.Context) error {
 	}
 
 	// Create the http router and return it for use
-	r := handler.NewRouter(logger, prometheusMetrics(), box, routerStore)
+	r := handler.NewRouter(logger, prometheusMetrics(), routerStore)
 
 	server := &http.Server{Addr: addr, Handler: r}
 
