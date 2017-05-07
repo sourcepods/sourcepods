@@ -1,0 +1,22 @@
+workspace:
+  base: /go
+  path: src/github.com/gitpods/gitpods
+
+pipeline:
+  test:
+    image: golang:1.8
+    commands:
+      - go get -v -t ./...
+      - go test -v ./...
+
+  compile:
+    image: golang:1.8
+    commands:
+      - go install -v ./cmd/stratus
+      - go install -v ./cmd/gitpods
+
+  notify:
+    image: plugins/gitter
+    secrets: [ gitter_webhook ]
+    when:
+      status: [ success, failure ]
