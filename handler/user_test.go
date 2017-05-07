@@ -63,7 +63,7 @@ func TestUserCreate(t *testing.T) {
 	routerStore := DefaultRouterStore()
 	r := DefaultTestAuthRouterWithStore(routerStore)
 
-	payloadUser := gitpod.User{
+	payloadUser := gitpods.User{
 		ID:       "28195928-2e77-431b-b1fc-43f543cfdc2a",
 		Username: "foobar",
 		Name:     "Foo Bar",
