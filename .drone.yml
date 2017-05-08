@@ -27,8 +27,6 @@ pipeline:
     commands:
       - go install -v ./cmd/ui
 
-  notify:
+  gitter:
     image: plugins/gitter
     secrets: [ gitter_webhook ]
-    when:
-      status: [ success, failure ]
