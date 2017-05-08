@@ -31,13 +31,13 @@ var FlagsAPI = []cli.Flag{
 	cli.StringFlag{
 		Name:   FlagAddr,
 		EnvVar: "GITPODS_ADDR",
-		Usage:  "The address gitpod runs on",
+		Usage:  "The address gitpods API runs on",
 		Value:  ":3000",
 	},
 	cli.StringFlag{
 		Name:   FlagEnv,
 		EnvVar: "GITPODS_ENV",
-		Usage:  "The environment gitpod should run in",
+		Usage:  "The environment gitpods should run in",
 		Value:  ProductionEnv,
 	},
 	cli.StringFlag{
@@ -83,7 +83,7 @@ func ActionAPI(c *cli.Context) error {
 	var gr group.Group
 	{
 		gr.Add(func() error {
-			level.Info(logger).Log("msg", "starting gitpod", "addr", addr)
+			level.Info(logger).Log("msg", "starting gitpods API", "addr", addr)
 			return server.ListenAndServe()
 		}, func(err error) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -127,7 +127,7 @@ func newLogger(env string, loglevel string) log.Logger {
 func prometheusMetrics() handler.RouterMetrics {
 	return handler.RouterMetrics{
 		LoginAttempts: prometheus.NewCounterFrom(stdprometheus.CounterOpts{
-			Namespace: "gitpod",
+			Namespace: "gitpods",
 			Name:      "login_attempts_total",
 			Help:      "Number of attempts to login and their status",
 		}, []string{"status"}),

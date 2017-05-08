@@ -1,0 +1,120 @@
+package main
+
+import (
+	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+)
+
+// GitPodsRunner builds, runs, stops and restarts GitPods.
+type GitPodsRunner struct {
+	name    string
+	env     []string
+	cmd     *exec.Cmd
+	restart chan bool
+}
+
+func NewGitPodsRunner(name string, env []string) *GitPodsRunner {
+	return &GitPodsRunner{
+		name:    name,
+		env:     env,
+		restart: make(chan bool, 1),
+	}
+}
+
+func (r *GitPodsRunner) Name() string {
+	return r.name
+}
+
+func (r *GitPodsRunner) Run() error {
+	file := "./dist/" + r.name
+	_, err := os.Stat(file)
+	if err != nil {
+		go func() {
+			if err := r.Build(); err == nil {
+				r.restart <- true
+			}
+		}()
+	}
+
+	// Enter the first for iteration to start the services
+	r.restart <- true
+
+	var cmd *exec.Cmd
+	for {
+		log.Println("waiting for restart")
+		<-r.restart
+		log.Println("restarting")
+
+		if cmd != nil {
+			r.Stop()
+		}
+
+		r.cmd = exec.Command("./dist/" + r.name)
+
+		go func() {
+			r.cmd.Env = r.env
+			r.cmd.Stdin = os.Stdin
+			r.cmd.Stdout = os.Stdout
+			r.cmd.Stderr = os.Stderr
+			r.cmd.Run()
+		}()
+
+		select {}
+	}
+
+}
+
+func (r *GitPodsRunner) Stop() {
+	if r.cmd == nil || r.cmd.Process == nil {
+		return
+	}
+	close(r.restart)
+	r.cmd.Process.Kill()
+}
+
+func (r *GitPodsRunner) Build() error {
+	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dist/"+r.name, "./cmd/"+r.name)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func (r GitPodsRunner) Restart() {
+	r.restart <- true
+}
+
+// WebpackRunner runs webpack either ones or watches the files.
+type WebpackRunner struct {
+	cmd *exec.Cmd
+}
+
+func (r *WebpackRunner) Run(watch bool) error {
+	file := "./webpack.config.js"
+	_, err := os.Stat(file)
+	if err != nil {
+		// webpack config not found
+		return nil
+	}
+
+	args := []string{}
+	if watch {
+		args = []string{"--watch"}
+	}
+
+	r.cmd = exec.Command(filepath.Join("node_modules", ".bin", "webpack"), args...)
+	r.cmd.Stdin = os.Stdin
+	r.cmd.Stdout = os.Stdout
+	r.cmd.Stderr = os.Stderr
+
+	return r.cmd.Run()
+}
+
+func (r *WebpackRunner) Stop() {
+	if r.cmd == nil || r.cmd.Process == nil {
+		return
+	}
+	r.cmd.Process.Kill()
+}

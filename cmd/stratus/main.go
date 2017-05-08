@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
-	"path/filepath"
+	"os/signal"
 
+	"github.com/go-errors/errors"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/urfave/cli"
 )
@@ -25,6 +25,7 @@ func main() {
 			cli.StringFlag{Name: "addr-api", Usage: "The address to run the API on", Value: ":3010"},
 			cli.StringFlag{Name: "env", Usage: "Set the env gitpods runs in", Value: "development"},
 			cli.StringFlag{Name: "log-level", Usage: "The log level to filter logs with before printing", Value: "debug"},
+			cli.BoolFlag{Name: "watch,w", Usage: "Watch files in this project and rebuild binaries if something changes"},
 		},
 	}}
 
@@ -38,122 +39,71 @@ func actionDev(c *cli.Context) error {
 	apiAddrFlag := c.String("addr-api")
 	envFlag := c.String("env")
 	loglevelFlag := c.String("log-level")
+	watch := c.Bool("watch")
+
+	uiRunner := NewGitPodsRunner("ui", []string{
+		fmt.Sprintf("GITPODS_ADDR=%s", uiAddrFlag),
+		fmt.Sprintf("GITPODS_ADDR_API=%s", apiAddrFlag),
+		fmt.Sprintf("GITPODS_ENV=%s", envFlag),
+		fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
+	})
+
+	apiRunner := NewGitPodsRunner("api", []string{
+		fmt.Sprintf("GITPODS_ADDR=%s", apiAddrFlag),
+		fmt.Sprintf("GITPODS_ENV=%s", envFlag),
+		fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
+	})
+
+	if watch {
+		watcher := &FileWatcher{}
+		watcher.Add(uiRunner, apiRunner)
+
+		go watcher.Watch()
+	}
 
 	var g group.Group
 	{
-		webpack := &WebpackRunner{}
+		g.Add(func() error {
+			log.Println("starting ui")
+			return uiRunner.Run()
+		}, func(err error) {
+			log.Println("stopping ui")
+			uiRunner.Stop()
+		})
+	}
+	{
+		g.Add(func() error {
+			log.Println("starting api")
+			return apiRunner.Run()
+		}, func(err error) {
+			log.Println("stopping api")
+			apiRunner.Stop()
+		})
+	}
+	{
+		g.Add(func() error {
+			stop := make(chan os.Signal, 1)
+			signal.Notify(stop, os.Interrupt)
+			<-stop
+			return errors.New("stopping stratus")
+		}, func(err error) {
+		})
+	}
+
+	webpack := &WebpackRunner{}
+	if watch {
 		g.Add(func() error {
 			log.Println("starting webpack")
-			return webpack.Run()
+			return webpack.Run(true)
 		}, func(err error) {
 			log.Println("stopping webpack")
 			webpack.Stop()
 		})
+	} else {
+		webpack.Run(false)
 	}
-	{
-		ui := &GitPodsRunner{}
-		env := []string{
-			fmt.Sprintf("GITPODS_ADDR=%s", uiAddrFlag),
-			fmt.Sprintf("GITPODS_ADDR_API=%s", apiAddrFlag),
-			fmt.Sprintf("GITPODS_ENV=%s", envFlag),
-			fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
-		}
-
-		g.Add(func() error {
-			log.Println("starting ui")
-			return ui.Run("ui", env)
-		}, func(err error) {
-			log.Println("stopping ui")
-			ui.Stop()
-		})
-	}
-	{
-		ui := &GitPodsRunner{}
-		env := []string{
-			fmt.Sprintf("GITPODS_ADDR=%s", apiAddrFlag),
-			fmt.Sprintf("GITPODS_ENV=%s", envFlag),
-			fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
-		}
-
-		g.Add(func() error {
-			log.Println("starting api")
-			return ui.Run("api", env)
-		}, func(err error) {
-			log.Println("stopping api")
-			ui.Stop()
-		})
-	}
-
-	//TODO: Add actor to the group that listens for system call to stop the group gracefully
 
 	return g.Run()
-}
-
-type WebpackRunner struct {
-	cmd *exec.Cmd
-}
-
-func (r *WebpackRunner) Run() error {
-	file := "./webpack.config.js"
-	_, err := os.Stat(file)
-	if err != nil {
-		// webpack config not found
-		return nil
-	}
-
-	r.cmd = exec.Command(filepath.Join("node_modules", ".bin", "webpack"), "--watch")
-	r.cmd.Stdin = os.Stdin
-	r.cmd.Stdout = os.Stdout
-	r.cmd.Stderr = os.Stderr
-
-	return r.cmd.Run()
-}
-
-func (r *WebpackRunner) Stop() {
-	if r.cmd == nil || r.cmd.Process == nil {
-		return
-	}
-	r.cmd.Process.Kill()
-}
-
-type GitPodsRunner struct {
-	cmd *exec.Cmd
-}
-
-func (r *GitPodsRunner) Run(name string, env []string) error {
-	file := "./dist/" + name
-	_, err := os.Stat(file)
-	if err != nil {
-		if err := build(name); err != nil {
-			return err
-		}
-	}
-
-	r.cmd = exec.Command("./dist/" + name)
-
-	r.cmd.Env = env
-	r.cmd.Stdin = os.Stdin
-	r.cmd.Stdout = os.Stdout
-	r.cmd.Stderr = os.Stderr
-	return r.cmd.Run()
-}
-
-func (r *GitPodsRunner) Stop() {
-	if r.cmd == nil || r.cmd.Process == nil {
-		return
-	}
-	r.cmd.Process.Kill()
-}
-
-func build(name string) error {
-	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dist/"+name, "./cmd/"+name)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
 }
 
 //// RunAPI runs a development server and restarts it with a new build if files change.
