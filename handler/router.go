@@ -30,13 +30,10 @@ type RouterMetrics struct {
 func NewRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 
+	r.Path("/authorize").Methods(http.MethodPost).Handler(Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.LoginStore))
+
 	apiAuthRouter := NewAuthRouter(logger, metrics, store)
 	r.PathPrefix("/").Handler(Authorized(logger, store.CookieStore)(apiAuthRouter))
-
-	r.Path("/authorize").Methods(http.MethodPost).Handler(Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.LoginStore))
-	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
-	})
 
 	return r
 }
@@ -51,6 +48,10 @@ func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) 
 	r.Path("/users/{username}").Methods(http.MethodGet).Handler(User(logger, store.UserStore))
 	r.Path("/users/{username}").Methods(http.MethodPut).Handler(UserUpdate(logger, store.UserStore))
 	r.Path("/users/{username}").Methods(http.MethodDelete).Handler(UserDelete(logger, store.UserStore))
+
+	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
+	})
 
 	return r
 }

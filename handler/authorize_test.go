@@ -12,7 +12,7 @@ func TestAuthorize(t *testing.T) {
 
 	payload := `{"email":"metalmatze@example.com", "password":"kubernetes"}`
 
-	res, content, err := Request(r, http.MethodPost, "/api/authorize", []byte(payload))
+	res, content, err := Request(r, http.MethodPost, "/authorize", []byte(payload))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
@@ -26,7 +26,7 @@ func TestAuthorize(t *testing.T) {
 func TestAuthorizeBadRequest(t *testing.T) {
 	r := DefaultTestRouter()
 
-	res, content, err := Request(r, http.MethodPost, "/api/authorize", nil)
+	res, content, err := Request(r, http.MethodPost, "/authorize", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, res.StatusCode)
 	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
@@ -38,7 +38,7 @@ func TestAuthorizeWrongEmail(t *testing.T) {
 
 	payload := `{"email":"foobar@example.com", "password":"kubernetes"}`
 
-	res, content, err := Request(r, http.MethodPost, "/api/authorize", []byte(payload))
+	res, content, err := Request(r, http.MethodPost, "/authorize", []byte(payload))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusUnauthorized, res.StatusCode)
 	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
@@ -50,7 +50,7 @@ func TestAuthorizeWrongPassword(t *testing.T) {
 
 	payload := `{"email":"metalmatze@example.com", "password":"foobar"}`
 
-	res, content, err := Request(r, http.MethodPost, "/api/authorize", []byte(payload))
+	res, content, err := Request(r, http.MethodPost, "/authorize", []byte(payload))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusUnauthorized, res.StatusCode)
 	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))

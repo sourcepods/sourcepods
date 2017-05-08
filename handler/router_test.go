@@ -12,22 +12,27 @@ import (
 	"github.com/gitpods/gitpods/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics/discard"
-	"github.com/gobuffalo/packr"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	box            = packr.NewBox("../public")
 	httpTestClient = &http.Client{Timeout: 5 * time.Second}
 )
 
 func TestApiNotFound(t *testing.T) {
 	r := DefaultTestAuthRouter()
-	res, content, err := Request(r, http.MethodGet, "/api/404", nil)
+	res, content, err := Request(r, http.MethodGet, "/404", nil)
 	assert.NoError(t, err)
 	assertNotFoundJson(t, res, content)
+}
+
+func TestApiNotFoundUnauthorized(t *testing.T) {
+	r := DefaultTestRouter()
+	res, content, err := Request(r, http.MethodGet, "/404", nil)
+	assert.NoError(t, err)
+	assertUnauthorized(t, res, content)
 }
 
 // Helpers
@@ -43,7 +48,7 @@ func DefaultTestRouter() *mux.Router {
 }
 
 func DefaultTestRouterWithStore(store handler.RouterStore) *mux.Router {
-	return handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), box, store)
+	return handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), store)
 }
 func DefaultTestAuthRouter() *mux.Router {
 	return DefaultTestAuthRouterWithStore(DefaultRouterStore())
@@ -91,5 +96,5 @@ func assertUnauthorized(t *testing.T, res *http.Response, content []byte) {
 func assertNotFoundJson(t *testing.T, res *http.Response, content []byte) {
 	assert.Equal(t, http.StatusNotFound, res.StatusCode)
 	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
-	assert.Equal(t, handler.JsonNotFound, content)
+	assert.Equal(t, string(handler.JsonNotFound), string(content))
 }

@@ -15,7 +15,7 @@ func TestUserList(t *testing.T) {
 	routerStore := DefaultRouterStore()
 	r := DefaultTestAuthRouterWithStore(routerStore)
 
-	res, content, err := Request(r, http.MethodGet, "/api/users", nil)
+	res, content, err := Request(r, http.MethodGet, "/users", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -29,7 +29,7 @@ func TestUserList(t *testing.T) {
 
 func TestUserListUnauthorized(t *testing.T) {
 	r := DefaultTestRouter()
-	res, content, err := Request(r, http.MethodGet, "/api/users", nil)
+	res, content, err := Request(r, http.MethodGet, "/users", nil)
 
 	assert.NoError(t, err)
 	assertUnauthorized(t, res, content)
@@ -37,7 +37,7 @@ func TestUserListUnauthorized(t *testing.T) {
 
 func TestUser(t *testing.T) {
 	r := DefaultTestAuthRouter()
-	res, content, err := Request(r, http.MethodGet, "/api/users/metalmatze", nil)
+	res, content, err := Request(r, http.MethodGet, "/users/metalmatze", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -51,7 +51,7 @@ func TestUser(t *testing.T) {
 
 func TestUserNotFound(t *testing.T) {
 	r := DefaultTestAuthRouter()
-	res, content, err := Request(r, http.MethodGet, "/api/users/foobar", nil)
+	res, content, err := Request(r, http.MethodGet, "/users/foobar", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNotFound, res.StatusCode)
@@ -73,7 +73,7 @@ func TestUserCreate(t *testing.T) {
 	payload, err := json.Marshal(payloadUser)
 	assert.NoError(t, err)
 
-	res, content, err := Request(r, http.MethodPost, "/api/users", payload)
+	res, content, err := Request(r, http.MethodPost, "/users", payload)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -97,7 +97,7 @@ func TestUserUpdate(t *testing.T) {
 	payload, err := json.Marshal(user)
 	assert.NoError(t, err)
 
-	res, content, err := Request(r, http.MethodPut, "/api/users/metalmatze", payload)
+	res, content, err := Request(r, http.MethodPut, "/users/metalmatze", payload)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -111,7 +111,7 @@ func TestUserUpdate(t *testing.T) {
 
 func TestUserUpdateBadRequest(t *testing.T) {
 	r := DefaultTestAuthRouter()
-	res, content, err := Request(r, http.MethodPut, "/api/users/metalmatze", nil)
+	res, content, err := Request(r, http.MethodPut, "/users/metalmatze", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, res.StatusCode)
@@ -129,7 +129,7 @@ func TestUserUpdateNotFound(t *testing.T) {
 	payload, err := json.Marshal(user)
 	assert.NoError(t, err)
 
-	res, content, err := Request(r, http.MethodPut, "/api/users/foobar", payload)
+	res, content, err := Request(r, http.MethodPut, "/users/foobar", payload)
 
 	assert.NoError(t, err)
 	assertNotFoundJson(t, res, content)
@@ -142,7 +142,7 @@ func TestUserDelete(t *testing.T) {
 	_, err := routerStore.UserStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
-	res, content, err := Request(r, http.MethodDelete, "/api/users/metalmatze", nil)
+	res, content, err := Request(r, http.MethodDelete, "/users/metalmatze", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -156,7 +156,7 @@ func TestUserDelete(t *testing.T) {
 func TestUserDeleteNotFound(t *testing.T) {
 	r := DefaultTestAuthRouter()
 
-	res, content, err := Request(r, http.MethodDelete, "/api/users/foobar", nil)
+	res, content, err := Request(r, http.MethodDelete, "/users/foobar", nil)
 	assert.NoError(t, err)
 	assertNotFoundJson(t, res, content)
 }
