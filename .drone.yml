@@ -9,11 +9,22 @@ pipeline:
       - go get -v -t ./...
       - go test -v ./...
 
-  compile:
+  api:
+    group: build
+    image: golang:1.8
+    commands:
+      - go install -v ./cmd/api
+
+  stratus:
+    group: build
     image: golang:1.8
     commands:
       - go install -v ./cmd/stratus
-      - go install -v ./cmd/api
+
+  ui:
+    group: build
+    image: golang:1.8
+    commands:
       - go install -v ./cmd/ui
 
   notify:
