@@ -15,11 +15,11 @@ pipeline:
     commands:
       - go install -v ./cmd/api
 
-  stratus:
+  gitpods:
     group: build
     image: golang:1.8
     commands:
-      - go install -v ./cmd/stratus
+      - go install -v ./cmd/gitpods
 
   ui:
     group: build

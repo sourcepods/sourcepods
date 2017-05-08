@@ -14,7 +14,7 @@ import (
 func main() {
 	app := cli.NewApp()
 
-	app.Name = "stratus"
+	app.Name = "gitpods"
 
 	app.Commands = []cli.Command{{
 		Name:   "dev",
@@ -85,7 +85,7 @@ func actionDev(c *cli.Context) error {
 			stop := make(chan os.Signal, 1)
 			signal.Notify(stop, os.Interrupt)
 			<-stop
-			return errors.New("stopping stratus")
+			return errors.New("stopping gitpods")
 		}, func(err error) {
 		})
 	}
