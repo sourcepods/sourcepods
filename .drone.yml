@@ -13,7 +13,8 @@ pipeline:
     image: golang:1.8
     commands:
       - go install -v ./cmd/stratus
-      - go install -v ./cmd/gitpods
+      - go install -v ./cmd/api
+      - go install -v ./cmd/ui
 
   notify:
     image: plugins/gitter
