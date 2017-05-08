@@ -54,12 +54,12 @@ func actionDev(c *cli.Context) error {
 		fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
 	})
 
-	if watch {
-		watcher := &FileWatcher{}
-		watcher.Add(uiRunner, apiRunner)
-
-		go watcher.Watch()
-	}
+	//if watch {
+	//	watcher := &FileWatcher{}
+	//	watcher.Add(uiRunner, apiRunner)
+	//
+	//	go watcher.Watch()
+	//}
 
 	var g group.Group
 	{

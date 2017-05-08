@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -31,37 +30,28 @@ func (r *GitPodsRunner) Run() error {
 	file := "./dist/" + r.name
 	_, err := os.Stat(file)
 	if err != nil {
-		go func() {
-			if err := r.Build(); err == nil {
-				r.restart <- true
-			}
-		}()
+		if err := r.Build(); err == nil {
+			r.restart <- true
+		}
 	}
 
-	// Enter the first for iteration to start the services
-	r.restart <- true
+	//// Enter the first for iteration to start the services
+	//r.restart <- true
 
 	var cmd *exec.Cmd
 	for {
-		log.Println("waiting for restart")
-		<-r.restart
-		log.Println("restarting")
+		//<-r.restart
 
 		if cmd != nil {
 			r.Stop()
 		}
 
 		r.cmd = exec.Command("./dist/" + r.name)
-
-		go func() {
-			r.cmd.Env = r.env
-			r.cmd.Stdin = os.Stdin
-			r.cmd.Stdout = os.Stdout
-			r.cmd.Stderr = os.Stderr
-			r.cmd.Run()
-		}()
-
-		select {}
+		r.cmd.Env = r.env
+		r.cmd.Stdin = os.Stdin
+		r.cmd.Stdout = os.Stdout
+		r.cmd.Stderr = os.Stderr
+		return r.cmd.Run()
 	}
 
 }
@@ -70,7 +60,6 @@ func (r *GitPodsRunner) Stop() {
 	if r.cmd == nil || r.cmd.Process == nil {
 		return
 	}
-	close(r.restart)
 	r.cmd.Process.Kill()
 }
 
