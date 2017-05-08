@@ -51,23 +51,24 @@ func actionDev(c *cli.Context) error {
 		})
 	}
 	{
-		ui := &UIRunner{}
+		ui := &GitPodsRunner{}
 		env := []string{
 			fmt.Sprintf("GITPODS_ADDR=%s", uiAddrFlag),
+			fmt.Sprintf("GITPODS_ADDR_API=%s", apiAddrFlag),
 			fmt.Sprintf("GITPODS_ENV=%s", envFlag),
 			fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
 		}
 
 		g.Add(func() error {
 			log.Println("starting ui")
-			return ui.Run(env)
+			return ui.Run("ui", env)
 		}, func(err error) {
 			log.Println("stopping ui")
 			ui.Stop()
 		})
 	}
 	{
-		ui := &APIRunner{}
+		ui := &GitPodsRunner{}
 		env := []string{
 			fmt.Sprintf("GITPODS_ADDR=%s", apiAddrFlag),
 			fmt.Sprintf("GITPODS_ENV=%s", envFlag),
@@ -76,7 +77,7 @@ func actionDev(c *cli.Context) error {
 
 		g.Add(func() error {
 			log.Println("starting api")
-			return ui.Run(env)
+			return ui.Run("api", env)
 		}, func(err error) {
 			log.Println("stopping api")
 			ui.Stop()
@@ -115,15 +116,21 @@ func (r *WebpackRunner) Stop() {
 	r.cmd.Process.Kill()
 }
 
-type UIRunner struct {
+type GitPodsRunner struct {
 	cmd *exec.Cmd
 }
 
-func (r *UIRunner) Run(env []string) error {
-	//TODO: run build command if no binary available
-	r.cmd = exec.Command("./dist/ui")
+func (r *GitPodsRunner) Run(name string, env []string) error {
+	file := "./dist/" + name
+	_, err := os.Stat(file)
+	if err != nil {
+		if err := build(name); err != nil {
+			return err
+		}
+	}
 
-	fmt.Printf("api env: %+v\n", env)
+	r.cmd = exec.Command("./dist/" + name)
+
 	r.cmd.Env = env
 	r.cmd.Stdin = os.Stdin
 	r.cmd.Stdout = os.Stdout
@@ -131,32 +138,57 @@ func (r *UIRunner) Run(env []string) error {
 	return r.cmd.Run()
 }
 
-func (r *UIRunner) Stop() {
+func (r *GitPodsRunner) Stop() {
 	if r.cmd == nil || r.cmd.Process == nil {
 		return
 	}
 	r.cmd.Process.Kill()
 }
 
-type APIRunner struct {
-	cmd *exec.Cmd
-}
-
-func (r *APIRunner) Run(env []string) error {
-	//TODO: run build command if no binary available
-	r.cmd = exec.Command("./dist/api")
-
-	fmt.Printf("api env: %+v\n", env)
-	r.cmd.Env = env
-	r.cmd.Stdin = os.Stdin
-	r.cmd.Stdout = os.Stdout
-	r.cmd.Stderr = os.Stderr
-	return r.cmd.Run()
-}
-
-func (r *APIRunner) Stop() {
-	if r.cmd == nil || r.cmd.Process == nil {
-		return
+func build(name string) error {
+	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dist/"+name, "./cmd/"+name)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return err
 	}
-	r.cmd.Process.Kill()
+	return nil
 }
+
+//// RunAPI runs a development server and restarts it with a new build if files change.
+//func RunAPI(env []string) func() error {
+//	return func() error {
+//		builds := make(chan bool)
+//
+//		go BuildForever(builds)
+//
+//		go func() {
+//			if err := build(); err == nil {
+//				builds <- true
+//			}
+//		}()
+//
+//		var cmd *exec.Cmd
+//		for {
+//			<-builds
+//			if cmd != nil {
+//				cmd.Process.Kill()
+//			}
+//
+//			cmd = exec.Command("./dist/gitpods")
+//			go func() {
+//				cmd.Env = env
+//				cmd.Stdin = os.Stdin
+//				cmd.Stdout = os.Stdout
+//				cmd.Stderr = os.Stderr
+//				if err := cmd.Run(); err != nil {
+//					log.Println(err)
+//					return
+//				}
+//			}()
+//		}
+//
+//		return nil
+//	}
+//}

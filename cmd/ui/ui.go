@@ -14,6 +14,7 @@ import (
 
 const (
 	FlagAddr     = "addr"
+	FlagAddrAPI  = "addr-api"
 	FlagEnv      = "env"
 	FlagLogLevel = "loglevel"
 
@@ -26,6 +27,12 @@ var FlagsUI = []cli.Flag{
 		EnvVar: "GITPODS_ADDR",
 		Usage:  "The address gitpods UI runs on",
 		Value:  ":3000",
+	},
+	cli.StringFlag{
+		Name:   FlagAddrAPI,
+		EnvVar: "GITPODS_ADDR_PI",
+		Usage:  "The address gitpods API runs on",
+		Value:  ":3010",
 	},
 	cli.StringFlag{
 		Name:   FlagEnv,
