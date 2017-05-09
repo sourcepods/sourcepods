@@ -27,7 +27,7 @@ func (r *GitPodsRunner) Name() string {
 }
 
 func (r *GitPodsRunner) Run() error {
-	file := "./dist/" + r.name
+	file := "./dev/" + r.name
 	_, err := os.Stat(file)
 	if err != nil {
 		if err := r.Build(); err == nil {
@@ -46,7 +46,7 @@ func (r *GitPodsRunner) Run() error {
 			r.Stop()
 		}
 
-		r.cmd = exec.Command("./dist/" + r.name)
+		r.cmd = exec.Command("./dev/" + r.name)
 		r.cmd.Env = r.env
 		r.cmd.Stdin = os.Stdin
 		r.cmd.Stdout = os.Stdout
@@ -64,7 +64,7 @@ func (r *GitPodsRunner) Stop() {
 }
 
 func (r *GitPodsRunner) Build() error {
-	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dist/"+r.name, "./cmd/"+r.name)
+	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dev/"+r.name, "./cmd/"+r.name)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

@@ -1,5 +1,6 @@
 *-packr.go
 
+/dev/
 /dist/
 /node_modules/
 /public/css/

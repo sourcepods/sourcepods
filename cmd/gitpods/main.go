@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/go-errors/errors"
 	"github.com/oklog/oklog/pkg/group"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
 
@@ -21,10 +21,11 @@ func main() {
 		Usage:  "Runs gitpods on you local development machine",
 		Action: actionDev,
 		Flags: []cli.Flag{
-			cli.StringFlag{Name: "addr-ui", Usage: "The address to run the UI on", Value: ":3000"},
-			cli.StringFlag{Name: "addr-api", Usage: "The address to run the API on", Value: ":3010"},
+			cli.StringFlag{Name: "addr-ui", Usage: "The address to run the UI on", Value: ":3010"},
+			cli.StringFlag{Name: "addr-api", Usage: "The address to run the API on", Value: ":3020"},
 			cli.StringFlag{Name: "env", Usage: "Set the env gitpods runs in", Value: "development"},
 			cli.StringFlag{Name: "log-level", Usage: "The log level to filter logs with before printing", Value: "debug"},
+			cli.BoolFlag{Name: "setup", Usage: "Setup all dependencies needed for local development"},
 			cli.BoolFlag{Name: "watch,w", Usage: "Watch files in this project and rebuild binaries if something changes"},
 		},
 	}}
@@ -35,6 +36,10 @@ func main() {
 }
 
 func actionDev(c *cli.Context) error {
+	if c.Bool("setup") {
+		return ActionDevSetup(c)
+	}
+
 	uiAddrFlag := c.String("addr-ui")
 	apiAddrFlag := c.String("addr-api")
 	envFlag := c.String("env")
