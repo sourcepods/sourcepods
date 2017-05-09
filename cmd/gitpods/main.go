@@ -54,6 +54,8 @@ func actionDev(c *cli.Context) error {
 		fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
 	})
 
+	caddy := CaddyRunner{}
+
 	//if watch {
 	//	watcher := &FileWatcher{}
 	//	watcher.Add(uiRunner, apiRunner)
@@ -78,6 +80,15 @@ func actionDev(c *cli.Context) error {
 		}, func(err error) {
 			log.Println("stopping api")
 			apiRunner.Stop()
+		})
+	}
+	{
+		g.Add(func() error {
+			log.Println("starting caddy")
+			return caddy.Run()
+		}, func(err error) {
+			log.Println("stopping caddy")
+			caddy.Stop()
 		})
 	}
 	{
