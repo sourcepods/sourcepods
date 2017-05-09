@@ -47,7 +47,7 @@ func actionDev(c *cli.Context) error {
 
 	uiRunner := NewGitPodsRunner("ui", []string{
 		fmt.Sprintf("GITPODS_ADDR=%s", uiAddrFlag),
-		fmt.Sprintf("GITPODS_ADDR_API=%s", apiAddrFlag),
+		fmt.Sprintf("GITPODS_ADDR_API=%s", "http://localhost:3000/api"), // TODO
 		fmt.Sprintf("GITPODS_ENV=%s", envFlag),
 		fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
 	})

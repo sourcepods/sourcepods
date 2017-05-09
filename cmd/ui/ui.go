@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"net/http"
 	"os"
 	"strings"
@@ -30,7 +31,7 @@ var FlagsUI = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:   FlagAddrAPI,
-		EnvVar: "GITPODS_ADDR_PI",
+		EnvVar: "GITPODS_ADDR_API",
 		Usage:  "The address gitpods API runs on",
 		Value:  ":3020",
 	},
@@ -50,6 +51,7 @@ var FlagsUI = []cli.Flag{
 
 func ActionUI(c *cli.Context) error {
 	addr := c.String(FlagAddr)
+	addrAPI := c.String(FlagAddrAPI)
 	//env := c.String(FlagEnv)
 	//loglevel := c.String(FlagLogLevel)
 
@@ -60,27 +62,38 @@ func ActionUI(c *cli.Context) error {
 	// The path is relative to this file.
 	box := packr.NewBox("../../public")
 
-	r := NewUIRouter(box)
+	conf := HTMLConfig{API: addrAPI}
+
+	r := NewUIRouter(box, conf)
 
 	return http.ListenAndServe(addr, r)
 }
 
-func NewUIRouter(box packr.Box) *mux.Router {
+func NewUIRouter(box packr.Box, conf HTMLConfig) *mux.Router {
 	r := mux.NewRouter()
-	r.Handle("/", HomeHandler(box)).Methods(http.MethodGet)
+	r.Handle("/", HomeHandler(box, conf)).Methods(http.MethodGet)
 	r.Handle("/favicon.ico", http.FileServer(box)).Methods(http.MethodGet)
 	r.Handle("/favicon.png", http.FileServer(box)).Methods(http.MethodGet)
 	r.PathPrefix("/js").Handler(http.FileServer(box)).Methods(http.MethodGet)
 	r.PathPrefix("/css").Handler(http.FileServer(box)).Methods(http.MethodGet)
 	r.PathPrefix("/img").Handler(http.FileServer(box)).Methods(http.MethodGet)
-	r.NotFoundHandler = HomeHandler(box)
+	r.NotFoundHandler = HomeHandler(box, conf)
 
 	return r
 }
 
-func HomeHandler(box packr.Box) http.HandlerFunc {
+type HTMLConfig struct {
+	API string `json:"api"`
+}
+
+func HomeHandler(box packr.Box, conf HTMLConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Write(box.Bytes("index.html"))
+		tem, err := template.New("index").Parse(box.String("index.html"))
+		if err != nil {
+			http.Error(w, "can't open index.html as template", http.StatusInternalServerError)
+		}
+
+		tem.Execute(w, conf)
 	}
 }
 
