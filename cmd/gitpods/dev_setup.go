@@ -1,7 +1,9 @@
 package main
 
 import (
+	"archive/tar"
 	"archive/zip"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -40,12 +42,22 @@ func ActionDevSetup(c *cli.Context) error {
 }
 
 func setupCaddy() error {
-	if err := downloadCaddy(); err != nil {
+	url := fmt.Sprintf("https://caddyserver.com/download/%s/%s", runtime.GOOS, runtime.GOARCH)
+	archive := ""
+
+	switch runtime.GOOS {
+	case "darwin":
+		archive = "./dev/caddy.zip"
+	default:
+		archive = "./dev/caddy.tar.gz"
+	}
+
+	if err := downloadCaddy(url, archive); err != nil {
 		return errors.Wrap(err, "failed to download caddy")
 	}
 	log.Println("Downloaded ./dev/caddy.zip")
 
-	if err := extractCaddy(); err != nil {
+	if err := extractCaddy(archive); err != nil {
 		return errors.Wrap(err, "failed to extract caddy")
 	}
 	log.Println("Extracted ./dev/caddy.zip to ./dev/caddy")
@@ -59,8 +71,7 @@ func setupCaddy() error {
 	return nil
 }
 
-func downloadCaddy() error {
-	caddyURL := fmt.Sprintf("https://caddyserver.com/download/%s/%s", runtime.GOOS, runtime.GOARCH)
+func downloadCaddy(url, archive string) error {
 
 	// Download & extract Caddy to ./dev/caddy if it not exist
 
@@ -72,7 +83,7 @@ func downloadCaddy() error {
 		return nil
 	}
 
-	exist, err = exists("./dev/caddy.zip")
+	exist, err = exists(archive)
 	if err != nil {
 		return err
 	}
@@ -80,13 +91,14 @@ func downloadCaddy() error {
 		return nil
 	}
 
-	out, err := os.Create("./dev/caddy.zip")
+	out, err := os.Create(archive)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	resp, err := http.Get(caddyURL)
+	log.Println("Downloading", url)
+	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
@@ -100,35 +112,78 @@ func downloadCaddy() error {
 	return nil
 }
 
-func extractCaddy() error {
-	r, err := zip.OpenReader("./dev/caddy.zip")
-	if err != nil {
-		return err
-	}
+func extractCaddy(archive string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		r, err := zip.OpenReader(archive)
+		if err != nil {
+			return err
+		}
 
-	var zippedCaddy *zip.File
-	for _, file := range r.File {
-		if file.Name == "caddy" {
-			zippedCaddy = file
+		var zippedCaddy *zip.File
+		for _, file := range r.File {
+			if file.Name == "caddy" {
+				zippedCaddy = file
+			}
+		}
+
+		fileReader, err := zippedCaddy.Open()
+		if err != nil {
+			return err
+		}
+		defer fileReader.Close()
+
+		targetFile, err := os.OpenFile("./dev/caddy", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zippedCaddy.Mode())
+		if err != nil {
+			return err
+		}
+		defer targetFile.Close()
+
+		if _, err := io.Copy(targetFile, fileReader); err != nil {
+			return err
+		}
+	default:
+		archiveFile, err := os.Open(archive)
+		if err != nil {
+			return err
+		}
+		defer archiveFile.Close()
+
+		gzipREader, err := gzip.NewReader(archiveFile)
+		if err != nil {
+			return err
+		}
+
+		tarReader := tar.NewReader(gzipREader)
+		for {
+			header, err := tarReader.Next()
+
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				return err
+			}
+
+			if header.Name == "caddy" && header.Typeflag == tar.TypeReg {
+				f, err := os.Create("./dev/caddy")
+				if err != nil {
+					return err
+				}
+				defer f.Close()
+
+				if err := f.Chmod(0744); err != nil {
+					return err
+				}
+
+				if _, err := io.Copy(f, tarReader); err != nil {
+					return err
+				}
+				return nil
+			}
 		}
 	}
-
-	fileReader, err := zippedCaddy.Open()
-	if err != nil {
-		return err
-	}
-	defer fileReader.Close()
-
-	targetFile, err := os.OpenFile("./dev/caddy", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zippedCaddy.Mode())
-	if err != nil {
-		return err
-	}
-	defer targetFile.Close()
-
-	if _, err := io.Copy(targetFile, fileReader); err != nil {
-		return err
-	}
-
 	return nil
 }
 
