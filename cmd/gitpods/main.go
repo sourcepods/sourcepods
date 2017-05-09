@@ -7,7 +7,6 @@ import (
 	"os/signal"
 
 	"github.com/oklog/oklog/pkg/group"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
 
@@ -101,7 +100,7 @@ func actionDev(c *cli.Context) error {
 			stop := make(chan os.Signal, 1)
 			signal.Notify(stop, os.Interrupt)
 			<-stop
-			return errors.New("stopping gitpods")
+			return nil
 		}, func(err error) {
 		})
 	}
