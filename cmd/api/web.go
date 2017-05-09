@@ -63,7 +63,7 @@ func ActionAPI(c *cli.Context) error {
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
 
-	cookieStore := sessions.NewFilesystemStore("/tmp/gitpods_sessions", []byte(secret))
+	cookieStore := sessions.NewFilesystemStore("./dev/sessions/", []byte(secret))
 
 	// Create a simple store running in memory for example purposes
 	userStore := store.NewUserInMemory()
