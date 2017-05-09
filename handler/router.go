@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -43,11 +44,12 @@ func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) 
 
 	r.Path("/user").Methods(http.MethodGet).Handler(AuthorizedUser(logger, store.LoginStore))
 
-	r.Path("/users").Methods(http.MethodGet).Handler(UserList(logger, store.UserStore))
-	r.Path("/users").Methods(http.MethodPost).Handler(UserCreate(logger, store.UserStore))
-	r.Path("/users/{username}").Methods(http.MethodGet).Handler(User(logger, store.UserStore))
-	r.Path("/users/{username}").Methods(http.MethodPut).Handler(UserUpdate(logger, store.UserStore))
-	r.Path("/users/{username}").Methods(http.MethodDelete).Handler(UserDelete(logger, store.UserStore))
+	users := &UsersAPI{logger: logger, store: store.UserStore}
+	r.Path("/users").Methods(http.MethodGet).HandlerFunc(users.List)
+	r.Path("/users").Methods(http.MethodPost).HandlerFunc(users.Create)
+	r.Path("/users/{username}").Methods(http.MethodGet).HandlerFunc(users.Get)
+	r.Path("/users/{username}").Methods(http.MethodPut).HandlerFunc(users.Update)
+	r.Path("/users/{username}").Methods(http.MethodDelete).HandlerFunc(users.Delete)
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
