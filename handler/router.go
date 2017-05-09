@@ -69,3 +69,18 @@ func LoggerMiddleware(logger log.Logger) func(http.Handler) http.Handler {
 		})
 	}
 }
+
+func jsonResponse(w http.ResponseWriter, v interface{}, code int) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		http.Error(w, "failed to marshal to json", http.StatusInternalServerError)
+		return
+	}
+	jsonResponseBytes(w, data, code)
+}
+
+func jsonResponseBytes(w http.ResponseWriter, payload []byte, code int) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(code)
+	w.Write(payload)
+}
