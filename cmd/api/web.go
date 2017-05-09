@@ -32,7 +32,7 @@ var FlagsAPI = []cli.Flag{
 		Name:   FlagAddr,
 		EnvVar: "GITPODS_ADDR",
 		Usage:  "The address gitpods API runs on",
-		Value:  ":3000",
+		Value:  ":3010",
 	},
 	cli.StringFlag{
 		Name:   FlagEnv,
@@ -78,7 +78,11 @@ func ActionAPI(c *cli.Context) error {
 	// Create the http router and return it for use
 	r := handler.NewRouter(logger, prometheusMetrics(), routerStore)
 
-	server := &http.Server{Addr: addr, Handler: r}
+	// Wrap the http router with the default logger middleware
+	// TODO: Maybe this should live inside the handler.NewRouter?
+	h := handler.LoggerMiddleware(logger)(r)
+
+	server := &http.Server{Addr: addr, Handler: h}
 
 	var gr group.Group
 	{
