@@ -114,7 +114,7 @@ type CaddyRunner struct {
 }
 
 func (r *CaddyRunner) Run() error {
-	r.cmd = exec.Command(filepath.Join(".", "dev", "caddy"))
+	r.cmd = exec.Command(filepath.Join(".", "dev", "caddy"), "-conf", "./dev/Caddyfile")
 	r.cmd.Stdin = os.Stdin
 	r.cmd.Stdout = os.Stdout
 	r.cmd.Stderr = os.Stderr
