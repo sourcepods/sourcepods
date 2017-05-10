@@ -18,7 +18,9 @@
 <body>
 <div id="app"></div>
 <script>
-	window.config = {{ .API }};
+	window.config = {
+		api: {{ .API }},
+	};
 </script>
 </body>
 </html>

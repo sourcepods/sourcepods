@@ -46,7 +46,7 @@ export const store = new Vuex.Store({
 	actions: {
 		fetchAuthenticatedUser(ctx) {
 			return new Promise((resolve, reject) => {
-				axios.get(`${window.ADDR_API}/user`)
+				axios.get(`${window.config.api}/user`)
 					.then((res) => {
 						ctx.commit('setUser', res.data);
 						resolve(res.data);
@@ -58,7 +58,7 @@ export const store = new Vuex.Store({
 		},
 		authenticateUser(ctx, payload) {
 			return new Promise((resolve, reject) => {
-				axios.post(`${window.ADDR_API}/authorize`, payload)
+				axios.post(`${window.config.api}/authorize`, payload)
 					.then((res) => {
 						ctx.commit('setUser', res.data);
 						resolve(res.data);
@@ -69,7 +69,7 @@ export const store = new Vuex.Store({
 			})
 		},
 		fetchUsers(ctx) {
-			axios.get(`${window.ADDR_API}/users`)
+			axios.get(`${window.config.api}/users`)
 				.then((res) => {
 					ctx.commit('addUsers', res.data);
 				})
@@ -78,7 +78,7 @@ export const store = new Vuex.Store({
 				})
 		},
 		fetchUser(ctx, username) {
-			axios.get(`${window.ADDR_API}/users/${username}`)
+			axios.get(`${window.config.api}/users/${username}`)
 				.then((res) => {
 					ctx.commit('addUser', res.data);
 				})
@@ -88,7 +88,7 @@ export const store = new Vuex.Store({
 		},
 		updateUser(ctx, user) {
 			return new Promise((resolve, reject) => {
-				axios.put(`${window.ADDR_API}/users/${user.username}`, user)
+				axios.put(`${window.config.api}/users/${user.username}`, user)
 					.then((res) => {
 						ctx.commit('updateUser', res.data);
 						resolve(res.data);
@@ -99,7 +99,7 @@ export const store = new Vuex.Store({
 			})
 		},
 		deleteUser(ctx, username) {
-			axios.delete(`${window.ADDR_API}/users/${username}`)
+			axios.delete(`${window.config.api}/users/${username}`)
 				.then((res) => {
 					ctx.dispatch('fetchUsers');
 				})
