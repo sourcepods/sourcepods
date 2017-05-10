@@ -38,6 +38,12 @@ export const store = new Vuex.Store({
 			for (let i = 0; i < state.users.length; i++) {
 				if (state.users[i].id === updatedUser.id) {
 					state.users[i] = updatedUser;
+
+					// If the current user was updated, update it in the store too
+					if (state.user.id === updatedUser.id) {
+						state.user = updatedUser;
+					}
+
 					return
 				}
 			}
