@@ -27,12 +27,8 @@ func (r *GitPodsRunner) Name() string {
 }
 
 func (r *GitPodsRunner) Run() error {
-	file := "./dev/" + r.name
-	_, err := os.Stat(file)
-	if err != nil {
-		if err := r.Build(); err == nil {
-			r.restart <- true
-		}
+	if err := r.Build(); err == nil {
+		r.restart <- true
 	}
 
 	//// Enter the first for iteration to start the services
