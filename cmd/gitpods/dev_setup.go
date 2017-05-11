@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 
@@ -37,11 +38,28 @@ func ActionDevSetup(c *cli.Context) error {
 	}
 	log.Println("Created ./dev/")
 
+	if err := setupNodeModules(); err != nil {
+		return err
+	}
+
 	if err := setupCaddy(); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func setupNodeModules() error {
+	yarn, err := exec.LookPath("yarn")
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command(yarn)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func setupCaddy() error {
