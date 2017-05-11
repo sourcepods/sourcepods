@@ -78,7 +78,9 @@ func (s *UserInMemory) UpdateUser(username string, updatedUser gitpods.User) (gi
 	defer s.mu.Unlock()
 	for i, user := range s.users {
 		if user.Username == username {
-			s.users[i] = updatedUser
+			s.users[i].Username = updatedUser.Username
+			s.users[i].Name = updatedUser.Name
+			s.users[i].Email = updatedUser.Email
 			return updatedUser, nil
 		}
 	}
