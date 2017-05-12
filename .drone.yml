@@ -3,29 +3,54 @@ workspace:
   path: src/github.com/gitpods/gitpods
 
 pipeline:
-  test:
+  goget:
+    group: dependencies
     image: golang:1.8
     commands:
       - go get -v -t ./...
+
+  yarn:
+    group: dependencies
+    image: kkarczmarczyk/node-yarn
+    commands:
+      - yarn install
+
+  test:
+    image: golang:1.8
+    commands:
       - go test -v ./...
 
   api:
     group: build
     image: golang:1.8
     commands:
-      - go install -v ./cmd/api
+      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api/api ./cmd/api
 
   gitpods:
     group: build
     image: golang:1.8
     commands:
-      - go install -v ./cmd/gitpods
+      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/gitpods/gitpods ./cmd/gitpods
 
   ui:
     group: build
     image: golang:1.8
     commands:
-      - go install -v ./cmd/ui
+      - ./node_modules/.bin/webpack
+      - packr
+      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
+
+  docker-api:
+    group: docker
+    image: plugins/docker
+    commands:
+      - docker build -t gitpods/api ./cmd/api
+
+  docker-ui:
+    group: docker
+    image: plugins/docker
+    commands:
+      - docker build -t gitpods/ui ./cmd/ui
 
   gitter:
     image: plugins/gitter
