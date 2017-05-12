@@ -37,7 +37,7 @@ pipeline:
     image: golang:1.8
     commands:
 #      - ./node_modules/.bin/webpack
-      - packr
+#      - packr
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
 
   docker-api:
