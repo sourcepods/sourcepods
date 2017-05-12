@@ -36,7 +36,7 @@ pipeline:
     group: build
     image: golang:1.8
     commands:
-      - ./node_modules/.bin/webpack
+#      - ./node_modules/.bin/webpack
       - packr
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
 
