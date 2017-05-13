@@ -66,14 +66,14 @@ func ActionAPI(c *cli.Context) error {
 	cookieStore := sessions.NewFilesystemStore("./dev/sessions/", []byte(secret))
 
 	// Create a simple store running in memory for example purposes
-	userStore := store.NewUserInMemory()
+	usersStore := store.NewUsersInMemory()
 
 	// Create a routerStore by passing concrete implementations to interfaces for the router.
 	routerStore := handler.RouterStore{
 		CookieStore:    cookieStore,
-		UserStore:      userStore,
-		UsersStore:     userStore,
-		AuthorizeStore: userStore,
+		UserStore:      usersStore,
+		UsersStore:     usersStore,
+		AuthorizeStore: usersStore,
 	}
 
 	// Create the http router and return it for use
