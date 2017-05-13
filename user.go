@@ -11,7 +11,7 @@ type User struct {
 	Email    string `json:"email" valid:"required,email"`
 	Password string `json:"-"`
 
-	Repositories []*Repository `json:"repositories"`
+	Repositories []*Repository `json:"repositories,omitempty"`
 }
 
 func (u *User) Validate() error {

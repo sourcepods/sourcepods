@@ -6,6 +6,7 @@ export const store = new Vuex.Store({
 	state: {
 		user: null,
 		users: [],
+		repositories: [],
 	},
 	getters: {
 		getUser: (state) => (username) => {
@@ -47,7 +48,10 @@ export const store = new Vuex.Store({
 					return
 				}
 			}
-		}
+		},
+		setRepositories(state, repositories) {
+			state.repositories = repositories;
+		},
 	},
 	actions: {
 		fetchAuthenticatedUser(ctx) {
@@ -55,6 +59,18 @@ export const store = new Vuex.Store({
 				axios.get(`${window.config.api}/user`)
 					.then((res) => {
 						ctx.commit('setUser', res.data);
+						resolve(res.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
+		},
+		fetchUserRepositories(ctx) {
+			return new Promise((resolve, reject) => {
+				axios.get(`${window.config.api}/user/repositories`)
+					.then((res) => {
+						ctx.commit('setRepositories', res.data.repositories);
 						resolve(res.data);
 					})
 					.catch((err) => {

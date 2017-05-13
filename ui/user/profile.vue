@@ -20,9 +20,7 @@
 					</li>
 					<li></li>
 				</ul>
-
 			</div>
-
 
 			<div class="uk-width-3-5@m uk-width-3-4@l">
 
@@ -69,24 +67,15 @@
 		},
 		created() {
 			this.$store.dispatch('fetchUser', this.$route.params.username);
+			this.$store.dispatch('fetchUserRepositories');
 		},
 		computed: {
 			user() {
 				return this.$store.getters.getUser(this.$route.params.username);
 			},
 			repositories() {
-				let repositories = [];
-				for (let i = 1; i <= 20; i++) {
-					repositories.push({
-						name: `project ${i}`,
-						description: `Quick descriptions describing this project ${i}`,
-						stars: Math.floor(i / 3),
-						forks: Math.floor(i / 4),
-						updated_at: new Date(),
-					})
-				}
-				return repositories;
-			}
+				return this.$store.state.repositories;
+			},
 		},
 	}
 </script>
