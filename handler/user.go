@@ -12,10 +12,10 @@ import (
 )
 
 type UserStore interface {
-	List() ([]gitpods.User, error)
-	GetUser(string) (gitpods.User, error)
-	CreateUser(gitpods.User) (gitpods.User, error)
-	UpdateUser(string, gitpods.User) (gitpods.User, error)
+	List() ([]*gitpods.User, error)
+	GetUser(string) (*gitpods.User, error)
+	CreateUser(*gitpods.User) (*gitpods.User, error)
+	UpdateUser(string, *gitpods.User) (*gitpods.User, error)
 	DeleteUser(string) error
 }
 
@@ -50,7 +50,7 @@ func (a *UsersAPI) Get(w http.ResponseWriter, r *http.Request) {
 func (a *UsersAPI) Create(w http.ResponseWriter, r *http.Request) {
 	a.logger = log.With(a.logger, "handler", "UserCreate")
 
-	var user gitpods.User
+	var user *gitpods.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		msg := "failed to unmarshal user"
 		level.Warn(a.logger).Log("msg", msg, "err", err)
@@ -81,7 +81,7 @@ func (a *UsersAPI) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 
-	var user gitpods.User
+	var user *gitpods.User
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		msg := "failed to unmarshal user"

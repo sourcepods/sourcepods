@@ -12,7 +12,7 @@ var UserNotFound = errors.New("user not found")
 
 type UserInMemory struct {
 	mu    sync.RWMutex
-	users []gitpods.User
+	users []*gitpods.User
 }
 
 func NewUserInMemory() *UserInMemory {
@@ -20,7 +20,7 @@ func NewUserInMemory() *UserInMemory {
 	pass2, _ := bcrypt.GenerateFromPassword([]byte("golang"), bcrypt.DefaultCost)
 
 	return &UserInMemory{
-		users: []gitpods.User{{
+		users: []*gitpods.User{{
 			ID:       "25558000-2565-48dc-84eb-18754da2b0a2",
 			Username: "metalmatze",
 			Name:     "Matthias Loibl",
@@ -36,13 +36,13 @@ func NewUserInMemory() *UserInMemory {
 	}
 }
 
-func (s *UserInMemory) List() ([]gitpods.User, error) {
+func (s *UserInMemory) List() ([]*gitpods.User, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.users, nil
 }
 
-func (s *UserInMemory) GetUser(username string) (gitpods.User, error) {
+func (s *UserInMemory) GetUser(username string) (*gitpods.User, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for _, user := range s.users {
@@ -51,10 +51,10 @@ func (s *UserInMemory) GetUser(username string) (gitpods.User, error) {
 		}
 	}
 
-	return gitpods.User{}, UserNotFound
+	return nil, UserNotFound
 }
 
-func (s *UserInMemory) GetUserByEmail(email string) (gitpods.User, error) {
+func (s *UserInMemory) GetUserByEmail(email string) (*gitpods.User, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for _, user := range s.users {
@@ -62,10 +62,10 @@ func (s *UserInMemory) GetUserByEmail(email string) (gitpods.User, error) {
 			return user, nil
 		}
 	}
-	return gitpods.User{}, UserNotFound
+	return nil, UserNotFound
 }
 
-func (s *UserInMemory) CreateUser(user gitpods.User) (gitpods.User, error) {
+func (s *UserInMemory) CreateUser(user *gitpods.User) (*gitpods.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.users = append(s.users, user)
@@ -73,7 +73,7 @@ func (s *UserInMemory) CreateUser(user gitpods.User) (gitpods.User, error) {
 	return user, nil
 }
 
-func (s *UserInMemory) UpdateUser(username string, updatedUser gitpods.User) (gitpods.User, error) {
+func (s *UserInMemory) UpdateUser(username string, updatedUser *gitpods.User) (*gitpods.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for i, user := range s.users {

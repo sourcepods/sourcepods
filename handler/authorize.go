@@ -25,8 +25,8 @@ const (
 )
 
 type LoginStore interface {
-	GetUser(string) (gitpods.User, error)
-	GetUserByEmail(string) (gitpods.User, error)
+	GetUser(string) (*gitpods.User, error)
+	GetUserByEmail(string) (*gitpods.User, error)
 }
 
 // Authorized users will have a user information in the next handlers.
