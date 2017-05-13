@@ -14,7 +14,7 @@ import (
 	"github.com/go-kit/kit/metrics/prometheus"
 	"github.com/gorilla/sessions"
 	"github.com/oklog/oklog/pkg/group"
-	stdprometheus "github.com/prometheus/client_golang/prometheus"
+	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
 )
 
@@ -130,7 +130,7 @@ func newLogger(env string, loglevel string) log.Logger {
 
 func prometheusMetrics() handler.RouterMetrics {
 	return handler.RouterMetrics{
-		LoginAttempts: prometheus.NewCounterFrom(stdprometheus.CounterOpts{
+		LoginAttempts: prometheus.NewCounterFrom(prom.CounterOpts{
 			Namespace: "gitpods",
 			Name:      "login_attempts_total",
 			Help:      "Number of attempts to login and their status",
