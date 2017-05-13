@@ -61,9 +61,9 @@ func DefaultTestAuthRouterWithStore(store handler.RouterStore) *mux.Router {
 func DefaultRouterStore() handler.RouterStore {
 	userStore := store.NewUserInMemory()
 	return handler.RouterStore{
-		LoginStore:  userStore,
-		UserStore:   userStore,
-		CookieStore: sessions.NewCookieStore([]byte("secret")),
+		AuthorizeStore: userStore,
+		UserStore:      userStore,
+		CookieStore:    sessions.NewCookieStore([]byte("secret")),
 	}
 }
 

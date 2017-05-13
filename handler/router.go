@@ -19,9 +19,10 @@ var (
 )
 
 type RouterStore struct {
-	LoginStore  LoginStore
-	UserStore   UserStore
-	CookieStore sessions.Store
+	AuthorizeStore AuthorizeStore
+	UserStore      UserStore
+	UsersStore     UsersStore
+	CookieStore    sessions.Store
 }
 
 type RouterMetrics struct {
@@ -31,7 +32,7 @@ type RouterMetrics struct {
 func NewRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 
-	r.Path("/authorize").Methods(http.MethodPost).Handler(Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.LoginStore))
+	r.Path("/authorize").Methods(http.MethodPost).Handler(Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.AuthorizeStore))
 
 	apiAuthRouter := NewAuthRouter(logger, metrics, store)
 	r.PathPrefix("/").Handler(Authorized(logger, store.CookieStore)(apiAuthRouter))
@@ -42,9 +43,9 @@ func NewRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux
 func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 
-	r.Path("/user").Methods(http.MethodGet).Handler(AuthorizedUser(logger, store.LoginStore))
+	r.Path("/user").Methods(http.MethodGet).Handler(User(logger, store.UserStore))
 
-	users := &UsersAPI{logger: logger, store: store.UserStore}
+	users := &UsersAPI{logger: logger, store: store.UsersStore}
 	r.Path("/users").Methods(http.MethodGet).HandlerFunc(users.List)
 	r.Path("/users").Methods(http.MethodPost).HandlerFunc(users.Create)
 	r.Path("/users/{username}").Methods(http.MethodGet).HandlerFunc(users.Get)

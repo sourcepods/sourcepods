@@ -70,9 +70,10 @@ func ActionAPI(c *cli.Context) error {
 
 	// Create a routerStore by passing concrete implementations to interfaces for the router.
 	routerStore := handler.RouterStore{
-		CookieStore: cookieStore,
-		UserStore:   userStore,
-		LoginStore:  userStore,
+		CookieStore:    cookieStore,
+		UserStore:      userStore,
+		UsersStore:     userStore,
+		AuthorizeStore: userStore,
 	}
 
 	// Create the http router and return it for use

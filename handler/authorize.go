@@ -24,8 +24,7 @@ const (
 	loginAttemptSuccess = "success"
 )
 
-type LoginStore interface {
-	GetUser(string) (*gitpods.User, error)
+type AuthorizeStore interface {
 	GetUserByEmail(string) (*gitpods.User, error)
 }
 
@@ -63,7 +62,7 @@ func Authorized(logger log.Logger, cookies sessions.Store) func(http.Handler) ht
 	}
 }
 
-func Authorize(logger log.Logger, loginAttempts metrics.Counter, cookies sessions.Store, s LoginStore) http.HandlerFunc {
+func Authorize(logger log.Logger, loginAttempts metrics.Counter, cookies sessions.Store, s AuthorizeStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, err := cookies.Get(r, SessionName)
 		if err != nil {
@@ -118,30 +117,6 @@ func Authorize(logger log.Logger, loginAttempts metrics.Counter, cookies session
 		}
 
 		loginAttempts.With("status", loginAttemptSuccess).Add(1)
-		jsonResponse(w, user, http.StatusOK)
-	}
-}
-
-func AuthorizedUser(logger log.Logger, s LoginStore) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		username := r.Context().Value(SessionUserUsername)
-		if username == nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		user, err := s.GetUser(username.(string))
-		if err == store.UserNotFound {
-			jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
-			return
-		}
-		if err != nil {
-			msg := "failed to get user"
-			level.Warn(logger).Log("msg", msg, "err", err)
-			jsonResponse(w, map[string]string{"message": msg}, http.StatusInternalServerError)
-			return
-		}
-
 		jsonResponse(w, user, http.StatusOK)
 	}
 }
