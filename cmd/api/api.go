@@ -67,11 +67,13 @@ func ActionAPI(c *cli.Context) error {
 
 	// Create a simple store running in memory for example purposes
 	usersStore := store.NewUsersInMemory()
+	repositoriesStore := store.NewRepositoriesInMemory(usersStore)
+	userStore := store.NewUserInMemory(usersStore, repositoriesStore)
 
 	// Create a routerStore by passing concrete implementations to interfaces for the router.
 	routerStore := handler.RouterStore{
 		CookieStore:    cookieStore,
-		UserStore:      usersStore,
+		UserStore:      userStore,
 		UsersStore:     usersStore,
 		AuthorizeStore: usersStore,
 	}

@@ -11,6 +11,7 @@ import (
 
 type UserStore interface {
 	GetUser(string) (*gitpods.User, error)
+	GetUserRepositories(string) (*gitpods.User, []*gitpods.Repository, error)
 }
 
 func User(logger log.Logger, s UserStore) http.HandlerFunc {
@@ -34,5 +35,31 @@ func User(logger log.Logger, s UserStore) http.HandlerFunc {
 		}
 
 		jsonResponse(w, user, http.StatusOK)
+	}
+}
+
+func UserRepositories(logger log.Logger, store UserStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		username := r.Context().Value(SessionUserUsername)
+		if username == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		user, repositories, err := store.GetUserRepositories(username.(string))
+		if err != nil {
+			jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
+			return
+		}
+
+		var resp struct {
+			User         *gitpods.User         `json:"user"`
+			Repositories []*gitpods.Repository `json:"repositories"`
+		}
+
+		resp.User = user
+		resp.Repositories = repositories
+
+		jsonResponse(w, resp, http.StatusOK)
 	}
 }
