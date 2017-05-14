@@ -43,12 +43,14 @@ pipeline:
   docker-api:
     group: docker
     image: plugins/docker
+    debug: true
     commands:
       - docker build -t gitpods/api ./cmd/api
 
   docker-ui:
     group: docker
     image: plugins/docker
+    debug: true
     commands:
       - docker build -t gitpods/ui ./cmd/ui
 
