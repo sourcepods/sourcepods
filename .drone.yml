@@ -25,6 +25,7 @@ pipeline:
     image: golang:1.8
     commands:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api/api ./cmd/api
+      - ls -lah ./cmd/api
 
 #  gitpods:
 #    group: build
@@ -43,7 +44,7 @@ pipeline:
   docker-api:
     image: plugins/docker
     repo: gitpods/api
-    dockerfile: cmd/api/Dockerfile
+    dockerfile: ./cmd/api/Dockerfile
     secrets: [ docker_username, docker_password ]
     tag: [ latest ]
     when:
