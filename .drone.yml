@@ -41,18 +41,26 @@ pipeline:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
 
   docker-api:
-    group: docker
     image: plugins/docker
     debug: true
-    commands:
-      - docker build -t gitpods/api ./cmd/api
+    repo: gitpods/api
+    dockerfile: cmd/api/Dockerfile
+    secrets: [ docker_username, docker_password ]
+    tag: [ latest ]
+    when:
+      branch: master
+      event: push
 
   docker-ui:
-    group: docker
     image: plugins/docker
     debug: true
-    commands:
-      - docker build -t gitpods/ui ./cmd/ui
+    repo: gitpods/ui
+    dockerfile: cmd/ui/Dockerfile
+    secrets: [ docker_username, docker_password ]
+    tag: [ latest ]
+    when:
+      branch: master
+      event: push
 
   gitter:
     image: plugins/gitter
