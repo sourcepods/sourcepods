@@ -9,16 +9,16 @@ pipeline:
     commands:
       - go get -v -t ./...
 
-  yarn:
-    group: dependencies
-    image: kkarczmarczyk/node-yarn
-    commands:
-      - yarn install
-
-  test:
-    image: golang:1.8
-    commands:
-      - go test -v ./...
+#  yarn:
+#    group: dependencies
+#    image: kkarczmarczyk/node-yarn
+#    commands:
+#      - yarn install
+#
+#  test:
+#    image: golang:1.8
+#    commands:
+#      - go test -v ./...
 
   api:
     group: build
@@ -26,19 +26,19 @@ pipeline:
     commands:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api/api ./cmd/api
 
-  gitpods:
-    group: build
-    image: golang:1.8
-    commands:
-      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/gitpods/gitpods ./cmd/gitpods
-
-  ui:
-    group: build
-    image: golang:1.8
-    commands:
-#      - ./node_modules/.bin/webpack
-#      - packr
-      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
+#  gitpods:
+#    group: build
+#    image: golang:1.8
+#    commands:
+#      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/gitpods/gitpods ./cmd/gitpods
+#
+#  ui:
+#    group: build
+#    image: golang:1.8
+#    commands:
+##      - ./node_modules/.bin/webpack
+##      - packr
+#      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
 
   docker-api:
     image: plugins/docker
@@ -50,15 +50,15 @@ pipeline:
       branch: master
       event: push
 
-  docker-ui:
-    image: plugins/docker
-    repo: gitpods/ui
-    dockerfile: cmd/ui/Dockerfile
-    secrets: [ docker_username, docker_password ]
-    tag: [ latest ]
-    when:
-      branch: master
-      event: push
+#  docker-ui:
+#    image: plugins/docker
+#    repo: gitpods/ui
+#    dockerfile: cmd/ui/Dockerfile
+#    secrets: [ docker_username, docker_password ]
+#    tag: [ latest ]
+#    when:
+#      branch: master
+#      event: push
 
   gitter:
     image: plugins/gitter
