@@ -2,7 +2,7 @@ FROM alpine
 
 RUN apk add --update ca-certificates
 
-ADD ./ui /usr/bin/gitpods-api
+ADD ./api /usr/bin/gitpods-api
 
 EXPOSE 3020
 
