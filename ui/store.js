@@ -66,11 +66,11 @@ export const store = new Vuex.Store({
 					})
 			})
 		},
-		fetchUserRepositories(ctx) {
+		fetchUserRepositories(ctx, username) {
 			return new Promise((resolve, reject) => {
-				axios.get(`${window.config.api}/user/repositories`)
+				axios.get(`${window.config.api}/users/${username}/repositories`)
 					.then((res) => {
-						ctx.commit('setRepositories', res.data.repositories);
+						ctx.commit('setRepositories', res.data);
 						resolve(res.data);
 					})
 					.catch((err) => {

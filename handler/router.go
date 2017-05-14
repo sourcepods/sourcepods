@@ -19,10 +19,11 @@ var (
 )
 
 type RouterStore struct {
-	AuthorizeStore AuthorizeStore
-	UserStore      UserStore
-	UsersStore     UsersStore
-	CookieStore    sessions.Store
+	AuthorizeStore         AuthorizeStore
+	CookieStore            sessions.Store
+	UsersRepositoriesStore UsersRepositoriesStore
+	UsersStore             UsersStore
+	UserStore              UserStore
 }
 
 type RouterMetrics struct {
@@ -52,6 +53,9 @@ func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) 
 	r.Path("/users/{username}").Methods(http.MethodGet).HandlerFunc(users.Get)
 	r.Path("/users/{username}").Methods(http.MethodPut).HandlerFunc(users.Update)
 	r.Path("/users/{username}").Methods(http.MethodDelete).HandlerFunc(users.Delete)
+
+	usersRepositories := &UsersRepositoriesAPI{logger: logger, store: store.UsersRepositoriesStore}
+	r.Path("/users/{username}/repositories").Methods(http.MethodGet).HandlerFunc(usersRepositories.List)
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)

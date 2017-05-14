@@ -67,7 +67,7 @@
 		},
 		created() {
 			this.$store.dispatch('fetchUser', this.$route.params.username);
-			this.$store.dispatch('fetchUserRepositories');
+			this.$store.dispatch('fetchUserRepositories', this.$route.params.username);
 		},
 		computed: {
 			user() {
