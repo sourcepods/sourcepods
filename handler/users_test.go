@@ -79,16 +79,16 @@ func TestUserCreate(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, string(payload), string(content))
 
-	user, err := routerStore.UserStore.GetUser(payloadUser.Username)
+	user, err := routerStore.UsersStore.GetUser(payloadUser.Username)
 	assert.NoError(t, err)
-	assert.Equal(t, payloadUser, user)
+	assert.Equal(t, payloadUser, *user)
 }
 
 func TestUserUpdate(t *testing.T) {
 	routerStore := DefaultRouterStore()
 	r := DefaultTestAuthRouterWithStore(routerStore)
 
-	user, err := routerStore.UserStore.GetUser("metalmatze")
+	user, err := routerStore.UsersStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
 	newEmail := "matze@example.com"
@@ -104,7 +104,7 @@ func TestUserUpdate(t *testing.T) {
 	assert.Equal(t, string(payload), string(content))
 
 	// Test if store was really updated
-	user, err = routerStore.UserStore.GetUser("metalmatze")
+	user, err = routerStore.UsersStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 	assert.Equal(t, newEmail, user.Email)
 }
@@ -123,7 +123,7 @@ func TestUserUpdateNotFound(t *testing.T) {
 	routerStore := DefaultRouterStore()
 	r := DefaultTestAuthRouterWithStore(routerStore)
 
-	user, err := routerStore.UserStore.GetUser("metalmatze")
+	user, err := routerStore.UsersStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
 	payload, err := json.Marshal(user)
@@ -139,7 +139,7 @@ func TestUserDelete(t *testing.T) {
 	routerStore := DefaultRouterStore()
 	r := DefaultTestAuthRouterWithStore(routerStore)
 
-	_, err := routerStore.UserStore.GetUser("metalmatze")
+	_, err := routerStore.UsersStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
 	res, content, err := Request(r, http.MethodDelete, "/users/metalmatze", nil)
@@ -149,7 +149,7 @@ func TestUserDelete(t *testing.T) {
 	assert.Equal(t, "", string(content))
 
 	// Test if store was really updated
-	_, err = routerStore.UserStore.GetUser("metalmatze")
+	_, err = routerStore.UsersStore.GetUser("metalmatze")
 	assert.Equal(t, err, store.UserNotFound)
 }
 

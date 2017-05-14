@@ -23,7 +23,6 @@ type RouterStore struct {
 	CookieStore            sessions.Store
 	UsersRepositoriesStore UsersRepositoriesStore
 	UsersStore             UsersStore
-	UserStore              UserStore
 }
 
 type RouterMetrics struct {
@@ -44,8 +43,8 @@ func NewRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux
 func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 
-	r.Path("/user").Methods(http.MethodGet).Handler(User(logger, store.UserStore))
-	r.Path("/user/repositories").Methods(http.MethodGet).Handler(UserRepositories(logger, store.UserStore))
+	r.Path("/user").Methods(http.MethodGet).Handler(User(logger, store.UsersStore))
+	r.Path("/user/repositories").Methods(http.MethodGet).Handler(UserRepositories(logger, store.UsersRepositoriesStore))
 
 	users := &UsersAPI{logger: logger, store: store.UsersStore}
 	r.Path("/users").Methods(http.MethodGet).HandlerFunc(users.List)
