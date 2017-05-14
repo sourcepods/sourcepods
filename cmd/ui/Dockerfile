@@ -2,9 +2,9 @@ FROM alpine
 
 RUN apk add --update ca-certificates
 
-ADD ./ui /usr/bin/gitpods-ui
-RUN chmod +x /usr/bin/gitpods-ui
+ADD ./ui /usr/bin/
+RUN chmod +x /usr/bin/ui
 
 EXPOSE 3010
 
-ENTRYPOINT ["/usr/bin/gitpods-ui"]
+ENTRYPOINT ["/usr/bin/ui"]
