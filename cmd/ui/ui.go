@@ -52,11 +52,11 @@ var FlagsUI = []cli.Flag{
 func ActionUI(c *cli.Context) error {
 	addr := c.String(FlagAddr)
 	addrAPI := c.String(FlagAddrAPI)
-	//env := c.String(FlagEnv)
-	//loglevel := c.String(FlagLogLevel)
+	env := c.String(FlagEnv)
+	loglevel := c.String(FlagLogLevel)
 
-	//// Create the logger based on the environment: production/development/test
-	//logger := newLogger(env, loglevel)
+	// Create the logger based on the environment: production/development/test
+	logger := newLogger(env, loglevel)
 
 	// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
 	// The path is relative to this file.
@@ -66,6 +66,7 @@ func ActionUI(c *cli.Context) error {
 
 	r := NewUIRouter(box, conf)
 
+	level.Info(logger).Log("msg", "starting gitpods ui", "addr", addr)
 	return http.ListenAndServe(addr, r)
 }
 

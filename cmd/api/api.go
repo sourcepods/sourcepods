@@ -90,7 +90,7 @@ func ActionAPI(c *cli.Context) error {
 	var gr group.Group
 	{
 		gr.Add(func() error {
-			level.Info(logger).Log("msg", "starting gitpods API", "addr", addr)
+			level.Info(logger).Log("msg", "starting gitpods api", "addr", addr)
 			return server.ListenAndServe()
 		}, func(err error) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
