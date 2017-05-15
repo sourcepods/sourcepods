@@ -60,12 +60,12 @@ func actionDev(c *cli.Context) error {
 
 	caddy := CaddyRunner{}
 
-	//if watch {
-	//	watcher := &FileWatcher{}
-	//	watcher.Add(uiRunner, apiRunner)
-	//
-	//	go watcher.Watch()
-	//}
+	if watch {
+		watcher := &FileWatcher{}
+		watcher.Add(uiRunner, apiRunner)
+
+		go watcher.Watch()
+	}
 
 	var g group.Group
 	{
@@ -74,7 +74,7 @@ func actionDev(c *cli.Context) error {
 			return uiRunner.Run()
 		}, func(err error) {
 			log.Println("stopping ui")
-			uiRunner.Stop()
+			uiRunner.Shutdown()
 		})
 	}
 	{
@@ -83,7 +83,7 @@ func actionDev(c *cli.Context) error {
 			return apiRunner.Run()
 		}, func(err error) {
 			log.Println("stopping api")
-			apiRunner.Stop()
+			apiRunner.Shutdown()
 		})
 	}
 	{

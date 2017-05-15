@@ -18,7 +18,7 @@ func NewGitPodsRunner(name string, env []string) *GitPodsRunner {
 	return &GitPodsRunner{
 		name:    name,
 		env:     env,
-		restart: make(chan bool, 1),
+		restart: make(chan bool, 16),
 	}
 }
 
@@ -31,25 +31,26 @@ func (r *GitPodsRunner) Run() error {
 		r.restart <- true
 	}
 
-	//// Enter the first for iteration to start the services
-	//r.restart <- true
-
-	var cmd *exec.Cmd
 	for {
-		//<-r.restart
+		_, more := <-r.restart
+		if more {
+			if r.cmd != nil {
+				r.Stop()
+			}
 
-		if cmd != nil {
-			r.Stop()
+			go func() {
+				r.cmd = exec.Command("./dev/" + r.name)
+				r.cmd.Env = r.env
+				r.cmd.Stdin = os.Stdin
+				r.cmd.Stdout = os.Stdout
+				r.cmd.Stderr = os.Stderr
+				r.cmd.Run()
+			}()
+		} else {
+			return nil
 		}
-
-		r.cmd = exec.Command("./dev/" + r.name)
-		r.cmd.Env = r.env
-		r.cmd.Stdin = os.Stdin
-		r.cmd.Stdout = os.Stdout
-		r.cmd.Stderr = os.Stderr
-		return r.cmd.Run()
 	}
-
+	return nil
 }
 
 func (r *GitPodsRunner) Stop() {
@@ -67,8 +68,13 @@ func (r *GitPodsRunner) Build() error {
 	return cmd.Run()
 }
 
-func (r GitPodsRunner) Restart() {
+func (r *GitPodsRunner) Restart() {
 	r.restart <- true
+}
+
+func (r *GitPodsRunner) Shutdown() {
+	close(r.restart)
+	r.Stop()
 }
 
 // WebpackRunner runs webpack either ones or watches the files.
