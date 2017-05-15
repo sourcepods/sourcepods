@@ -58,9 +58,9 @@ func DefaultTestAuthRouterWithStore(store handler.RouterStore) *chi.Mux {
 	return handler.NewAuthRouter(log.NewNopLogger(), DiscardMetrics(), store)
 }
 
-func DefaultRouterStore() handler.RouterStore {
+func DefaultRouterStore() *handler.RouterStore {
 	usersStore := store.NewUsersInMemory()
-	return handler.RouterStore{
+	return &handler.RouterStore{
 		AuthorizeStore: usersStore,
 		UsersStore:     usersStore,
 		CookieStore:    sessions.NewCookieStore([]byte("secret")),
