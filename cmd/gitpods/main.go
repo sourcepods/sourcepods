@@ -20,12 +20,44 @@ func main() {
 		Usage:  "Runs gitpods on you local development machine",
 		Action: actionDev,
 		Flags: []cli.Flag{
-			cli.StringFlag{Name: "addr-ui", Usage: "The address to run the UI on", Value: ":3010"},
-			cli.StringFlag{Name: "addr-api", Usage: "The address to run the API on", Value: ":3020"},
-			cli.StringFlag{Name: "env", Usage: "Set the env gitpods runs in", Value: "development"},
-			cli.StringFlag{Name: "log-level", Usage: "The log level to filter logs with before printing", Value: "debug"},
-			cli.BoolFlag{Name: "setup", Usage: "Setup all dependencies needed for local development"},
-			cli.BoolFlag{Name: "watch,w", Usage: "Watch files in this project and rebuild binaries if something changes"},
+			cli.StringFlag{
+				Name:  "addr-ui",
+				Usage: "The address to run the UI on",
+				Value: ":3010",
+			},
+			cli.StringFlag{
+				Name:  "addr-api",
+				Usage: "The address to run the API on",
+				Value: ":3020",
+			},
+			cli.StringFlag{
+				Name:  "database-driver",
+				Usage: "The database driver to use: memory & postgres",
+				Value: "postgres",
+			},
+			cli.StringFlag{
+				Name:  "database-datasource",
+				Usage: "The database connection data",
+				Value: "postgres://postgres:postgres@localhost:5432?sslmode=disable",
+			},
+			cli.StringFlag{
+				Name:  "env",
+				Usage: "Set the env gitpods runs in",
+				Value: "development",
+			},
+			cli.StringFlag{
+				Name:  "log-level",
+				Usage: "The log level to filter logs with before printing",
+				Value: "debug",
+			},
+			cli.BoolFlag{
+				Name:  "setup",
+				Usage: "Setup all dependencies needed for local development",
+			},
+			cli.BoolFlag{
+				Name:  "watch,w",
+				Usage: "Watch files in this project and rebuild binaries if something changes",
+			},
 		},
 	}}
 
@@ -41,6 +73,8 @@ func actionDev(c *cli.Context) error {
 
 	uiAddrFlag := c.String("addr-ui")
 	apiAddrFlag := c.String("addr-api")
+	databaseDriver := c.String("database-driver")
+	databaseDatasource := c.String("database-datasource")
 	envFlag := c.String("env")
 	loglevelFlag := c.String("log-level")
 	watch := c.Bool("watch")
@@ -54,6 +88,8 @@ func actionDev(c *cli.Context) error {
 
 	apiRunner := NewGitPodsRunner("api", []string{
 		fmt.Sprintf("GITPODS_ADDR=%s", apiAddrFlag),
+		fmt.Sprintf("GITPODS_DATABASE_DRIVER=%s", databaseDriver),
+		fmt.Sprintf("GITPODS_DATABASE_DATASOURCE=%s", databaseDatasource),
 		fmt.Sprintf("GITPODS_ENV=%s", envFlag),
 		fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
 	})
