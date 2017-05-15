@@ -13,10 +13,10 @@ import (
 
 type UsersStore interface {
 	List() ([]*gitpods.User, error)
-	GetUser(string) (*gitpods.User, error)
+	GetUser(username string) (*gitpods.User, error)
 	CreateUser(*gitpods.User) (*gitpods.User, error)
-	UpdateUser(string, *gitpods.User) (*gitpods.User, error)
-	DeleteUser(string) error
+	UpdateUser(username string, user *gitpods.User) (*gitpods.User, error)
+	DeleteUser(username string) error
 }
 
 type UsersAPI struct {
