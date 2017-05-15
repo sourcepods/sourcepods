@@ -43,10 +43,10 @@ func (s *UsersPostgres) GetUser(username string) (*gitpods.User, error) {
 }
 
 func (s *UsersPostgres) GetUserByEmail(email string) (*gitpods.User, error) {
-	row := s.db.QueryRow(`SELECT id, email, username, name FROM users WHERE email = $1 LIMIT 1`, email)
+	row := s.db.QueryRow(`SELECT id, email, username, name, password FROM users WHERE email = $1 LIMIT 1`, email)
 
 	var user gitpods.User
-	if err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Name); err != nil {
+	if err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Name, &user.Password); err != nil {
 		return nil, err
 	}
 
