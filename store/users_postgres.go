@@ -31,7 +31,7 @@ func (s UsersPostgres) List() ([]*gitpods.User, error) {
 	return users, nil
 }
 
-func (s *UsersPostgres) GetUser(username string) (*gitpods.User, error) {
+func (s *UsersPostgres) GetUserByUsername(username string) (*gitpods.User, error) {
 	row := s.db.QueryRow(`SELECT * FROM users WHERE username = $1 LIMIT 1`, username)
 
 	var user *gitpods.User
