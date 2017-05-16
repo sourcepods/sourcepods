@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE repositories (
   id             UUID PRIMARY KEY                           DEFAULT gen_random_uuid(),
-  name           VARCHAR(100) NOT NULL,
+  name           TEXT NOT NULL,
   description    TEXT,
   website        TEXT,
   default_branch TEXT         NOT NULL,
