@@ -37,6 +37,7 @@ pipeline:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
 
   docker-api:
+    group: docker
     image: plugins/docker
     repo: gitpods/api
     context: ./cmd/api
@@ -48,6 +49,7 @@ pipeline:
       event: push
 
   docker-ui:
+    group: docker
     image: plugins/docker
     repo: gitpods/ui
     dockerfile: cmd/ui/Dockerfile
