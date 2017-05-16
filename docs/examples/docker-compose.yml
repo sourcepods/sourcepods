@@ -5,9 +5,9 @@ services:
     image: gitpods/ui
     restart: always
     ports:
-      - 3010:3010
+    - 3010:3010
     environment:
-    - GITPODS_ADDR=localhost:3010
+    - GITPODS_ADDR=0.0.0.0:3010
     - GITPODS_ADDR_API=http://localhost:3000/api
     - GITPODS_ENV=production
     - GITPODS_LOGLEVEL=info
@@ -18,8 +18,8 @@ services:
     depends_on:
     - ui
     ports:
-      - 3020:3020
+    - 3020:3020
     environment:
-    - GITPODS_ADDR=localhost:3020
+    - GITPODS_ADDR=0.0.0.0:3020
     - GITPODS_ENV=production
     - GITPODS_LOGLEVEL=info
