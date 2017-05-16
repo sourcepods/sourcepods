@@ -8,14 +8,24 @@ import (
 	"github.com/gitpods/gitpods"
 	"github.com/gitpods/gitpods/handler"
 	"github.com/gitpods/gitpods/store"
+	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUserList(t *testing.T) {
-	routerStore := DefaultRouterStore()
-	r := DefaultTestAuthRouterWithStore(routerStore)
+func newUsersAPI(usersStore handler.UsersStore) *handler.UsersAPI {
+	if usersStore == nil {
+		usersStore = store.NewUsersInMemory()
+	}
 
-	res, content, err := Request(r, http.MethodGet, "/users", nil)
+	return &handler.UsersAPI{
+		Logger: log.NewNopLogger(),
+		Store:  usersStore,
+	}
+}
+
+func TestUserList(t *testing.T) {
+	r := newUsersAPI(nil)
+	res, content, err := Request(r.Routes(), http.MethodGet, "/", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -27,17 +37,9 @@ func TestUserList(t *testing.T) {
 	)
 }
 
-func TestUserListUnauthorized(t *testing.T) {
-	r := DefaultTestRouter()
-	res, content, err := Request(r, http.MethodGet, "/users", nil)
-
-	assert.NoError(t, err)
-	assertUnauthorized(t, res, content)
-}
-
 func TestUser(t *testing.T) {
-	r := DefaultTestAuthRouter()
-	res, content, err := Request(r, http.MethodGet, "/users/metalmatze", nil)
+	r := newUsersAPI(nil)
+	res, content, err := Request(r.Routes(), http.MethodGet, "/metalmatze", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -50,8 +52,8 @@ func TestUser(t *testing.T) {
 }
 
 func TestUserNotFound(t *testing.T) {
-	r := DefaultTestAuthRouter()
-	res, content, err := Request(r, http.MethodGet, "/users/foobar", nil)
+	r := newUsersAPI(nil)
+	res, content, err := Request(r.Routes(), http.MethodGet, "/foobar", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNotFound, res.StatusCode)
@@ -60,8 +62,8 @@ func TestUserNotFound(t *testing.T) {
 }
 
 func TestUserCreate(t *testing.T) {
-	routerStore := DefaultRouterStore()
-	r := DefaultTestAuthRouterWithStore(routerStore)
+	usersStore := store.NewUsersInMemory()
+	r := newUsersAPI(usersStore)
 
 	payloadUser := gitpods.User{
 		ID:       "28195928-2e77-431b-b1fc-43f543cfdc2a",
@@ -73,22 +75,22 @@ func TestUserCreate(t *testing.T) {
 	payload, err := json.Marshal(payloadUser)
 	assert.NoError(t, err)
 
-	res, content, err := Request(r, http.MethodPost, "/users", payload)
+	res, content, err := Request(r.Routes(), http.MethodPost, "/", payload)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, string(payload), string(content))
 
-	user, err := routerStore.UsersStore.GetUser(payloadUser.Username)
+	user, err := usersStore.GetUser(payloadUser.Username)
 	assert.NoError(t, err)
 	assert.Equal(t, payloadUser, *user)
 }
 
 func TestUserUpdate(t *testing.T) {
-	routerStore := DefaultRouterStore()
-	r := DefaultTestAuthRouterWithStore(routerStore)
+	usersStore := store.NewUsersInMemory()
+	r := newUsersAPI(usersStore)
 
-	user, err := routerStore.UsersStore.GetUser("metalmatze")
+	user, err := usersStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
 	newEmail := "matze@example.com"
@@ -97,21 +99,21 @@ func TestUserUpdate(t *testing.T) {
 	payload, err := json.Marshal(user)
 	assert.NoError(t, err)
 
-	res, content, err := Request(r, http.MethodPut, "/users/metalmatze", payload)
+	res, content, err := Request(r.Routes(), http.MethodPut, "/metalmatze", payload)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, string(payload), string(content))
 
 	// Test if store was really updated
-	user, err = routerStore.UsersStore.GetUser("metalmatze")
+	user, err = usersStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 	assert.Equal(t, newEmail, user.Email)
 }
 
 func TestUserUpdateBadRequest(t *testing.T) {
-	r := DefaultTestAuthRouter()
-	res, content, err := Request(r, http.MethodPut, "/users/metalmatze", nil)
+	r := newUsersAPI(nil)
+	res, content, err := Request(r.Routes(), http.MethodPut, "/metalmatze", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, res.StatusCode)
@@ -120,36 +122,36 @@ func TestUserUpdateBadRequest(t *testing.T) {
 }
 
 func TestUserUpdateNotFound(t *testing.T) {
-	routerStore := DefaultRouterStore()
-	r := DefaultTestAuthRouterWithStore(routerStore)
+	usersStore := store.NewUsersInMemory()
+	r := newUsersAPI(usersStore)
 
-	user, err := routerStore.UsersStore.GetUser("metalmatze")
+	user, err := usersStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
 	payload, err := json.Marshal(user)
 	assert.NoError(t, err)
 
-	res, content, err := Request(r, http.MethodPut, "/users/foobar", payload)
+	res, content, err := Request(r.Routes(), http.MethodPut, "/foobar", payload)
 
 	assert.NoError(t, err)
 	assertNotFoundJson(t, res, content)
 }
 
 func TestUserDelete(t *testing.T) {
-	routerStore := DefaultRouterStore()
-	r := DefaultTestAuthRouterWithStore(routerStore)
+	usersStore := store.NewUsersInMemory()
+	r := newUsersAPI(usersStore)
 
-	_, err := routerStore.UsersStore.GetUser("metalmatze")
+	_, err := usersStore.GetUser("metalmatze")
 	assert.NoError(t, err)
 
-	res, content, err := Request(r, http.MethodDelete, "/users/metalmatze", nil)
+	res, content, err := Request(r.Routes(), http.MethodDelete, "/metalmatze", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "", string(content))
 
 	// Test if store was really updated
-	_, err = routerStore.UsersStore.GetUser("metalmatze")
+	_, err = usersStore.GetUser("metalmatze")
 	assert.Equal(t, err, store.UserNotFound)
 }
 

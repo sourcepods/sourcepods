@@ -46,7 +46,7 @@ func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) 
 	r.Get("/user", User(logger, store.UsersStore))
 	r.Get("/user/repositories", UserRepositories(logger, store.UsersRepositoriesStore))
 
-	users := &UsersAPI{logger: logger, store: store.UsersStore}
+	users := &UsersAPI{Logger: logger, Store: store.UsersStore}
 	r.Mount("/users", users.Routes())
 
 	usersRepositories := &UsersRepositoriesAPI{logger: logger, store: store.UsersRepositoriesStore}
