@@ -58,6 +58,7 @@ func ActionUI(c *cli.Context) error {
 
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
+	logger = log.WithPrefix(logger, "app", "ui")
 
 	// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
 	// The path is relative to this file.

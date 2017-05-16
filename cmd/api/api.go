@@ -63,6 +63,7 @@ func ActionAPI(c *cli.Context) error {
 
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
+	logger = log.WithPrefix(logger, "app", "api")
 
 	cookieStore := sessions.NewFilesystemStore("./dev/sessions/", []byte(secret))
 
