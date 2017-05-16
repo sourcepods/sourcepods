@@ -32,8 +32,8 @@ pipeline:
     group: build
     image: golang:1.8
     commands:
-      - go install ./vendor/github.com/gobuffalo/packr
-      - /go/bin/packr
+      - go get -u github.com/gobuffalo/packr/...
+      - packr
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
 
   docker-api:
