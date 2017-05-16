@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/gitpods/gitpods"
+	"github.com/pkg/errors"
 )
 
 type UsersPostgres struct {
@@ -58,7 +59,26 @@ func (s *UsersPostgres) CreateUser(*gitpods.User) (*gitpods.User, error) {
 }
 
 func (s *UsersPostgres) UpdateUser(username string, user *gitpods.User) (*gitpods.User, error) {
-	panic("implement me")
+	stmt, err := s.db.Prepare(`UPDATE users SET username=$1, email=$2, name=$3 WHERE username=$1`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(user.Username, user.Email, user.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if affected != 1 {
+		return nil, errors.New("no rows updated")
+	}
+
+	return s.GetUserByUsername(username)
 }
 
 func (s *UsersPostgres) DeleteUser(username string) error {
