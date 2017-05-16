@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/gitpods/gitpods"
-	"github.com/go-errors/errors"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
