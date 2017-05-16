@@ -14,6 +14,7 @@ import (
 	"github.com/go-kit/kit/metrics/prometheus"
 	"github.com/gorilla/sessions"
 	"github.com/oklog/oklog/pkg/group"
+	"github.com/pressly/chi"
 	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
 )
@@ -62,6 +63,7 @@ func ActionAPI(c *cli.Context) error {
 
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
+	logger = log.WithPrefix(logger, "app", "api")
 
 	cookieStore := sessions.NewFilesystemStore("./dev/sessions/", []byte(secret))
 
@@ -78,14 +80,15 @@ func ActionAPI(c *cli.Context) error {
 		AuthorizeStore:         usersStore,
 	}
 
-	// Create the http router and return it for use
-	r := handler.NewRouter(logger, prometheusMetrics(), routerStore)
+	r := chi.NewRouter()
+	r.Use(handler.LoggerMiddleware(logger))
 
-	// Wrap the http router with the default logger middleware
-	// TODO: Maybe this should live inside the handler.NewRouter?
-	h := handler.LoggerMiddleware(logger)(r)
+	r.Mount("/", handler.NewRouter(logger, prometheusMetrics(), routerStore))
 
-	server := &http.Server{Addr: addr, Handler: h}
+	server := &http.Server{
+		Addr:    addr,
+		Handler: r,
+	}
 
 	var gr group.Group
 	{

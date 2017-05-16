@@ -8,7 +8,7 @@ import (
 	"github.com/gitpods/gitpods/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/gorilla/mux"
+	"github.com/pressly/chi"
 )
 
 type UsersStore interface {
@@ -20,12 +20,24 @@ type UsersStore interface {
 }
 
 type UsersAPI struct {
-	logger log.Logger
-	store  UsersStore
+	Logger log.Logger
+	Store  UsersStore
+}
+
+func (a *UsersAPI) Routes() *chi.Mux {
+	r := chi.NewRouter()
+
+	r.Get("/", a.List)
+	r.Post("/", a.Create)
+	r.Get("/:username", a.Get)
+	r.Put("/:username", a.Update)
+	r.Delete("/:username", a.Delete)
+
+	return r
 }
 
 func (a *UsersAPI) List(w http.ResponseWriter, r *http.Request) {
-	users, err := a.store.List()
+	users, err := a.Store.List()
 	if err != nil {
 		http.Error(w, "failed to list users", http.StatusInternalServerError)
 		return
@@ -35,10 +47,9 @@ func (a *UsersAPI) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *UsersAPI) Get(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	username := vars["username"]
+	username := chi.URLParam(r, "username")
 
-	user, err := a.store.GetUser(username)
+	user, err := a.Store.GetUser(username)
 	if err != nil {
 		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
 		return
@@ -48,26 +59,26 @@ func (a *UsersAPI) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *UsersAPI) Create(w http.ResponseWriter, r *http.Request) {
-	a.logger = log.With(a.logger, "handler", "UserCreate")
+	a.Logger = log.With(a.Logger, "handler", "UserCreate")
 
 	var user *gitpods.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		msg := "failed to unmarshal user"
-		level.Warn(a.logger).Log("msg", msg, "err", err)
+		level.Warn(a.Logger).Log("msg", msg, "err", err)
 		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
 
 	if err := user.Validate(); err != nil {
-		level.Debug(a.logger).Log("msg", "user invalid", "err", err)
+		level.Debug(a.Logger).Log("msg", "user invalid", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	user, err := a.store.CreateUser(user)
+	user, err := a.Store.CreateUser(user)
 	if err != nil {
 		msg := "failed create user"
-		level.Warn(a.logger).Log("msg", msg)
+		level.Warn(a.Logger).Log("msg", msg)
 		http.Error(w, msg, http.StatusInternalServerError)
 		return
 	}
@@ -76,16 +87,14 @@ func (a *UsersAPI) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *UsersAPI) Update(w http.ResponseWriter, r *http.Request) {
-	logger := log.With(a.logger, "handler", "UserUpdate")
-
-	vars := mux.Vars(r)
-	username := vars["username"]
+	logger := log.With(a.Logger, "handler", "UserUpdate")
+	username := chi.URLParam(r, "username")
 
 	var user *gitpods.User
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		msg := "failed to unmarshal user"
-		level.Warn(a.logger).Log("msg", msg, "err", err)
+		level.Warn(a.Logger).Log("msg", msg, "err", err)
 		jsonResponse(w, map[string]string{"message": msg}, http.StatusBadRequest)
 		return
 	}
@@ -96,7 +105,7 @@ func (a *UsersAPI) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := a.store.UpdateUser(username, user)
+	user, err := a.Store.UpdateUser(username, user)
 	if err == store.UserNotFound {
 		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
 		return
@@ -106,12 +115,10 @@ func (a *UsersAPI) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *UsersAPI) Delete(w http.ResponseWriter, r *http.Request) {
-	logger := log.With(a.logger, "handler", "UserDelete")
+	logger := log.With(a.Logger, "handler", "UserDelete")
+	username := chi.URLParam(r, "username")
 
-	vars := mux.Vars(r)
-	username := vars["username"]
-
-	err := a.store.DeleteUser(username)
+	err := a.Store.DeleteUser(username)
 	if err == store.UserNotFound {
 		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
 		return

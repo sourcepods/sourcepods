@@ -6,7 +6,7 @@ import (
 	"github.com/gitpods/gitpods"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/gorilla/mux"
+	"github.com/pressly/chi"
 )
 
 type UsersRepositoriesStore interface {
@@ -18,9 +18,15 @@ type UsersRepositoriesAPI struct {
 	store  UsersRepositoriesStore
 }
 
+func (a UsersRepositoriesAPI) Routes() *chi.Mux {
+	r := chi.NewRouter()
+	r.Get("/", a.List)
+
+	return r
+}
+
 func (a UsersRepositoriesAPI) List(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	username := vars["username"]
+	username := chi.URLParam(r, "username")
 
 	repositories, err := a.store.List(username)
 	if err != nil {

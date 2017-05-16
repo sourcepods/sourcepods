@@ -6,10 +6,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gitpods/gitpods/handler"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/gobuffalo/packr"
-	"github.com/gorilla/mux"
+	"github.com/pressly/chi"
 	"github.com/urfave/cli"
 )
 
@@ -57,6 +58,7 @@ func ActionUI(c *cli.Context) error {
 
 	// Create the logger based on the environment: production/development/test
 	logger := newLogger(env, loglevel)
+	logger = log.WithPrefix(logger, "app", "ui")
 
 	// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
 	// The path is relative to this file.
@@ -64,21 +66,21 @@ func ActionUI(c *cli.Context) error {
 
 	conf := HTMLConfig{API: addrAPI}
 
-	r := NewUIRouter(box, conf)
+	r := NewUIRouter(logger, box, conf)
 
 	level.Info(logger).Log("msg", "starting gitpods ui", "addr", addr)
 	return http.ListenAndServe(addr, r)
 }
 
-func NewUIRouter(box packr.Box, conf HTMLConfig) *mux.Router {
-	r := mux.NewRouter()
-	r.Handle("/", HomeHandler(box, conf)).Methods(http.MethodGet)
-	r.Handle("/favicon.ico", http.FileServer(box)).Methods(http.MethodGet)
-	r.Handle("/favicon.png", http.FileServer(box)).Methods(http.MethodGet)
-	r.PathPrefix("/js").Handler(http.FileServer(box)).Methods(http.MethodGet)
-	r.PathPrefix("/css").Handler(http.FileServer(box)).Methods(http.MethodGet)
-	r.PathPrefix("/img").Handler(http.FileServer(box)).Methods(http.MethodGet)
-	r.NotFoundHandler = HomeHandler(box, conf)
+func NewUIRouter(logger log.Logger, box packr.Box, conf HTMLConfig) *chi.Mux {
+	homeHandler := HomeHandler(box, conf)
+
+	r := chi.NewRouter()
+	r.Use(handler.LoggerMiddleware(logger))
+
+	r.Get("/", homeHandler)
+	r.FileServer("/", box)
+	r.NotFound(homeHandler)
 
 	return r
 }
