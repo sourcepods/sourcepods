@@ -8,8 +8,8 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/pressly/chi"
 )
 
 var (
@@ -29,34 +29,30 @@ type RouterMetrics struct {
 	LoginAttempts metrics.Counter
 }
 
-func NewRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux.Router {
-	r := mux.NewRouter().StrictSlash(true)
+func NewRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *chi.Mux {
+	r := chi.NewRouter()
 
-	r.Path("/authorize").Methods(http.MethodPost).Handler(Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.AuthorizeStore))
+	r.Post("/authorize", Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.AuthorizeStore))
 
 	apiAuthRouter := NewAuthRouter(logger, metrics, store)
-	r.PathPrefix("/").Handler(Authorized(logger, store.CookieStore)(apiAuthRouter))
+	r.With(Authorized(logger, store.CookieStore)).Mount("/", apiAuthRouter)
 
 	return r
 }
 
-func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *mux.Router {
-	r := mux.NewRouter().StrictSlash(true)
+func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *chi.Mux {
+	r := chi.NewRouter()
 
-	r.Path("/user").Methods(http.MethodGet).Handler(User(logger, store.UsersStore))
-	r.Path("/user/repositories").Methods(http.MethodGet).Handler(UserRepositories(logger, store.UsersRepositoriesStore))
+	r.Get("/user", User(logger, store.UsersStore))
+	r.Get("/user/repositories", UserRepositories(logger, store.UsersRepositoriesStore))
 
 	users := &UsersAPI{logger: logger, store: store.UsersStore}
-	r.Path("/users").Methods(http.MethodGet).HandlerFunc(users.List)
-	r.Path("/users").Methods(http.MethodPost).HandlerFunc(users.Create)
-	r.Path("/users/{username}").Methods(http.MethodGet).HandlerFunc(users.Get)
-	r.Path("/users/{username}").Methods(http.MethodPut).HandlerFunc(users.Update)
-	r.Path("/users/{username}").Methods(http.MethodDelete).HandlerFunc(users.Delete)
+	r.Mount("/users", users.Routes())
 
 	usersRepositories := &UsersRepositoriesAPI{logger: logger, store: store.UsersRepositoriesStore}
-	r.Path("/users/{username}/repositories").Methods(http.MethodGet).HandlerFunc(usersRepositories.List)
+	r.Get("/users/:username/repositories", usersRepositories.List)
 
-	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
 	})
 

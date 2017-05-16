@@ -8,7 +8,7 @@ import (
 	"github.com/gitpods/gitpods/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/gorilla/mux"
+	"github.com/pressly/chi"
 )
 
 type UsersStore interface {
@@ -24,6 +24,18 @@ type UsersAPI struct {
 	store  UsersStore
 }
 
+func (a *UsersAPI) Routes() *chi.Mux {
+	r := chi.NewRouter()
+
+	r.Get("/", a.List)
+	r.Post("/", a.Create)
+	r.Get("/:username", a.Get)
+	r.Put("/:username", a.Update)
+	r.Delete("/:username", a.Delete)
+
+	return r
+}
+
 func (a *UsersAPI) List(w http.ResponseWriter, r *http.Request) {
 	users, err := a.store.List()
 	if err != nil {
@@ -35,8 +47,7 @@ func (a *UsersAPI) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *UsersAPI) Get(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	username := vars["username"]
+	username := chi.URLParam(r, "username")
 
 	user, err := a.store.GetUser(username)
 	if err != nil {
@@ -77,9 +88,7 @@ func (a *UsersAPI) Create(w http.ResponseWriter, r *http.Request) {
 
 func (a *UsersAPI) Update(w http.ResponseWriter, r *http.Request) {
 	logger := log.With(a.logger, "handler", "UserUpdate")
-
-	vars := mux.Vars(r)
-	username := vars["username"]
+	username := chi.URLParam(r, "username")
 
 	var user *gitpods.User
 
@@ -107,9 +116,7 @@ func (a *UsersAPI) Update(w http.ResponseWriter, r *http.Request) {
 
 func (a *UsersAPI) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := log.With(a.logger, "handler", "UserDelete")
-
-	vars := mux.Vars(r)
-	username := vars["username"]
+	username := chi.URLParam(r, "username")
 
 	err := a.store.DeleteUser(username)
 	if err == store.UserNotFound {

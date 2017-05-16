@@ -12,8 +12,8 @@ import (
 	"github.com/gitpods/gitpods/store"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics/discard"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/pressly/chi"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,18 +43,18 @@ func DiscardMetrics() handler.RouterMetrics {
 	}
 }
 
-func DefaultTestRouter() *mux.Router {
+func DefaultTestRouter() *chi.Mux {
 	return DefaultTestRouterWithStore(DefaultRouterStore())
 }
 
-func DefaultTestRouterWithStore(store handler.RouterStore) *mux.Router {
+func DefaultTestRouterWithStore(store handler.RouterStore) *chi.Mux {
 	return handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), store)
 }
-func DefaultTestAuthRouter() *mux.Router {
+func DefaultTestAuthRouter() *chi.Mux {
 	return DefaultTestAuthRouterWithStore(DefaultRouterStore())
 }
 
-func DefaultTestAuthRouterWithStore(store handler.RouterStore) *mux.Router {
+func DefaultTestAuthRouterWithStore(store handler.RouterStore) *chi.Mux {
 	return handler.NewAuthRouter(log.NewNopLogger(), DiscardMetrics(), store)
 }
 
@@ -67,7 +67,7 @@ func DefaultRouterStore() handler.RouterStore {
 	}
 }
 
-func Request(r *mux.Router, method string, url string, payload []byte) (*http.Response, []byte, error) {
+func Request(r *chi.Mux, method string, url string, payload []byte) (*http.Response, []byte, error) {
 	ts := httptest.NewServer(r)
 	defer ts.Close()
 
