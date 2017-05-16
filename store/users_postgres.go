@@ -15,7 +15,7 @@ func NewUsersPostgres(db *sql.DB) *UsersPostgres {
 }
 
 func (s UsersPostgres) List() ([]*gitpods.User, error) {
-	rows, err := s.db.Query(`SELECT * FROM users;`)
+	rows, err := s.db.Query(`SELECT id, email, username, name FROM users;`)
 	if err != nil {
 		return nil, err
 	}
@@ -23,9 +23,9 @@ func (s UsersPostgres) List() ([]*gitpods.User, error) {
 
 	var users []*gitpods.User
 	for rows.Next() {
-		var user *gitpods.User
-		rows.Scan(user.ID, user.Email, user.Username, user.Name)
-		users = append(users, user)
+		var user gitpods.User
+		rows.Scan(&user.ID, &user.Email, &user.Username, &user.Name)
+		users = append(users, &user)
 	}
 
 	return users, nil
