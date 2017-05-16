@@ -16,7 +16,8 @@ func NewRouterStore(driver string, dsn string, secret []byte) (*handler.RouterSt
 		CookieStore: cookieStore,
 	}
 
-	if driver == "memory" {
+	switch driver {
+	case "memory":
 		usersStore := store.NewUsersInMemory()
 		repositoriesStore := store.NewRepositoriesInMemory(usersStore)
 		usersRepositoriesStore := store.NewUsersRepositoriesInMemory(usersStore, repositoriesStore)
@@ -24,9 +25,7 @@ func NewRouterStore(driver string, dsn string, secret []byte) (*handler.RouterSt
 		routerStore.UsersStore = usersStore
 		routerStore.UsersRepositoriesStore = usersRepositoriesStore
 		routerStore.AuthorizeStore = usersStore
-	}
-
-	if driver == "postgres" {
+	default:
 		db, err := sql.Open("postgres", dsn)
 		if err != nil {
 			return nil, err
