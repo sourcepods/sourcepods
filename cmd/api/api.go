@@ -66,6 +66,8 @@ var FlagsAPI = []cli.Flag{
 	},
 }
 
+type StoreCloser func() error
+
 func ActionAPI(c *cli.Context) error {
 	addr := c.String(FlagAddr)
 	databaseDriver := c.String(FlagDatabaseDriver)
@@ -78,7 +80,7 @@ func ActionAPI(c *cli.Context) error {
 	logger := newLogger(env, loglevel)
 	logger = log.WithPrefix(logger, "app", "api")
 
-	store, err := NewRouterStore(databaseDriver, databaseDSN, []byte(secret))
+	store, dbCloser, err := NewRouterStore(databaseDriver, databaseDSN, []byte(secret))
 	if err != nil {
 		level.Error(logger).Log(
 			"msg", "failed to initialize store",
@@ -112,6 +114,14 @@ func ActionAPI(c *cli.Context) error {
 				return
 			}
 			level.Info(logger).Log("msg", "http server shutdown gracefully")
+		})
+	}
+	{
+		gr.Add(func() error {
+			select {}
+		}, func(err error) {
+			dbCloser()
+			level.Info(logger).Log("msg", "database shutdown gracefully")
 		})
 	}
 
