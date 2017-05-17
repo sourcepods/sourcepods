@@ -92,7 +92,7 @@ func ActionAPI(c *cli.Context) error {
 	r := chi.NewRouter()
 	r.Use(handler.LoggerMiddleware(logger))
 
-	r.Mount("/", handler.NewRouter(logger, prometheusMetrics(), routerStore))
+	r.Mount("/", handler.NewRouter(logger, prometheusMetrics(), store))
 
 	server := &http.Server{
 		Addr:    addr,
