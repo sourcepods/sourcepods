@@ -47,14 +47,14 @@ func DefaultTestRouter() *chi.Mux {
 	return DefaultTestRouterWithStore(DefaultRouterStore())
 }
 
-func DefaultTestRouterWithStore(store handler.RouterStore) *chi.Mux {
+func DefaultTestRouterWithStore(store *handler.RouterStore) *chi.Mux {
 	return handler.NewRouter(log.NewNopLogger(), DiscardMetrics(), store)
 }
 func DefaultTestAuthRouter() *chi.Mux {
 	return DefaultTestAuthRouterWithStore(DefaultRouterStore())
 }
 
-func DefaultTestAuthRouterWithStore(store handler.RouterStore) *chi.Mux {
+func DefaultTestAuthRouterWithStore(store *handler.RouterStore) *chi.Mux {
 	return handler.NewAuthRouter(log.NewNopLogger(), DiscardMetrics(), store)
 }
 
