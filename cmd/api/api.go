@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/gitpods/gitpods/cmd"
 	"github.com/gitpods/gitpods/handler"
+	"github.com/gitpods/gitpods/user"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics/prometheus"
@@ -80,6 +82,30 @@ func apiAction(c *cli.Context) error {
 
 	logger := cmd.NewLogger(apiConfig.LogJson, apiConfig.LogLevel)
 	logger = log.WithPrefix(logger, "app", "api")
+
+	//
+	// Repositories
+	//
+	users := user.NewMemoryRepository()
+	//
+	// Services
+	//
+	us := user.NewService(users)
+	//
+	//
+	//
+
+	httpLogger := log.With(logger, "component", "http")
+
+	router := chi.NewRouter()
+	router.Use(handler.LoggerMiddleware(httpLogger))
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "hi")
+	})
+
+	router.Mount("/users", user.NewHandler(us))
+
+	http.ListenAndServe(":3020", router)
 
 	store, dbCloser, err := NewRouterStore(apiConfig.DatabaseDriver, apiConfig.DatabaseDSN, []byte(apiConfig.Secret))
 	if err != nil {
