@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/gitpods/gitpods/cmd"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/urfave/cli"
 )
@@ -36,14 +37,9 @@ func main() {
 				Value: "postgres",
 			},
 			cli.StringFlag{
-				Name:  "database-datasource",
+				Name:  "database-dsn",
 				Usage: "The database connection data",
 				Value: "postgres://postgres:postgres@localhost:5432?sslmode=disable",
-			},
-			cli.StringFlag{
-				Name:  "env",
-				Usage: "Set the env gitpods runs in",
-				Value: "development",
 			},
 			cli.StringFlag{
 				Name:  "log-level",
@@ -74,24 +70,22 @@ func actionDev(c *cli.Context) error {
 	uiAddrFlag := c.String("addr-ui")
 	apiAddrFlag := c.String("addr-api")
 	databaseDriver := c.String("database-driver")
-	databaseDatasource := c.String("database-datasource")
-	envFlag := c.String("env")
+	databaseDSN := c.String("database-dsn")
 	loglevelFlag := c.String("log-level")
 	watch := c.Bool("watch")
 
 	uiRunner := NewGitPodsRunner("ui", []string{
-		fmt.Sprintf("GITPODS_ADDR=%s", uiAddrFlag),
-		fmt.Sprintf("GITPODS_ADDR_API=%s", "http://localhost:3000/api"), // TODO
-		fmt.Sprintf("GITPODS_ENV=%s", envFlag),
-		fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvAddr, uiAddrFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvAddrAPI, "http://localhost:3000/api"), // TODO
+		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 	})
 
 	apiRunner := NewGitPodsRunner("api", []string{
-		fmt.Sprintf("GITPODS_ADDR=%s", apiAddrFlag),
-		fmt.Sprintf("GITPODS_DATABASE_DRIVER=%s", databaseDriver),
-		fmt.Sprintf("GITPODS_DATABASE_DATASOURCE=%s", databaseDatasource),
-		fmt.Sprintf("GITPODS_ENV=%s", envFlag),
-		fmt.Sprintf("GITPODS_LOGLEVEL=%s", loglevelFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvAddr, apiAddrFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDriver, databaseDriver),
+		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSN),
+		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvSecret, "secret"),
 	})
 
 	caddy := CaddyRunner{}

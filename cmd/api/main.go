@@ -12,8 +12,8 @@ func main() {
 	app.Name = "gitpods-api"
 	app.Usage = "git flying loudly in the cloud!"
 
-	app.Action = ActionAPI
-	app.Flags = FlagsAPI
+	app.Action = apiAction
+	app.Flags = apiFlags
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

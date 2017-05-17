@@ -13,7 +13,7 @@ func main() {
 	app.Usage = "git flying loudly in the cloud!"
 
 	app.Action = ActionUI
-	app.Flags = FlagsUI
+	app.Flags = uiFlags
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

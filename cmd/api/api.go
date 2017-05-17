@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
+	"github.com/gitpods/gitpods/cmd"
 	"github.com/gitpods/gitpods/handler"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -17,70 +18,70 @@ import (
 	"github.com/urfave/cli"
 )
 
-const (
-	FlagAddr               = "addr"
-	FlagDatabaseDriver     = "database-driver"
-	FlagDatabaseDatasource = "database-datasource"
-	FlagEnv                = "env"
-	FlagLogLevel           = "loglevel"
-	FlagSecret             = "secret"
-
-	ProductionEnv = "production"
-)
-
-var FlagsAPI = []cli.Flag{
-	cli.StringFlag{
-		Name:   FlagAddr,
-		EnvVar: "GITPODS_ADDR",
-		Usage:  "The address gitpods API runs on",
-		Value:  ":3010",
-	},
-	cli.StringFlag{
-		Name:   FlagDatabaseDriver,
-		EnvVar: "GITPODS_DATABASE_DRIVER",
-		Usage:  "The database driver to use: memory & postgres",
-		Value:  "postgres",
-	},
-	cli.StringFlag{
-		Name:   FlagDatabaseDatasource,
-		EnvVar: "GITPODS_DATABASE_DATASOURCE",
-		Usage:  "The database connection data",
-	},
-	cli.StringFlag{
-		Name:   FlagEnv,
-		EnvVar: "GITPODS_ENV",
-		Usage:  "The environment gitpods should run in",
-		Value:  ProductionEnv,
-	},
-	cli.StringFlag{
-		Name:   FlagLogLevel,
-		EnvVar: "GITPODS_LOGLEVEL",
-		Usage:  "The log level to filter logs with before printing",
-		Value:  "info",
-	},
-	cli.StringFlag{
-		Name:   FlagSecret,
-		EnvVar: "GITPODS_SECRET",
-		Usage:  "This secret is going to be used to generate cookies",
-		Value:  "secret", // TODO: Remove this to force users to pass a real secret, no default
-	},
+type apiConf struct {
+	Addr           string
+	DatabaseDriver string
+	DatabaseDSN    string
+	LogJson        bool
+	LogLevel       string
+	Secret         string
 }
 
-type StoreCloser func() error
+var (
+	apiConfig = apiConf{}
 
-func ActionAPI(c *cli.Context) error {
-	addr := c.String(FlagAddr)
-	databaseDriver := c.String(FlagDatabaseDriver)
-	databaseDSN := c.String(FlagDatabaseDatasource)
-	env := c.String(FlagEnv)
-	loglevel := c.String(FlagLogLevel)
-	secret := c.String(FlagSecret)
+	apiFlags = []cli.Flag{
+		cli.StringFlag{
+			Name:        cmd.FlagAddr,
+			EnvVar:      cmd.EnvAddr,
+			Usage:       "The address gitpods API runs on",
+			Value:       ":3010",
+			Destination: &apiConfig.Addr,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagDatabaseDriver,
+			EnvVar:      cmd.EnvDatabaseDriver,
+			Usage:       "The database driver to use: memory & postgres",
+			Value:       "postgres",
+			Destination: &apiConfig.DatabaseDriver,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagDatabaseDSN,
+			EnvVar:      cmd.EnvDatabaseDSN,
+			Usage:       "The database connection data",
+			Destination: &apiConfig.DatabaseDSN,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagLogLevel,
+			EnvVar:      cmd.EnvLogLevel,
+			Usage:       "The log level to filter logs with before printing",
+			Value:       "info",
+			Destination: &apiConfig.LogLevel,
+		},
+		cli.BoolFlag{
+			Name:        cmd.FlagLogJson,
+			EnvVar:      cmd.EnvLogJson,
+			Usage:       "The logger will log json lines",
+			Destination: &apiConfig.LogJson,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagSecret,
+			EnvVar:      cmd.EnvSecret,
+			Usage:       "This secret is going to be used to generate cookies",
+			Destination: &apiConfig.Secret,
+		},
+	}
+)
 
-	// Create the logger based on the environment: production/development/test
-	logger := newLogger(env, loglevel)
+func apiAction(c *cli.Context) error {
+	if apiConfig.Secret == "" {
+		return errors.New("the secret for the api can't be empty")
+	}
+
+	logger := cmd.NewLogger(apiConfig.LogJson, apiConfig.LogLevel)
 	logger = log.WithPrefix(logger, "app", "api")
 
-	store, dbCloser, err := NewRouterStore(databaseDriver, databaseDSN, []byte(secret))
+	store, dbCloser, err := NewRouterStore(apiConfig.DatabaseDriver, apiConfig.DatabaseDSN, []byte(apiConfig.Secret))
 	if err != nil {
 		level.Error(logger).Log(
 			"msg", "failed to initialize store",
@@ -95,14 +96,14 @@ func ActionAPI(c *cli.Context) error {
 	r.Mount("/", handler.NewRouter(logger, prometheusMetrics(), store))
 
 	server := &http.Server{
-		Addr:    addr,
+		Addr:    apiConfig.Addr,
 		Handler: r,
 	}
 
 	var gr group.Group
 	{
 		gr.Add(func() error {
-			level.Info(logger).Log("msg", "starting gitpods api", "addr", addr)
+			level.Info(logger).Log("msg", "starting gitpods api", "addr", apiConfig.Addr)
 			return server.ListenAndServe()
 		}, func(err error) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -126,29 +127,6 @@ func ActionAPI(c *cli.Context) error {
 	}
 
 	return gr.Run()
-}
-
-func newLogger(env string, loglevel string) log.Logger {
-	var logger log.Logger
-
-	if env == ProductionEnv {
-		logger = log.NewJSONLogger(log.NewSyncWriter(os.Stdout))
-	} else {
-		logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout))
-	}
-
-	switch strings.ToLower(loglevel) {
-	case "debug":
-		logger = level.NewFilter(logger, level.AllowDebug())
-	case "warn":
-		logger = level.NewFilter(logger, level.AllowWarn())
-	case "error":
-		logger = level.NewFilter(logger, level.AllowError())
-	default:
-		logger = level.NewFilter(logger, level.AllowInfo())
-	}
-
-	return log.With(logger, "ts", log.DefaultTimestampUTC)
 }
 
 func prometheusMetrics() handler.RouterMetrics {

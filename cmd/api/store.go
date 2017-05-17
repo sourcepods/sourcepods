@@ -9,6 +9,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type StoreCloser func() error
+
 func NewRouterStore(driver string, dsn string, secret []byte) (*handler.RouterStore, StoreCloser, error) {
 	cookieStore := sessions.NewFilesystemStore("./dev/sessions/", secret)
 
