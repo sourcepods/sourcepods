@@ -18,7 +18,7 @@ func TestAuthorize(t *testing.T) {
 	assert.Equal(t, "application/json; charset=utf-8", res.Header.Get("Content-Type"))
 	assert.Contains(t, res.Header.Get("Set-Cookie"), "_gitpods_session=")
 	assert.Equal(t,
-		`{"id":"25558000-2565-48dc-84eb-18754da2b0a2","username":"metalmatze","name":"Matthias Loibl","email":"metalmatze@example.com"}`,
+		`{"id":"25558000-2565-48dc-84eb-18754da2b0a2","email":"metalmatze@example.com","username":"metalmatze","name":"Matthias Loibl"}`,
 		string(content),
 	)
 }

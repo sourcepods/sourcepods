@@ -16,7 +16,7 @@ func User(logger log.Logger, s UsersStore) http.HandlerFunc {
 			return
 		}
 
-		user, err := s.GetUser(username.(string))
+		user, err := s.GetUserByUsername(username.(string))
 		if err == store.UserNotFound {
 			jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
 			return

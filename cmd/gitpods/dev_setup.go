@@ -38,6 +38,10 @@ func ActionDevSetup(c *cli.Context) error {
 	}
 	log.Println("Created ./dev/")
 
+	if err := setupPostgres(); err != nil {
+		return err
+	}
+
 	if err := setupNodeModules(); err != nil {
 		return err
 	}
@@ -47,6 +51,27 @@ func ActionDevSetup(c *cli.Context) error {
 	}
 
 	return nil
+}
+
+func setupPostgres() error {
+	docker, err := exec.LookPath("docker")
+	if err != nil {
+		return err
+	}
+
+	args := []string{
+		"run", "-d",
+		"--name", "gitpods-postgres",
+		"-p", "5432:5432",
+		"-e", "POSTGRES_PASSWORD=postgres",
+		"postgres:9.6-alpine",
+	}
+
+	cmd := exec.Command(docker, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func setupNodeModules() error {

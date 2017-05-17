@@ -42,7 +42,7 @@ func (s *UsersInMemory) List() ([]*gitpods.User, error) {
 	return s.users, nil
 }
 
-func (s *UsersInMemory) GetUser(username string) (*gitpods.User, error) {
+func (s *UsersInMemory) GetUserByUsername(username string) (*gitpods.User, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for _, user := range s.users {

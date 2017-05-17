@@ -81,7 +81,7 @@ func TestUserCreate(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, string(payload), string(content))
 
-	user, err := usersStore.GetUser(payloadUser.Username)
+	user, err := usersStore.GetUserByUsername(payloadUser.Username)
 	assert.NoError(t, err)
 	assert.Equal(t, payloadUser, *user)
 }
@@ -90,7 +90,7 @@ func TestUserUpdate(t *testing.T) {
 	usersStore := store.NewUsersInMemory()
 	r := newUsersAPI(usersStore)
 
-	user, err := usersStore.GetUser("metalmatze")
+	user, err := usersStore.GetUserByUsername("metalmatze")
 	assert.NoError(t, err)
 
 	newEmail := "matze@example.com"
@@ -106,7 +106,7 @@ func TestUserUpdate(t *testing.T) {
 	assert.Equal(t, string(payload), string(content))
 
 	// Test if store was really updated
-	user, err = usersStore.GetUser("metalmatze")
+	user, err = usersStore.GetUserByUsername("metalmatze")
 	assert.NoError(t, err)
 	assert.Equal(t, newEmail, user.Email)
 }
@@ -125,7 +125,7 @@ func TestUserUpdateNotFound(t *testing.T) {
 	usersStore := store.NewUsersInMemory()
 	r := newUsersAPI(usersStore)
 
-	user, err := usersStore.GetUser("metalmatze")
+	user, err := usersStore.GetUserByUsername("metalmatze")
 	assert.NoError(t, err)
 
 	payload, err := json.Marshal(user)
@@ -141,7 +141,7 @@ func TestUserDelete(t *testing.T) {
 	usersStore := store.NewUsersInMemory()
 	r := newUsersAPI(usersStore)
 
-	_, err := usersStore.GetUser("metalmatze")
+	_, err := usersStore.GetUserByUsername("metalmatze")
 	assert.NoError(t, err)
 
 	res, content, err := Request(r.Routes(), http.MethodDelete, "/metalmatze", nil)
@@ -151,7 +151,7 @@ func TestUserDelete(t *testing.T) {
 	assert.Equal(t, "", string(content))
 
 	// Test if store was really updated
-	_, err = usersStore.GetUser("metalmatze")
+	_, err = usersStore.GetUserByUsername("metalmatze")
 	assert.Equal(t, err, store.UserNotFound)
 }
 

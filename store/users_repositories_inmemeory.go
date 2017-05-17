@@ -20,7 +20,7 @@ func NewUsersRepositoriesInMemory(users *UsersInMemory, repositories *Repositori
 }
 
 func (s *UsersRepositoriesInMemory) List(username string) ([]*gitpods.Repository, error) {
-	user, err := s.users.GetUser(username)
+	user, err := s.users.GetUserByUsername(username)
 	if err != nil {
 		return nil, err
 	}

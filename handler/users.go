@@ -13,7 +13,7 @@ import (
 
 type UsersStore interface {
 	List() ([]*gitpods.User, error)
-	GetUser(string) (*gitpods.User, error)
+	GetUserByUsername(string) (*gitpods.User, error)
 	CreateUser(*gitpods.User) (*gitpods.User, error)
 	UpdateUser(string, *gitpods.User) (*gitpods.User, error)
 	DeleteUser(string) error
@@ -49,7 +49,7 @@ func (a *UsersAPI) List(w http.ResponseWriter, r *http.Request) {
 func (a *UsersAPI) Get(w http.ResponseWriter, r *http.Request) {
 	username := chi.URLParam(r, "username")
 
-	user, err := a.Store.GetUser(username)
+	user, err := a.Store.GetUserByUsername(username)
 	if err != nil {
 		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
 		return

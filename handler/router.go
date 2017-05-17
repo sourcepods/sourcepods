@@ -29,7 +29,7 @@ type RouterMetrics struct {
 	LoginAttempts metrics.Counter
 }
 
-func NewRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *chi.Mux {
+func NewRouter(logger log.Logger, metrics RouterMetrics, store *RouterStore) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Post("/authorize", Authorize(logger, metrics.LoginAttempts, store.CookieStore, store.AuthorizeStore))
@@ -40,7 +40,7 @@ func NewRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *chi
 	return r
 }
 
-func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store RouterStore) *chi.Mux {
+func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store *RouterStore) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Get("/user", User(logger, store.UsersStore))
