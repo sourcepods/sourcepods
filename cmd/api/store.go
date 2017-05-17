@@ -26,9 +26,9 @@ func NewRouterStore(driver string, dsn string, secret []byte) (*handler.RouterSt
 
 		closer = func() error { return nil }
 
+		routerStore.AuthorizeStore = usersStore
 		routerStore.UsersStore = usersStore
 		routerStore.UsersRepositoriesStore = usersRepositoriesStore
-		routerStore.AuthorizeStore = usersStore
 	default:
 		db, err := sql.Open("postgres", dsn)
 		if err != nil {
@@ -42,8 +42,9 @@ func NewRouterStore(driver string, dsn string, secret []byte) (*handler.RouterSt
 		closer = db.Close
 
 		usersStore := store.NewUsersPostgres(db)
-		routerStore.UsersStore = usersStore
 		routerStore.AuthorizeStore = usersStore
+		routerStore.UsersStore = usersStore
+		routerStore.UsersRepositoriesStore = store.NewUsersRepositoriesPostgres(db)
 	}
 
 	return &routerStore, closer, nil
