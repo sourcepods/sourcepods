@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics/prometheus"
+	_ "github.com/lib/pq"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/pressly/chi"
 	prom "github.com/prometheus/client_golang/prometheus"
@@ -86,11 +88,27 @@ func apiAction(c *cli.Context) error {
 	//
 	// Repositories
 	//
-	users := user.NewMemoryRepository()
+	var (
+		users user.Repository
+	)
+
+	switch apiConfig.DatabaseDriver {
+	case "memory":
+		users = user.NewMemoryRepository()
+	default:
+		db, err := sql.Open("postgres", apiConfig.DatabaseDSN)
+		if err != nil {
+			return err
+		}
+
+		users = user.NewPostgresRepository(db)
+	}
 	//
 	// Services
 	//
-	us := user.NewService(users)
+	var us user.Service
+	us = user.NewService(users)
+	us = user.NewLoggingService(log.WithPrefix(logger, "service", "user"), us)
 	//
 	//
 	//
