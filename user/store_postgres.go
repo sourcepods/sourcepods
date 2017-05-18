@@ -14,7 +14,7 @@ func NewPostgresStore(db *sql.DB) *postgres {
 }
 
 func (r *postgres) FindAll() ([]*User, error) {
-	rows, err := r.db.Query(`SELECT id, email, username, name FROM users`)
+	rows, err := r.db.Query(`SELECT id, email, username, name FROM users ORDER BY name DESC`)
 	if err != nil {
 		return nil, err
 	}
