@@ -31,21 +31,3 @@ func User(logger log.Logger, s UsersStore) http.HandlerFunc {
 		jsonResponse(w, user, http.StatusOK)
 	}
 }
-
-func UserRepositories(logger log.Logger, store UsersRepositoriesStore) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		username := r.Context().Value(SessionUserUsername)
-		if username == nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		repositories, err := store.List(username.(string))
-		if err != nil {
-			jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
-			return
-		}
-
-		jsonResponse(w, repositories, http.StatusOK)
-	}
-}

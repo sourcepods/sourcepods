@@ -23,14 +23,11 @@ func NewRouterStore(driver string, dsn string, secret []byte) (*handler.RouterSt
 	switch driver {
 	case "memory":
 		usersStore := store.NewUsersInMemory()
-		repositoriesStore := store.NewRepositoriesInMemory(usersStore)
-		usersRepositoriesStore := store.NewUsersRepositoriesInMemory(usersStore, repositoriesStore)
 
 		closer = func() error { return nil }
 
 		routerStore.AuthorizeStore = usersStore
 		routerStore.UsersStore = usersStore
-		routerStore.UsersRepositoriesStore = usersRepositoriesStore
 	default:
 		db, err := sql.Open("postgres", dsn)
 		if err != nil {
@@ -46,7 +43,6 @@ func NewRouterStore(driver string, dsn string, secret []byte) (*handler.RouterSt
 		usersStore := store.NewUsersPostgres(db)
 		routerStore.AuthorizeStore = usersStore
 		routerStore.UsersStore = usersStore
-		routerStore.UsersRepositoriesStore = store.NewUsersRepositoriesPostgres(db)
 	}
 
 	return &routerStore, closer, nil

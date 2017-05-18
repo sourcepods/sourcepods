@@ -19,10 +19,9 @@ var (
 )
 
 type RouterStore struct {
-	AuthorizeStore         AuthorizeStore
-	CookieStore            sessions.Store
-	UsersRepositoriesStore UsersRepositoriesStore
-	UsersStore             UsersStore
+	AuthorizeStore AuthorizeStore
+	CookieStore    sessions.Store
+	UsersStore     UsersStore
 }
 
 type RouterMetrics struct {
@@ -44,13 +43,9 @@ func NewAuthRouter(logger log.Logger, metrics RouterMetrics, store *RouterStore)
 	r := chi.NewRouter()
 
 	r.Get("/user", User(logger, store.UsersStore))
-	r.Get("/user/repositories", UserRepositories(logger, store.UsersRepositoriesStore))
 
 	users := &UsersAPI{Logger: logger, Store: store.UsersStore}
 	r.Mount("/users", users.Routes())
-
-	usersRepositories := &UsersRepositoriesAPI{logger: logger, store: store.UsersRepositoriesStore}
-	r.Get("/users/:username/repositories", usersRepositories.List)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		jsonResponseBytes(w, JsonNotFound, http.StatusNotFound)
