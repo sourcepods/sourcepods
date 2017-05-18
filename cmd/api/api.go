@@ -94,14 +94,14 @@ func apiAction(c *cli.Context) error {
 
 	switch apiConfig.DatabaseDriver {
 	case "memory":
-		users = user.NewMemoryRepository()
+		users = user.NewMemoryStore()
 	default:
 		db, err := sql.Open("postgres", apiConfig.DatabaseDSN)
 		if err != nil {
 			return err
 		}
 
-		users = user.NewPostgresRepository(db)
+		users = user.NewPostgresStore(db)
 	}
 	//
 	// Services

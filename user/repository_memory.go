@@ -14,7 +14,7 @@ type memory struct {
 	users []*User
 }
 
-func NewMemoryRepository() *memory {
+func NewMemoryStore() *memory {
 	pass1, _ := bcrypt.GenerateFromPassword([]byte("kubernetes"), bcrypt.DefaultCost)
 	pass2, _ := bcrypt.GenerateFromPassword([]byte("golang"), bcrypt.DefaultCost)
 
