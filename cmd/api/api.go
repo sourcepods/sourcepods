@@ -11,6 +11,7 @@ import (
 
 	"github.com/gitpods/gitpods/cmd"
 	"github.com/gitpods/gitpods/handler"
+	"github.com/gitpods/gitpods/repository"
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -89,7 +90,8 @@ func apiAction(c *cli.Context) error {
 	// Stores
 	//
 	var (
-		users user.Store
+		users        user.Store
+		repositories repository.Store
 	)
 
 	switch apiConfig.DatabaseDriver {
@@ -102,6 +104,7 @@ func apiAction(c *cli.Context) error {
 		}
 
 		users = user.NewPostgresStore(db)
+		repositories = repository.NewPostgresStore(db)
 	}
 	//
 	// Services
@@ -110,6 +113,8 @@ func apiAction(c *cli.Context) error {
 	us = user.NewService(users)
 	us = user.NewLoggingService(log.WithPrefix(logger, "service", "user"), us)
 	//
+	var rs repository.Service
+	rs = repository.NewService(users, repositories)
 	//
 	//
 
@@ -122,6 +127,7 @@ func apiAction(c *cli.Context) error {
 	})
 
 	router.Mount("/users", user.NewHandler(us))
+	router.Mount("/users/:username/repositories", repository.NewHandler(rs))
 
 	http.ListenAndServe(":3020", router)
 
