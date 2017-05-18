@@ -42,7 +42,7 @@ func (r *memory) FindAll() ([]*User, error) {
 	return r.users, nil
 }
 
-func (r *memory) Find(id ID) (*User, error) {
+func (r *memory) Find(id string) (*User, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	for _, user := range r.users {
@@ -54,7 +54,7 @@ func (r *memory) Find(id ID) (*User, error) {
 	return nil, NotFound
 }
 
-func (r *memory) FindByUsername(username Username) (*User, error) {
+func (r *memory) FindByUsername(username string) (*User, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	for _, user := range r.users {
@@ -74,7 +74,7 @@ func (r *memory) Create(user *User) (*User, error) {
 	return user, nil
 }
 
-func (r *memory) Update(username Username, updated *User) (*User, error) {
+func (r *memory) Update(username string, updated *User) (*User, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	for i, user := range r.users {
@@ -89,7 +89,7 @@ func (r *memory) Update(username Username, updated *User) (*User, error) {
 	return nil, NotFound
 }
 
-func (r *memory) Delete(username Username) error {
+func (r *memory) Delete(username string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	for i, user := range r.users {
