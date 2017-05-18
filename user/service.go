@@ -8,7 +8,7 @@ type Service interface {
 	Delete(string) error
 }
 
-type Repository interface {
+type Store interface {
 	FindAll() ([]*User, error)
 	Find(string) (*User, error)
 	FindByUsername(string) (*User, error)
@@ -18,10 +18,10 @@ type Repository interface {
 }
 
 type service struct {
-	users Repository
+	users Store
 }
 
-func NewService(users Repository) Service {
+func NewService(users Store) Service {
 	return &service{users: users}
 }
 

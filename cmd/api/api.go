@@ -86,10 +86,10 @@ func apiAction(c *cli.Context) error {
 	logger = log.WithPrefix(logger, "app", "api")
 
 	//
-	// Repositories
+	// Stores
 	//
 	var (
-		users user.Repository
+		users user.Store
 	)
 
 	switch apiConfig.DatabaseDriver {
