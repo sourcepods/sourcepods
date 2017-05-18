@@ -62,25 +62,24 @@ func ActionUI(c *cli.Context) error {
 	// The path is relative to this file.
 	box := packr.NewBox("../../public")
 
-	conf := HTMLConfig{API: uiConfig.AddrAPI}
-
-	r := NewUIRouter(logger, box, conf)
-
-	level.Info(logger).Log("msg", "starting gitpods ui", "addr", uiConfig.Addr)
-	return http.ListenAndServe(uiConfig.Addr, r)
-}
-
-func NewUIRouter(logger log.Logger, box packr.Box, conf HTMLConfig) *chi.Mux {
-	homeHandler := HomeHandler(box, conf)
+	homeHandler := HomeHandler(box, HTMLConfig{
+		API: uiConfig.AddrAPI,
+	})
 
 	r := chi.NewRouter()
 	r.Use(handler.LoggerMiddleware(logger))
 
 	r.Get("/", homeHandler)
-	r.FileServer("/", box)
 	r.NotFound(homeHandler)
 
-	return r
+	r.Handle("/favicon.ico", http.FileServer(box))
+	r.Handle("/favicon.png", http.FileServer(box))
+	r.Handle("/img/*", http.FileServer(box))
+	r.Handle("/css/*", http.FileServer(box))
+	r.Handle("/js/*", http.FileServer(box))
+
+	level.Info(logger).Log("msg", "starting gitpods ui", "addr", uiConfig.Addr)
+	return http.ListenAndServe(uiConfig.Addr, r)
 }
 
 type HTMLConfig struct {
