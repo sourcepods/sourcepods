@@ -46,5 +46,8 @@ func NewLogger(json bool, loglevel string) log.Logger {
 		logger = level.NewFilter(logger, level.AllowInfo())
 	}
 
-	return log.With(logger, "ts", log.DefaultTimestampUTC)
+	return log.With(logger,
+		"ts", log.DefaultTimestampUTC,
+		"caller", log.DefaultCaller,
+	)
 }
