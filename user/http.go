@@ -12,6 +12,7 @@ func NewHandler(s Service) *chi.Mux {
 
 	r.Get("/", list(s))
 	r.Get("/:username", get(s))
+	r.Put("/:username", update(s))
 
 	return r
 }
@@ -36,7 +37,7 @@ func get(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username := chi.URLParam(r, "username")
 
-		user, err := s.FindByUsername(Username(username))
+		user, err := s.FindByUsername(username)
 		if err != nil {
 			return // TODO
 		}
@@ -45,6 +46,29 @@ func get(s Service) http.HandlerFunc {
 		if err != nil {
 			return // TODO
 		}
+		w.Write(data)
+	}
+}
+
+func update(s Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		username := chi.URLParam(r, "username")
+
+		var user *User
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			return // TODO
+		}
+
+		user, err := s.Update(username, user)
+		if err != nil {
+			return // TODO
+		}
+
+		data, err := json.Marshal(user)
+		if err != nil {
+			return // TODO
+		}
+
 		w.Write(data)
 	}
 }
