@@ -47,6 +47,10 @@ func main() {
 				Value: "debug",
 			},
 			cli.BoolFlag{
+				Name:  "log-json",
+				Usage: "Log json instead of key-value pairs",
+			},
+			cli.BoolFlag{
 				Name:  "setup",
 				Usage: "Setup all dependencies needed for local development",
 			},
@@ -72,12 +76,14 @@ func actionDev(c *cli.Context) error {
 	databaseDriver := c.String("database-driver")
 	databaseDSN := c.String("database-dsn")
 	loglevelFlag := c.String("log-level")
+	logJSONFlag := c.Bool("log-json")
 	watch := c.Bool("watch")
 
 	uiRunner := NewGitPodsRunner("ui", []string{
 		fmt.Sprintf("%s=%s", cmd.EnvAddr, uiAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvAddrAPI, "http://localhost:3000/api"), // TODO
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
+		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
 	})
 
 	apiRunner := NewGitPodsRunner("api", []string{
@@ -85,6 +91,7 @@ func actionDev(c *cli.Context) error {
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDriver, databaseDriver),
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSN),
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
+		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvSecret, "secret"),
 	})
 

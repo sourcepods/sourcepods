@@ -9,7 +9,6 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/gobuffalo/packr"
 	"github.com/pressly/chi"
-	"github.com/pressly/chi/middleware"
 	"github.com/urfave/cli"
 )
 
@@ -67,8 +66,7 @@ func ActionUI(c *cli.Context) error {
 	})
 
 	r := chi.NewRouter()
-	//r.Use(handler.LoggerMiddleware(logger))
-	r.Use(middleware.Logger) // TODO
+	r.Use(cmd.NewRequestLogger(logger))
 
 	r.Get("/", homeHandler)
 	r.NotFound(homeHandler)

@@ -18,7 +18,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/pressly/chi"
-	"github.com/pressly/chi/middleware"
 	"github.com/urfave/cli"
 )
 
@@ -128,10 +127,7 @@ func apiAction(c *cli.Context) error {
 	// Router
 	//
 	router := chi.NewRouter()
-
-	//httpLogger := log.With(logger, "component", "http")
-	//router.Use(handler.LoggerMiddleware(httpLogger))
-	router.Use(middleware.Logger) // TODO
+	router.Use(cmd.NewRequestLogger(logger))
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "hi")
