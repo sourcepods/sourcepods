@@ -3,6 +3,7 @@ package user
 import (
 	"sync"
 
+	"github.com/gitpods/gitpods"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -11,7 +12,7 @@ var NotFound = errors.New("user not found")
 
 type memory struct {
 	mu    sync.RWMutex
-	users []*User
+	users []*gitpods.User
 }
 
 func NewMemoryStore() *memory {
@@ -19,7 +20,7 @@ func NewMemoryStore() *memory {
 	pass2, _ := bcrypt.GenerateFromPassword([]byte("golang"), bcrypt.DefaultCost)
 
 	return &memory{
-		users: []*User{{
+		users: []*gitpods.User{{
 			ID:       "25558000-2565-48dc-84eb-18754da2b0a2",
 			Username: "metalmatze",
 			Name:     "Matthias Loibl",
@@ -35,14 +36,14 @@ func NewMemoryStore() *memory {
 	}
 }
 
-func (r *memory) FindAll() ([]*User, error) {
+func (r *memory) FindAll() ([]*gitpods.User, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	return r.users, nil
 }
 
-func (r *memory) Find(id string) (*User, error) {
+func (r *memory) Find(id string) (*gitpods.User, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	for _, user := range r.users {
@@ -54,7 +55,7 @@ func (r *memory) Find(id string) (*User, error) {
 	return nil, NotFound
 }
 
-func (r *memory) FindByUsername(username string) (*User, error) {
+func (r *memory) FindByUsername(username string) (*gitpods.User, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	for _, user := range r.users {
@@ -66,7 +67,7 @@ func (r *memory) FindByUsername(username string) (*User, error) {
 	return nil, NotFound
 }
 
-func (r *memory) Create(user *User) (*User, error) {
+func (r *memory) Create(user *gitpods.User) (*gitpods.User, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.users = append(r.users, user)
@@ -74,7 +75,7 @@ func (r *memory) Create(user *User) (*User, error) {
 	return user, nil
 }
 
-func (r *memory) Update(username string, updated *User) (*User, error) {
+func (r *memory) Update(username string, updated *gitpods.User) (*gitpods.User, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	for i, user := range r.users {

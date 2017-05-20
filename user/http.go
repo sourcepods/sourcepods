@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/gitpods/gitpods"
 	"github.com/pressly/chi"
 )
 
@@ -55,7 +56,7 @@ func update(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username := chi.URLParam(r, "username")
 
-		var user *User
+		var user *gitpods.User
 		if err := json.NewDecoder(io.LimitReader(r.Body, 5242880)).Decode(&user); err != nil {
 			return // TODO
 		}

@@ -1,18 +1,20 @@
 package repository
 
-import "github.com/gitpods/gitpods/user"
+import (
+	"github.com/gitpods/gitpods"
+)
 
 type (
 	Store interface {
-		ListByOwner(string) ([]*Repository, error)
+		ListByOwner(string) ([]*gitpods.Repository, error)
 	}
 
 	UserStore interface {
-		FindByUsername(string) (*user.User, error)
+		FindByUsername(string) (*gitpods.User, error)
 	}
 
 	Service interface {
-		ListByOwnerUsername(string) ([]*Repository, error)
+		ListByOwnerUsername(string) ([]*gitpods.Repository, error)
 	}
 
 	service struct {
@@ -28,7 +30,7 @@ func NewService(users UserStore, repositories Store) Service {
 	}
 }
 
-func (s *service) ListByOwnerUsername(username string) ([]*Repository, error) {
+func (s *service) ListByOwnerUsername(username string) ([]*gitpods.Repository, error) {
 	u, err := s.users.FindByUsername(username)
 	if err != nil {
 		return nil, err

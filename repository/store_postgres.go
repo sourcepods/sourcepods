@@ -2,6 +2,8 @@ package repository
 
 import (
 	"database/sql"
+
+	"github.com/gitpods/gitpods"
 )
 
 type postgres struct {
@@ -12,14 +14,14 @@ func NewPostgresStore(db *sql.DB) *postgres {
 	return &postgres{db: db}
 }
 
-func (s *postgres) ListByOwner(id string) ([]*Repository, error) {
+func (s *postgres) ListByOwner(id string) ([]*gitpods.Repository, error) {
 	rows, err := s.db.Query(`SELECT id, name, description, website, default_branch, private, bare FROM repositories WHERE owner_id = $1`, id)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var repositories []*Repository
+	var repositories []*gitpods.Repository
 	for rows.Next() {
 		var id string
 		var name string
@@ -30,7 +32,7 @@ func (s *postgres) ListByOwner(id string) ([]*Repository, error) {
 		var bare bool
 		rows.Scan(&id, &name, &description, &website, &defaultBranch, &private, &bare)
 
-		repositories = append(repositories, &Repository{
+		repositories = append(repositories, &gitpods.Repository{
 			ID:            id,
 			Name:          name,
 			Description:   description,

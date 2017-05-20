@@ -1,18 +1,18 @@
 package authorization
 
 import (
+	"github.com/gitpods/gitpods"
 	"github.com/gitpods/gitpods/session"
-	"github.com/gitpods/gitpods/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Service interface {
-	AuthenticateUser(email, password string) (*user.User, error)
+	AuthenticateUser(email, password string) (*gitpods.User, error)
 	CreateSession(string, string) (*session.Session, error)
 }
 
 type Store interface {
-	FindUserByEmail(string) (*user.User, error)
+	FindUserByEmail(string) (*gitpods.User, error)
 }
 
 func NewService(store Store, sessions session.Service) Service {
@@ -26,7 +26,7 @@ type service struct {
 
 // AuthenticateUser by querying the store for the hashed password
 // and comparing it against the one passed.
-func (s *service) AuthenticateUser(email, password string) (*user.User, error) {
+func (s *service) AuthenticateUser(email, password string) (*gitpods.User, error) {
 	user, err := s.store.FindUserByEmail(email)
 	if err != nil {
 		return nil, err

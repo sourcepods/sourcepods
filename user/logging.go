@@ -3,6 +3,7 @@ package user
 import (
 	"time"
 
+	"github.com/gitpods/gitpods"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 )
@@ -16,7 +17,7 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger, s}
 }
 
-func (s *loggingService) FindAll() ([]*User, error) {
+func (s *loggingService) FindAll() ([]*gitpods.User, error) {
 	start := time.Now()
 
 	users, err := s.Service.FindAll()
@@ -35,7 +36,7 @@ func (s *loggingService) FindAll() ([]*User, error) {
 	return users, err
 }
 
-func (s *loggingService) FindByUsername(username string) (*User, error) {
+func (s *loggingService) FindByUsername(username string) (*gitpods.User, error) {
 	start := time.Now()
 
 	user, err := s.Service.FindByUsername(username)
@@ -55,7 +56,7 @@ func (s *loggingService) FindByUsername(username string) (*User, error) {
 	return user, err
 }
 
-func (s *loggingService) Create(user *User) (*User, error) {
+func (s *loggingService) Create(user *gitpods.User) (*gitpods.User, error) {
 	start := time.Now()
 
 	user, err := s.Service.Create(user)
@@ -75,7 +76,7 @@ func (s *loggingService) Create(user *User) (*User, error) {
 	return user, err
 }
 
-func (s *loggingService) Update(username string, user *User) (*User, error) {
+func (s *loggingService) Update(username string, user *gitpods.User) (*gitpods.User, error) {
 	start := time.Now()
 
 	user, err := s.Service.Update(username, user)

@@ -3,8 +3,8 @@ package authorization
 import (
 	"time"
 
+	"github.com/gitpods/gitpods"
 	"github.com/gitpods/gitpods/session"
-	"github.com/gitpods/gitpods/user"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 )
@@ -18,7 +18,7 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger: logger, service: s}
 }
 
-func (s *loggingService) AuthenticateUser(email, password string) (*user.User, error) {
+func (s *loggingService) AuthenticateUser(email, password string) (*gitpods.User, error) {
 	start := time.Now()
 
 	user, err := s.service.AuthenticateUser(email, password)

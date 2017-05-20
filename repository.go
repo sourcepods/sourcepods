@@ -4,8 +4,8 @@ import "time"
 
 // Repository is a git repository with some meta information for gitpods.
 type Repository struct {
-	ID            string    `json:"id" valid:"required,uuidv4"`
-	Name          string    `json:"name" valid:"required"`
+	ID            string    `json:"id"`   //valid:"required,uuidv4"
+	Name          string    `json:"name"` //valid:"required"
 	Description   string    `json:"description"`
 	Website       string    `json:"website"`
 	DefaultBranch string    `json:"default_branch"`

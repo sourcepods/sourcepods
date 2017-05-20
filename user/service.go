@@ -1,19 +1,21 @@
 package user
 
+import "github.com/gitpods/gitpods"
+
 type Service interface {
-	FindAll() ([]*User, error)
-	FindByUsername(string) (*User, error)
-	Create(*User) (*User, error)
-	Update(string, *User) (*User, error)
+	FindAll() ([]*gitpods.User, error)
+	FindByUsername(string) (*gitpods.User, error)
+	Create(*gitpods.User) (*gitpods.User, error)
+	Update(string, *gitpods.User) (*gitpods.User, error)
 	Delete(string) error
 }
 
 type Store interface {
-	FindAll() ([]*User, error)
-	Find(string) (*User, error)
-	FindByUsername(string) (*User, error)
-	Create(*User) (*User, error)
-	Update(string, *User) (*User, error)
+	FindAll() ([]*gitpods.User, error)
+	Find(string) (*gitpods.User, error)
+	FindByUsername(string) (*gitpods.User, error)
+	Create(*gitpods.User) (*gitpods.User, error)
+	Update(string, *gitpods.User) (*gitpods.User, error)
 	Delete(string) error
 }
 
@@ -25,19 +27,19 @@ func NewService(users Store) Service {
 	return &service{users: users}
 }
 
-func (s *service) FindAll() ([]*User, error) {
+func (s *service) FindAll() ([]*gitpods.User, error) {
 	return s.users.FindAll()
 }
 
-func (s *service) FindByUsername(username string) (*User, error) {
+func (s *service) FindByUsername(username string) (*gitpods.User, error) {
 	return s.users.FindByUsername(username)
 }
 
-func (s *service) Create(user *User) (*User, error) {
+func (s *service) Create(user *gitpods.User) (*gitpods.User, error) {
 	return user, nil
 }
 
-func (s *service) Update(username string, user *User) (*User, error) {
+func (s *service) Update(username string, user *gitpods.User) (*gitpods.User, error) {
 	return user, nil
 }
 
