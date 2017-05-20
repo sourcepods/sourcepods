@@ -11,6 +11,7 @@ import (
 
 const megabyte = 1024 * 1024 * 1024
 
+// NewHandler returns a RESTful http router interacting with the Service.
 func NewHandler(s Service) *chi.Mux {
 	r := chi.NewRouter()
 

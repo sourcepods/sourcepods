@@ -7,15 +7,18 @@ import (
 	"github.com/gitpods/gitpods"
 )
 
-type postgres struct {
+// Postgres implementation of the Store.
+type Postgres struct {
 	db *sql.DB
 }
 
-func NewPostgresStore(db *sql.DB) *postgres {
-	return &postgres{db: db}
+// NewPostgresStore returns a Postgres implementation of the Store.
+func NewPostgresStore(db *sql.DB) *Postgres {
+	return &Postgres{db: db}
 }
 
-func (s *postgres) FindAll() ([]*gitpods.User, error) {
+// FindAll users.
+func (s *Postgres) FindAll() ([]*gitpods.User, error) {
 	rows, err := s.db.Query(`SELECT id, email, username, name FROM users ORDER BY name ASC`)
 	if err != nil {
 		return nil, err
@@ -41,11 +44,13 @@ func (s *postgres) FindAll() ([]*gitpods.User, error) {
 	return users, nil
 }
 
-func (s *postgres) Find(id string) (*gitpods.User, error) {
+// Find a user by its ID.
+func (s *Postgres) Find(id string) (*gitpods.User, error) {
 	panic("implement me")
 }
 
-func (s *postgres) FindByUsername(username string) (*gitpods.User, error) {
+// FindByUsername finds a user by its username.
+func (s *Postgres) FindByUsername(username string) (*gitpods.User, error) {
 	row := s.db.QueryRow(`SELECT id, email, username, name, password FROM users WHERE username = $1 LIMIT 1`, username)
 
 	var id string
@@ -66,7 +71,8 @@ func (s *postgres) FindByUsername(username string) (*gitpods.User, error) {
 	}, nil
 }
 
-func (s *postgres) FindUserByEmail(email string) (*gitpods.User, error) {
+// FindUserByEmail by its email.
+func (s *Postgres) FindUserByEmail(email string) (*gitpods.User, error) {
 	row := s.db.QueryRow(`SELECT id, username, name, password FROM users WHERE email = $1 LIMIT 1`, email)
 
 	var id string
@@ -86,11 +92,14 @@ func (s *postgres) FindUserByEmail(email string) (*gitpods.User, error) {
 	}, nil
 }
 
-func (s *postgres) Create(*gitpods.User) (*gitpods.User, error) {
+// Create a user in postgres and return it with the ID set in the store.
+func (s *Postgres) Create(*gitpods.User) (*gitpods.User, error) {
 	panic("implement me")
 }
 
-func (s *postgres) Update(username string, user *gitpods.User) (*gitpods.User, error) {
+// Update a user by its username.
+// TODO: Update users by their id?
+func (s *Postgres) Update(username string, user *gitpods.User) (*gitpods.User, error) {
 	stmt, err := s.db.Prepare(`UPDATE users SET username=$1, email=$2, name=$3 WHERE username=$1`)
 	if err != nil {
 		return nil, err
@@ -113,6 +122,7 @@ func (s *postgres) Update(username string, user *gitpods.User) (*gitpods.User, e
 	return s.FindByUsername(username)
 }
 
-func (s *postgres) Delete(string) error {
+// Delete a user by its id.
+func (s *Postgres) Delete(id string) error {
 	panic("implement me")
 }

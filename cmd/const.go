@@ -13,7 +13,7 @@ const (
 	FlagAddrAPI        = "addr-api"
 	FlagDatabaseDriver = "database-driver"
 	FlagDatabaseDSN    = "database-dsn"
-	FlagLogJson        = "log-json"
+	FlagLogJSON        = "log-json"
 	FlagLogLevel       = "log-level"
 	FlagSecret         = "secret"
 
@@ -21,8 +21,8 @@ const (
 	EnvAddrAPI        = "GITPODS_ADDR_API"
 	EnvDatabaseDriver = "GITPODS_DATABASE_DRIVER"
 	EnvDatabaseDSN    = "GITPODS_DATABASE_DSN"
-	EnvLogJson        = "GITPODS_LOG_LEVEL"
-	EnvLogLevel       = "GITPODS_LOG_JSON"
+	EnvLogJSON        = "GITPODS_LOG_JSON"
+	EnvLogLevel       = "GITPODS_LOG_LEVEL"
 	EnvSecret         = "GITPODS_SECRET"
 )
 

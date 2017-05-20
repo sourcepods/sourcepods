@@ -9,6 +9,7 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/gobuffalo/packr"
 	"github.com/pressly/chi"
+	"github.com/pressly/chi/middleware"
 	"github.com/urfave/cli"
 )
 
@@ -38,8 +39,8 @@ var (
 			Destination: &uiConfig.AddrAPI,
 		},
 		cli.BoolFlag{
-			Name:        cmd.FlagLogJson,
-			EnvVar:      cmd.EnvLogJson,
+			Name:        cmd.FlagLogJSON,
+			EnvVar:      cmd.EnvLogJSON,
 			Usage:       "The logger will log json lines",
 			Destination: &uiConfig.LogJson,
 		},
@@ -67,6 +68,7 @@ func ActionUI(c *cli.Context) error {
 
 	r := chi.NewRouter()
 	//r.Use(handler.LoggerMiddleware(logger))
+	r.Use(middleware.Logger) // TODO
 
 	r.Get("/", homeHandler)
 	r.NotFound(homeHandler)

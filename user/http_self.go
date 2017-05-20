@@ -8,6 +8,8 @@ import (
 	"github.com/pressly/chi"
 )
 
+// NewUserHandler returns a RESTful http router interacting with the Service
+// and the authenticated user set as the username.
 func NewUserHandler(s Service) *chi.Mux {
 	r := chi.NewRouter()
 

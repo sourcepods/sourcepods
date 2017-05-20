@@ -6,15 +6,18 @@ import (
 	"github.com/gitpods/gitpods"
 )
 
-type postgres struct {
+// Postgres implementation of the Store.
+type Postgres struct {
 	db *sql.DB
 }
 
-func NewPostgresStore(db *sql.DB) *postgres {
-	return &postgres{db: db}
+// NewPostgresStore returns a Postgres implementation of the Store.
+func NewPostgresStore(db *sql.DB) *Postgres {
+	return &Postgres{db: db}
 }
 
-func (s *postgres) ListByOwner(id string) ([]*gitpods.Repository, error) {
+// ListByOwner retrieves a list of repositories based on their ownership.
+func (s *Postgres) ListByOwner(id string) ([]*gitpods.Repository, error) {
 	rows, err := s.db.Query(`SELECT id, name, description, website, default_branch, private, bare FROM repositories WHERE owner_id = $1`, id)
 	if err != nil {
 		return nil, err

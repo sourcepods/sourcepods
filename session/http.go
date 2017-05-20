@@ -7,11 +7,13 @@ import (
 	"time"
 )
 
+type ctxKey int
+
 const (
-	// CookieName is the name used to store the cookie on the client
-	CookieName         = "_gitpods_session"
-	CookieUserID       = "user_id"
-	CookieUserUsername = "user_username"
+	// CookieName is the name to store the cookie in the browser with.
+	CookieName                = "_gitpods_session"
+	cookieUserID       ctxKey = iota
+	cookieUserUsername ctxKey = iota
 )
 
 // Authorized users will have a user information in the next handlers.
@@ -45,8 +47,8 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 				return // TODO
 			}
 
-			ctx := context.WithValue(r.Context(), CookieUserID, session.User.ID)
-			ctx = context.WithValue(ctx, CookieUserUsername, session.User.Username)
+			ctx := context.WithValue(r.Context(), cookieUserID, session.User.ID)
+			ctx = context.WithValue(ctx, cookieUserUsername, session.User.Username)
 			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
@@ -54,10 +56,11 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 	}
 }
 
-func GetSessionUser(r *http.Request) *SessionUser {
+// GetSessionUser from the http.Request
+func GetSessionUser(r *http.Request) *User {
 	ctx := r.Context()
-	return &SessionUser{
-		ID:       ctx.Value(CookieUserID).(string),
-		Username: ctx.Value(CookieUserUsername).(string),
+	return &User{
+		ID:       ctx.Value(cookieUserID).(string),
+		Username: ctx.Value(cookieUserUsername).(string),
 	}
 }

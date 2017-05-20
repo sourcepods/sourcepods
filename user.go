@@ -1,5 +1,6 @@
 package gitpods
 
+// User of GitPods.
 type User struct {
 	ID       string `json:"id"`       // valid:"required,uuidv4"
 	Email    string `json:"email"`    // valid:"required,email"

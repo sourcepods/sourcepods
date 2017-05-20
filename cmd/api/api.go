@@ -18,6 +18,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/pressly/chi"
+	"github.com/pressly/chi/middleware"
 	"github.com/urfave/cli"
 )
 
@@ -25,7 +26,7 @@ type apiConf struct {
 	Addr           string
 	DatabaseDriver string
 	DatabaseDSN    string
-	LogJson        bool
+	LogJSON        bool
 	LogLevel       string
 	Secret         string
 }
@@ -62,10 +63,10 @@ var (
 			Destination: &apiConfig.LogLevel,
 		},
 		cli.BoolFlag{
-			Name:        cmd.FlagLogJson,
-			EnvVar:      cmd.EnvLogJson,
+			Name:        cmd.FlagLogJSON,
+			EnvVar:      cmd.EnvLogJSON,
 			Usage:       "The logger will log json lines",
-			Destination: &apiConfig.LogJson,
+			Destination: &apiConfig.LogJSON,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagSecret,
@@ -81,7 +82,7 @@ func apiAction(c *cli.Context) error {
 		return errors.New("the secret for the api can't be empty")
 	}
 
-	logger := cmd.NewLogger(apiConfig.LogJson, apiConfig.LogLevel)
+	logger := cmd.NewLogger(apiConfig.LogJSON, apiConfig.LogLevel)
 	logger = log.WithPrefix(logger, "app", "api")
 
 	//
@@ -130,6 +131,8 @@ func apiAction(c *cli.Context) error {
 
 	//httpLogger := log.With(logger, "component", "http")
 	//router.Use(handler.LoggerMiddleware(httpLogger))
+	router.Use(middleware.Logger) // TODO
+
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "hi")
 	})

@@ -9,6 +9,7 @@ import (
 	"github.com/pressly/chi"
 )
 
+// NewUsersHandler returns a RESTful http router interacting with the Service.
 func NewUsersHandler(s Service) *chi.Mux {
 	r := chi.NewRouter()
 

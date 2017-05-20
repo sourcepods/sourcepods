@@ -5,16 +5,21 @@ import (
 )
 
 const (
-	DefaultSessionDuration = 24 * time.Hour
+	defaultExpiry = 24 * time.Hour
 )
 
-type SessionUser struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-}
+type (
+	// User only has an ID and a username
+	// which is enough to find what you need from stores.
+	User struct {
+		ID       string `json:"id"`
+		Username string `json:"username"`
+	}
 
-type Session struct {
-	ID     string      `json:"id"`
-	Expiry time.Time   `json:"expiry"`
-	User   SessionUser `json:"user"`
-}
+	// Session has an ID, expiry and a User.
+	Session struct {
+		ID     string    `json:"id"`
+		Expiry time.Time `json:"expiry"`
+		User   User      `json:"user"`
+	}
+)

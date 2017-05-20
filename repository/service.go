@@ -5,14 +5,17 @@ import (
 )
 
 type (
+	// Store or retrieve repositories from some database.
 	Store interface {
 		ListByOwner(string) ([]*gitpods.Repository, error)
 	}
 
+	// UserStore is used to find a user by its username.
 	UserStore interface {
 		FindByUsername(string) (*gitpods.User, error)
 	}
 
+	// Service to interact with repositories.
 	Service interface {
 		ListByOwnerUsername(string) ([]*gitpods.Repository, error)
 	}
@@ -23,6 +26,7 @@ type (
 	}
 )
 
+// NewService to interact with repositories.
 func NewService(users UserStore, repositories Store) Service {
 	return &service{
 		users:        users,
@@ -43,36 +47,3 @@ func (s *service) ListByOwnerUsername(username string) ([]*gitpods.Repository, e
 
 	return repositories, err
 }
-
-//type UsersRepositoriesStore interface {
-//	List(username string) ([]*gitpods.Store, error)
-//}
-//
-//type UsersRepositoriesAPI struct {
-//	logger log.Logger
-//	store  UsersRepositoriesStore
-//}
-//
-//func (a UsersRepositoriesAPI) Routes() *chi.Mux {
-//	r := chi.NewRouter()
-//	r.Get("/", a.List)
-//
-//	return r
-//}
-//
-//func (a UsersRepositoriesAPI) List(w http.ResponseWriter, r *http.Request) {
-//	username := chi.URLParam(r, "username")
-//
-//	repositories, err := a.store.List(username)
-//	if err != nil {
-//		msg := "failed to list user's repositories"
-//		level.Warn(a.logger).Log(
-//			"msg", msg,
-//			"err", err,
-//		)
-//		jsonResponse(w, msg, http.StatusInternalServerError)
-//		return
-//	}
-//
-//	jsonResponse(w, repositories, http.StatusOK)
-//}

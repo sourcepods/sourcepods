@@ -2,15 +2,18 @@ package session
 
 import "database/sql"
 
+// NewPostgresStore returns a Postgres implementation of the Store.
 func NewPostgresStore(db *sql.DB) Store {
-	return &postgres{db: db}
+	return &Postgres{db: db}
 }
 
-type postgres struct {
+// Postgres implementation of the Store.
+type Postgres struct {
 	db *sql.DB
 }
 
-func (s *postgres) SaveSession(session *Session) error {
+// SaveSession in the store.
+func (s *Postgres) SaveSession(session *Session) error {
 	return s.db.QueryRow(
 		`INSERT INTO sessions(expires, owner_id) VALUES($1, $2) RETURNING id`,
 		session.Expiry, session.User.ID,
@@ -18,7 +21,7 @@ func (s *postgres) SaveSession(session *Session) error {
 }
 
 // FindSession that aren't expired
-func (s *postgres) FindSession(id string) (*Session, error) {
+func (s *Postgres) FindSession(id string) (*Session, error) {
 	query := `
 SELECT
 	sessions.id,
@@ -32,7 +35,7 @@ WHERE sessions.id = $1`
 	row := s.db.QueryRow(query, id)
 
 	session := Session{
-		User: SessionUser{},
+		User: User{},
 	}
 
 	err := row.Scan(&session.ID, &session.Expiry, &session.User.ID, &session.User.Username)
@@ -43,7 +46,8 @@ WHERE sessions.id = $1`
 	return &session, nil
 }
 
-func (s *postgres) ClearSessions() (int64, error) {
+// ClearSessions that are expired.
+func (s *Postgres) ClearSessions() (int64, error) {
 	res, err := s.db.Exec(`DELETE FROM sessions WHERE expires < now()`)
 	if err != nil {
 		return 0, nil
