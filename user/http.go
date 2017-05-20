@@ -42,11 +42,13 @@ func get(s Service) http.HandlerFunc {
 
 		user, err := s.FindByUsername(username)
 		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
 			return // TODO
 		}
 
 		data, err := json.Marshal(user)
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			return // TODO
 		}
 		w.Write(data)
