@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gitpods/gitpods/cmd"
-	"github.com/gitpods/gitpods/handler"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/gobuffalo/packr"
@@ -67,7 +66,7 @@ func ActionUI(c *cli.Context) error {
 	})
 
 	r := chi.NewRouter()
-	r.Use(handler.LoggerMiddleware(logger))
+	//r.Use(handler.LoggerMiddleware(logger))
 
 	r.Get("/", homeHandler)
 	r.NotFound(homeHandler)

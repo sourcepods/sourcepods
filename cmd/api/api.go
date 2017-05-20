@@ -6,20 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/gitpods/gitpods/authorization"
 	"github.com/gitpods/gitpods/cmd"
-	"github.com/gitpods/gitpods/handler"
 	"github.com/gitpods/gitpods/repository"
+	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/pressly/chi"
-	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
 )
 
@@ -90,75 +88,97 @@ func apiAction(c *cli.Context) error {
 	// Stores
 	//
 	var (
-		users        user.Store
 		repositories repository.Store
+		sessions     session.Store
+		users        user.Store
 	)
 
 	switch apiConfig.DatabaseDriver {
-	case "memory":
-		users = user.NewMemoryStore()
 	default:
 		db, err := sql.Open("postgres", apiConfig.DatabaseDSN)
 		if err != nil {
 			return err
 		}
+		defer db.Close()
 
 		users = user.NewPostgresStore(db)
+		sessions = session.NewPostgresStore(db)
 		repositories = repository.NewPostgresStore(db)
 	}
+
 	//
 	// Services
 	//
+	var ss session.Service
+	ss = session.NewService(sessions)
+
+	var as authorization.Service
+	as = authorization.NewService(users.(authorization.Store), ss)
+	as = authorization.NewLoggingService(log.WithPrefix(logger, "service", "authorization"), as)
+
 	var us user.Service
 	us = user.NewService(users)
 	us = user.NewLoggingService(log.WithPrefix(logger, "service", "user"), us)
-	//
+
 	var rs repository.Service
 	rs = repository.NewService(users, repositories)
-	//
-	//
 
-	httpLogger := log.With(logger, "component", "http")
-
+	//
+	// Router
+	//
 	router := chi.NewRouter()
-	router.Use(handler.LoggerMiddleware(httpLogger))
+
+	//httpLogger := log.With(logger, "component", "http")
+	//router.Use(handler.LoggerMiddleware(httpLogger))
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "hi")
 	})
 
-	router.Mount("/users", user.NewHandler(us))
-	router.Mount("/users/:username/repositories", repository.NewHandler(rs))
+	router.Mount("/authorize", authorization.NewHandler(as))
 
-	http.ListenAndServe(":3020", router)
+	router.Group(func(router chi.Router) {
+		router.Use(session.Authorized(ss))
 
-	store, dbCloser, err := NewRouterStore(apiConfig.DatabaseDriver, apiConfig.DatabaseDSN, []byte(apiConfig.Secret))
-	if err != nil {
-		level.Error(logger).Log(
-			"msg", "failed to initialize store",
-			"err", err,
-		)
-		os.Exit(1)
-	}
+		router.Mount("/user", user.NewUserHandler(us))
+		router.Mount("/users", user.NewUsersHandler(us))
+		router.Mount("/users/:username/repositories", repository.NewHandler(rs))
+	})
 
-	r := chi.NewRouter()
-	r.Use(handler.LoggerMiddleware(logger))
-
-	r.Mount("/", handler.NewRouter(logger, prometheusMetrics(), store))
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"error":"Not Found"}`))
+	})
 
 	server := &http.Server{
 		Addr:    apiConfig.Addr,
-		Handler: r,
+		Handler: router,
 	}
 
 	var gr group.Group
 	{
 		gr.Add(func() error {
-			level.Info(logger).Log("msg", "starting gitpods api", "addr", apiConfig.Addr)
+			dur := time.Minute
+			level.Info(logger).Log("msg", "starting session cleaner", "interval", dur)
+			for {
+				if _, err := ss.ClearSessions(); err != nil {
+					return err
+				}
+				time.Sleep(dur)
+			}
+		}, func(err error) {
+		})
+	}
+	{
+		gr.Add(func() error {
+			level.Info(logger).Log(
+				"msg", "starting gitpods api",
+				"addr", apiConfig.Addr,
+			)
 			return server.ListenAndServe()
 		}, func(err error) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			log.With(logger, "grouperr", err)
+			log.With(logger, "err", err)
 
 			if err := server.Shutdown(ctx); err != nil {
 				level.Error(logger).Log("msg", "failed to shutdown http server gracefully", "err", err)
@@ -167,24 +187,6 @@ func apiAction(c *cli.Context) error {
 			level.Info(logger).Log("msg", "http server shutdown gracefully")
 		})
 	}
-	{
-		gr.Add(func() error {
-			select {}
-		}, func(err error) {
-			dbCloser()
-			level.Info(logger).Log("msg", "database shutdown gracefully")
-		})
-	}
 
 	return gr.Run()
-}
-
-func prometheusMetrics() handler.RouterMetrics {
-	return handler.RouterMetrics{
-		LoginAttempts: prometheus.NewCounterFrom(prom.CounterOpts{
-			Namespace: "gitpods",
-			Name:      "login_attempts_total",
-			Help:      "Number of attempts to login and their status",
-		}, []string{"status"}),
-	}
 }

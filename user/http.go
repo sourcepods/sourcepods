@@ -2,12 +2,13 @@ package user
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/pressly/chi"
 )
 
-func NewHandler(s Service) *chi.Mux {
+func NewUsersHandler(s Service) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Get("/", list(s))
@@ -55,7 +56,7 @@ func update(s Service) http.HandlerFunc {
 		username := chi.URLParam(r, "username")
 
 		var user *User
-		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		if err := json.NewDecoder(io.LimitReader(r.Body, 5242880)).Decode(&user); err != nil {
 			return // TODO
 		}
 

@@ -13,8 +13,8 @@ func NewPostgresStore(db *sql.DB) *postgres {
 	return &postgres{db: db}
 }
 
-func (r *postgres) FindAll() ([]*User, error) {
-	rows, err := r.db.Query(`SELECT id, email, username, name FROM users ORDER BY name DESC`)
+func (s *postgres) FindAll() ([]*User, error) {
+	rows, err := s.db.Query(`SELECT id, email, username, name FROM users ORDER BY name ASC`)
 	if err != nil {
 		return nil, err
 	}
@@ -39,12 +39,12 @@ func (r *postgres) FindAll() ([]*User, error) {
 	return users, nil
 }
 
-func (r *postgres) Find(id string) (*User, error) {
+func (s *postgres) Find(id string) (*User, error) {
 	panic("implement me")
 }
 
-func (r *postgres) FindByUsername(username string) (*User, error) {
-	row := r.db.QueryRow(`SELECT id, email, username, name, password FROM users WHERE username = $1 LIMIT 1`, username)
+func (s *postgres) FindByUsername(username string) (*User, error) {
+	row := s.db.QueryRow(`SELECT id, email, username, name, password FROM users WHERE username = $1 LIMIT 1`, username)
 
 	var id string
 	var email string
@@ -64,12 +64,32 @@ func (r *postgres) FindByUsername(username string) (*User, error) {
 	}, nil
 }
 
-func (r *postgres) Create(*User) (*User, error) {
+func (s *postgres) FindUserByEmail(email string) (*User, error) {
+	row := s.db.QueryRow(`SELECT id, username, name, password FROM users WHERE email = $1 LIMIT 1`, email)
+
+	var id string
+	var username string
+	var name string
+	var password string
+	if err := row.Scan(&id, &username, &name, &password); err != nil {
+		return nil, err
+	}
+
+	return &User{
+		ID:       id,
+		Email:    email,
+		Username: username,
+		Name:     name,
+		Password: password,
+	}, nil
+}
+
+func (s *postgres) Create(*User) (*User, error) {
 	panic("implement me")
 }
 
-func (r *postgres) Update(username string, user *User) (*User, error) {
-	stmt, err := r.db.Prepare(`UPDATE users SET username=$1, email=$2, name=$3 WHERE username=$1`)
+func (s *postgres) Update(username string, user *User) (*User, error) {
+	stmt, err := s.db.Prepare(`UPDATE users SET username=$1, email=$2, name=$3 WHERE username=$1`)
 	if err != nil {
 		return nil, err
 	}
@@ -88,9 +108,9 @@ func (r *postgres) Update(username string, user *User) (*User, error) {
 		return nil, errors.New("no rows updated")
 	}
 
-	return r.FindByUsername(username)
+	return s.FindByUsername(username)
 }
 
-func (r *postgres) Delete(string) error {
+func (s *postgres) Delete(string) error {
 	panic("implement me")
 }
