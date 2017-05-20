@@ -143,6 +143,12 @@
 			"revisionTime": "2017-05-15T13:38:45Z"
 		},
 		{
+			"checksumSHA1": "mfxk+IDzPluS1OIVzeJpyAZBM4k=",
+			"path": "github.com/pressly/chi/middleware",
+			"revision": "5f645ae32b572998bed8ceaf80318569ef3b69fc",
+			"revisionTime": "2017-05-15T13:38:45Z"
+		},
+		{
 			"checksumSHA1": "V7BV/OAGXK4PZh8EyKFRQxMyNj8=",
 			"path": "github.com/prometheus/client_golang/prometheus",
 			"revision": "a5060f1eaab721946b185b2de468ff83ea5b89cb",
