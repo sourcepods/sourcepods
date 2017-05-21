@@ -20,7 +20,6 @@
 						<router-link class="uk-button uk-button-default" :to="`/users/${user.username}/edit`">
 							edit
 						</router-link>
-						<button class="uk-button uk-button-danger" @click="deleteUser(user)">delete</button>
 					</div>
 				</div>
 			</li>
@@ -53,13 +52,6 @@
 					console.log(err);
 				})
 		},
-		methods: {
-			deleteUser(user) {
-				if (confirm(`Do you really want to delete ${user.username}?`)) {
-					this.$store.dispatch('deleteUser', user.username);
-				}
-			}
-		}
 	}
 </script>
 
