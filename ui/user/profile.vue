@@ -3,7 +3,7 @@
 
 		<div class="uk-grid-small" uk-grid v-if="user!==null">
 			<div class="uk-flex-top uk-padding-small uk-width-2-5@m uk-width-1-4@l">
-				<gravatar :email="user.email" default-img="mm" size="512" class="uk-border-rounded"></gravatar>
+				<gravatar :email="user.email" default-img="mm" :size="512" class="uk-border-rounded"></gravatar>
 				<h3 class="user-name">{{user.name}}</h3>
 				<h4 class="uk-text-muted user-username">@{{user.username}}</h4>
 
