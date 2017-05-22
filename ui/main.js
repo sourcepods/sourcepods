@@ -7,14 +7,18 @@ import Login from "./login.vue";
 import UserList from "./user/list.vue";
 import UserProfile from "./user/profile.vue";
 import UserEdit from "./user/edit.vue";
+import Pulls from "./pulls/pulls.vue";
+import Issues from "./issues/issues.vue";
 
 Vue.use(VueRouter);
 
 const router = new VueRouter({
 	mode: 'history',
 	routes: [
-		{path: "/login", component: Login},
 		{path: "/", component: UserList},
+		{path: "/login", component: Login},
+		{path: '/pulls', component: Pulls},
+		{path: '/issues', component: Issues},
 		{path: "/users/:username", component: UserProfile},
 		{path: "/users/:username/edit", component: UserEdit},
 	],
