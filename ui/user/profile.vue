@@ -37,7 +37,8 @@
 						<li v-for="repository in repositories">
 							<div class="uk-flex">
 								<div class="uk-flex-auto">
-									<h4 class="repository-name"><a :href="`#${repository.name}`">{{repository.name}}</a>
+									<h4 class="repository-name">
+										<a :href="`/${user.username}/${repository.name}`">{{repository.name}}</a>
 									</h4>
 									<p class="repository-description">{{repository.description}}</p>
 								</div>
