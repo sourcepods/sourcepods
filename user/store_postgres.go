@@ -20,7 +20,15 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 
 // FindAll users.
 func (s *Postgres) FindAll() ([]*gitpods.User, error) {
-	rows, err := s.db.Query(`SELECT id, email, username, name, created_at, updated_at FROM users ORDER BY name ASC`)
+	rows, err := s.db.Query(`SELECT
+	id,
+	email,
+	username,
+	name,
+	created_at,
+	updated_at
+FROM users
+ORDER BY name ASC`)
 	if err != nil {
 		return nil, err
 	}
@@ -92,13 +100,24 @@ LIMIT 1`
 
 // FindUserByEmail by its email.
 func (s *Postgres) FindUserByEmail(email string) (*gitpods.User, error) {
-	row := s.db.QueryRow(`SELECT id, username, name, password FROM users WHERE email = $1 LIMIT 1`, email)
+	row := s.db.QueryRow(`SELECT
+	id,
+	username,
+	name,
+	password,
+	created_at,
+	updated_at,
+FROM users
+WHERE email = $1
+LIMIT 1`, email)
 
 	var id string
 	var username string
 	var name string
 	var password string
-	if err := row.Scan(&id, &username, &name, &password); err != nil {
+	var created time.Time
+	var updated time.Time
+	if err := row.Scan(&id, &username, &name, &password, &created, &updated); err != nil {
 		return nil, err
 	}
 
@@ -108,6 +127,8 @@ func (s *Postgres) FindUserByEmail(email string) (*gitpods.User, error) {
 		Username: username,
 		Name:     name,
 		Password: password,
+		Created:  created,
+		Updated:  updated,
 	}, nil
 }
 
@@ -119,7 +140,7 @@ func (s *Postgres) Create(*gitpods.User) (*gitpods.User, error) {
 // Update a user by its username.
 // TODO: Update users by their id?
 func (s *Postgres) Update(username string, user *gitpods.User) (*gitpods.User, error) {
-	stmt, err := s.db.Prepare(`UPDATE users SET username=$1, email=$2, name=$3 WHERE username=$1`)
+	stmt, err := s.db.Prepare(`UPDATE users SET username = $1, email = $2, name = $3 WHERE username = $1`)
 	if err != nil {
 		return nil, err
 	}
