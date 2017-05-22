@@ -3,6 +3,7 @@ package user
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/gitpods/gitpods"
 )
@@ -19,7 +20,7 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 
 // FindAll users.
 func (s *Postgres) FindAll() ([]*gitpods.User, error) {
-	rows, err := s.db.Query(`SELECT id, email, username, name FROM users ORDER BY name ASC`)
+	rows, err := s.db.Query(`SELECT id, email, username, name, created_at, updated_at FROM users ORDER BY name ASC`)
 	if err != nil {
 		return nil, err
 	}
@@ -31,13 +32,17 @@ func (s *Postgres) FindAll() ([]*gitpods.User, error) {
 		var email string
 		var username string
 		var name string
-		rows.Scan(&id, &email, &username, &name)
+		var created time.Time
+		var updated time.Time
+		rows.Scan(&id, &email, &username, &name, &created, &updated)
 
 		users = append(users, &gitpods.User{
 			ID:       id,
 			Email:    email,
 			Username: username,
 			Name:     name,
+			Created:  created,
+			Updated:  updated,
 		})
 	}
 
@@ -51,14 +56,26 @@ func (s *Postgres) Find(id string) (*gitpods.User, error) {
 
 // FindByUsername finds a user by its username.
 func (s *Postgres) FindByUsername(username string) (*gitpods.User, error) {
-	row := s.db.QueryRow(`SELECT id, email, username, name, password FROM users WHERE username = $1 LIMIT 1`, username)
+	query := `SELECT
+	id,
+	email,
+	name,
+	password,
+	created_at,
+	updated_at
+FROM users
+WHERE username = $1
+LIMIT 1`
+
+	row := s.db.QueryRow(query, username)
 
 	var id string
 	var email string
-	var uusername string
 	var name string
 	var password string
-	if err := row.Scan(&id, &email, &uusername, &name, &password); err != nil {
+	var created time.Time
+	var updated time.Time
+	if err := row.Scan(&id, &email, &name, &password, &created, &updated); err != nil {
 		return nil, err
 	}
 
@@ -68,6 +85,8 @@ func (s *Postgres) FindByUsername(username string) (*gitpods.User, error) {
 		Username: username,
 		Name:     name,
 		Password: password,
+		Created:  created,
+		Updated:  updated,
 	}, nil
 }
 
