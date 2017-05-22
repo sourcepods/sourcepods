@@ -1,4 +1,4 @@
-package gitpods
+package user
 
 import "time"
 
@@ -11,6 +11,4 @@ type User struct {
 	Password string    `json:"-"`
 	Created  time.Time `json:"created_at"`
 	Updated  time.Time `json:"updated_at"`
-
-	Repositories []*Repository `json:"repositories,omitempty"`
 }

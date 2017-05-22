@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"time"
-
-	"github.com/gitpods/gitpods"
 )
 
 // Postgres implementation of the Store.
@@ -19,7 +17,7 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 }
 
 // FindAll users.
-func (s *Postgres) FindAll() ([]*gitpods.User, error) {
+func (s *Postgres) FindAll() ([]*User, error) {
 	rows, err := s.db.Query(`SELECT
 	id,
 	email,
@@ -34,7 +32,7 @@ ORDER BY name ASC`)
 	}
 	defer rows.Close()
 
-	var users []*gitpods.User
+	var users []*User
 	for rows.Next() {
 		var id string
 		var email string
@@ -44,7 +42,7 @@ ORDER BY name ASC`)
 		var updated time.Time
 		rows.Scan(&id, &email, &username, &name, &created, &updated)
 
-		users = append(users, &gitpods.User{
+		users = append(users, &User{
 			ID:       id,
 			Email:    email,
 			Username: username,
@@ -58,12 +56,12 @@ ORDER BY name ASC`)
 }
 
 // Find a user by its ID.
-func (s *Postgres) Find(id string) (*gitpods.User, error) {
+func (s *Postgres) Find(id string) (*User, error) {
 	panic("implement me")
 }
 
 // FindByUsername finds a user by its username.
-func (s *Postgres) FindByUsername(username string) (*gitpods.User, error) {
+func (s *Postgres) FindByUsername(username string) (*User, error) {
 	query := `SELECT
 	id,
 	email,
@@ -87,7 +85,7 @@ LIMIT 1`
 		return nil, err
 	}
 
-	return &gitpods.User{
+	return &User{
 		ID:       id,
 		Email:    email,
 		Username: username,
@@ -99,7 +97,7 @@ LIMIT 1`
 }
 
 // FindUserByEmail by its email.
-func (s *Postgres) FindUserByEmail(email string) (*gitpods.User, error) {
+func (s *Postgres) FindUserByEmail(email string) (*User, error) {
 	row := s.db.QueryRow(`SELECT
 	id,
 	username,
@@ -121,7 +119,7 @@ LIMIT 1`, email)
 		return nil, err
 	}
 
-	return &gitpods.User{
+	return &User{
 		ID:       id,
 		Email:    email,
 		Username: username,
@@ -133,13 +131,13 @@ LIMIT 1`, email)
 }
 
 // Create a user in postgres and return it with the ID set in the store.
-func (s *Postgres) Create(*gitpods.User) (*gitpods.User, error) {
+func (s *Postgres) Create(*User) (*User, error) {
 	panic("implement me")
 }
 
 // Update a user by its username.
 // TODO: Update users by their id?
-func (s *Postgres) Update(username string, user *gitpods.User) (*gitpods.User, error) {
+func (s *Postgres) Update(username string, user *User) (*User, error) {
 	stmt, err := s.db.Prepare(`UPDATE users SET username = $1, email = $2, name = $3 WHERE username = $1`)
 	if err != nil {
 		return nil, err

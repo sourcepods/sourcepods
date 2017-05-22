@@ -2,8 +2,7 @@ package repository
 
 import (
 	"database/sql"
-
-	"github.com/gitpods/gitpods"
+	"time"
 )
 
 // Postgres implementation of the Store.
@@ -17,14 +16,31 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 }
 
 // ListByOwner retrieves a list of repositories based on their ownership.
-func (s *Postgres) ListByOwner(id string) ([]*gitpods.Repository, error) {
-	rows, err := s.db.Query(`SELECT id, name, description, website, default_branch, private, bare FROM repositories WHERE owner_id = $1`, id)
+func (s *Postgres) ListByOwnerUsername(username string) ([]*Repository, error) {
+	query := `
+SELECT
+	id,
+	name,
+	description,
+	website,
+	default_branch,
+	private,
+	bare,
+	created_at,
+	updated_at
+FROM repositories
+WHERE owner_id = (SELECT id
+		  FROM users
+		  WHERE username = $1)
+ORDER BY updated_at DESC`
+
+	rows, err := s.db.Query(query, username)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var repositories []*gitpods.Repository
+	var repositories []*Repository
 	for rows.Next() {
 		var id string
 		var name string
@@ -33,9 +49,11 @@ func (s *Postgres) ListByOwner(id string) ([]*gitpods.Repository, error) {
 		var defaultBranch string
 		var private bool
 		var bare bool
-		rows.Scan(&id, &name, &description, &website, &defaultBranch, &private, &bare)
+		var created time.Time
+		var updated time.Time
+		rows.Scan(&id, &name, &description, &website, &defaultBranch, &private, &bare, &created, &updated)
 
-		repositories = append(repositories, &gitpods.Repository{
+		repositories = append(repositories, &Repository{
 			ID:            id,
 			Name:          name,
 			Description:   description,
@@ -43,6 +61,8 @@ func (s *Postgres) ListByOwner(id string) ([]*gitpods.Repository, error) {
 			DefaultBranch: defaultBranch,
 			Private:       private,
 			Bare:          bare,
+			Created:       created,
+			Updated:       updated,
 		})
 	}
 

@@ -129,7 +129,7 @@ func apiAction(c *cli.Context) error {
 	us = user.NewLoggingService(log.WithPrefix(logger, "service", "user"), us)
 
 	var rs repository.Service
-	rs = repository.NewService(users, repositories)
+	rs = repository.NewService(repositories)
 
 	//
 	// Router

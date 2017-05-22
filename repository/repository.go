@@ -1,4 +1,4 @@
-package gitpods
+package repository
 
 import "time"
 
@@ -13,7 +13,4 @@ type Repository struct {
 	Bare          bool      `json:"bare"`
 	Created       time.Time `json:"created_at"`
 	Updated       time.Time `json:"updated_at"`
-
-	OwnerID string `json:"owner_id"`
-	Owner   *User  `json:"owner,omitempty"`
 }
