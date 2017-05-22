@@ -106,7 +106,7 @@ func (s *Postgres) FindUserByEmail(email string) (*gitpods.User, error) {
 	name,
 	password,
 	created_at,
-	updated_at,
+	updated_at
 FROM users
 WHERE email = $1
 LIMIT 1`, email)
