@@ -28,14 +28,14 @@
 
 			<ul class="uk-navbar-nav" v-if="user !== null">
 				<li>
-					<router-link :to="`/users/${user.username}`">
+					<router-link :to="`/${user.username}`">
 						<gravatar class="uk-border-circle" :email="user.email" :size="46" default-img="mm"></gravatar>
 						<span uk-icon="icon: more-vertical"></span>
 					</router-link>
 					<div class="uk-navbar-dropdown">
 						<ul class="uk-nav uk-navbar-dropdown-nav">
 							<li>
-								<router-link to="/users/metalmatze">Profile</router-link>
+								<router-link :to="`/${user.username}`">Profile</router-link>
 							</li>
 							<li>
 								<router-link to="/settings/profile">Settings</router-link>
@@ -48,7 +48,6 @@
 					</div>
 				</li>
 			</ul>
-
 		</div>
 	</nav>
 </template>

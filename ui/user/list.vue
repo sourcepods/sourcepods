@@ -10,14 +10,14 @@
 						<gravatar class="uk-border-circle" :email="user.email" :size="46" default-img="mm"></gravatar>
 					</div>
 					<div class="uk-width-expand">
-						<router-link class="uk-link-reset uk-text-bold" :to="`/users/${user.username}`">
+						<router-link class="uk-link-reset uk-text-bold" :to="`/${user.username}`">
 							{{user.name}}
 						</router-link>
 						<br>
 						<span>{{ user.email }}</span>
 					</div>
 					<div>
-						<router-link class="uk-button uk-button-default" :to="`/users/${user.username}/edit`">
+						<router-link class="uk-button uk-button-default" :to="`/${user.username}/edit`">
 							edit
 						</router-link>
 					</div>

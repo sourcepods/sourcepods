@@ -56,7 +56,7 @@
 			saveUser() {
 				this.$store.dispatch('updateUser', this.user)
 					.then((user) => {
-						this.$router.push(`/users/${user.username}`);
+						this.$router.push(`/${user.username}`);
 						UIkit.notification('User updated', {status: 'success', pos: 'bottom-center'});
 					})
 					.catch((err) => {
