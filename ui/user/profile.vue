@@ -38,7 +38,7 @@
 							<div class="uk-flex">
 								<div class="uk-flex-auto">
 									<h4 class="repository-name">
-										<a :href="`/${user.username}/${repository.name}`">{{repository.name}}</a>
+										<router-link :to="`/${user.username}/${repository.name}`">{{repository.name}}</router-link>
 									</h4>
 									<p class="repository-description">{{repository.description}}</p>
 								</div>
