@@ -16,7 +16,7 @@
 					</li>
 					<li>
 						<span uk-icon="icon: clock"></span>
-						<span>Joined on May 10th 2017</span>
+						<span>Joined on {{user.created_at}}</span>
 					</li>
 					<li></li>
 				</ul>
