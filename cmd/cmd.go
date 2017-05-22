@@ -14,6 +14,7 @@ import (
 const (
 	FlagAddr           = "addr"
 	FlagAddrAPI        = "addr-api"
+	FlagAPIPrefix      = "api-prefix"
 	FlagDatabaseDriver = "database-driver"
 	FlagDatabaseDSN    = "database-dsn"
 	FlagLogJSON        = "log-json"
@@ -22,6 +23,7 @@ const (
 
 	EnvAddr           = "GITPODS_ADDR"
 	EnvAddrAPI        = "GITPODS_ADDR_API"
+	EnvAPIPrefix      = "GITPODS_API_PREFIX"
 	EnvDatabaseDriver = "GITPODS_DATABASE_DRIVER"
 	EnvDatabaseDSN    = "GITPODS_DATABASE_DSN"
 	EnvLogJSON        = "GITPODS_LOG_JSON"

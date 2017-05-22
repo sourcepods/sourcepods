@@ -23,6 +23,7 @@ import (
 
 type apiConf struct {
 	Addr           string
+	APIPrefix      string
 	DatabaseDriver string
 	DatabaseDSN    string
 	LogJSON        bool
@@ -40,6 +41,13 @@ var (
 			Usage:       "The address gitpods API runs on",
 			Value:       ":3010",
 			Destination: &apiConfig.Addr,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagAPIPrefix,
+			EnvVar:      cmd.EnvAPIPrefix,
+			Usage:       "The prefix the api is serving from, default: /",
+			Value:       "/",
+			Destination: &apiConfig.APIPrefix,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagDatabaseDriver,
@@ -129,19 +137,29 @@ func apiAction(c *cli.Context) error {
 	router := chi.NewRouter()
 	router.Use(cmd.NewRequestLogger(logger))
 
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "hi")
+	// Wrap the router inside a Router handler to make it possible to listen on / or on /api.
+	// Change via APIPrefix.
+	router.Route(apiConfig.APIPrefix, func(router chi.Router) {
+		router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, "hi")
+		})
+
+		router.Mount("/authorize", authorization.NewHandler(as))
+
+		router.Group(func(router chi.Router) {
+			router.Use(session.Authorized(ss))
+
+			router.Mount("/user", user.NewUserHandler(us))
+			router.Mount("/users", user.NewUsersHandler(us))
+			router.Mount("/users/:username/repositories", repository.NewHandler(rs))
+		})
 	})
 
-	router.Mount("/authorize", authorization.NewHandler(as))
-
-	router.Group(func(router chi.Router) {
-		router.Use(session.Authorized(ss))
-
-		router.Mount("/user", user.NewUserHandler(us))
-		router.Mount("/users", user.NewUsersHandler(us))
-		router.Mount("/users/:username/repositories", repository.NewHandler(rs))
-	})
+	if apiConfig.APIPrefix != "/" {
+		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, apiConfig.APIPrefix, http.StatusPermanentRedirect)
+		})
+	}
 
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
