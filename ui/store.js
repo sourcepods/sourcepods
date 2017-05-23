@@ -27,7 +27,7 @@ export const store = new Vuex.Store({
 		setUser(state, user) {
 			state.user = user;
 		},
-		addUsers(state, users) {
+		setUsers(state, users) {
 			state.users = users;
 		},
 		addUser(state, newUser) {
@@ -97,7 +97,7 @@ export const store = new Vuex.Store({
 		fetchUsers(ctx) {
 			axios.get(`${window.config.api}/users`)
 				.then((res) => {
-					ctx.commit('addUsers', res.data);
+					ctx.commit('setUsers', res.data);
 				})
 				.catch((err) => {
 					alert(err);

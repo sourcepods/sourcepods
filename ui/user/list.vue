@@ -39,13 +39,7 @@
 			}
 		},
 		created(){
-			axios.get('/api/users')
-				.then((res) => {
-					this.$store.commit('addUsers', res.data);
-				})
-				.catch((err) => {
-					console.log(err);
-				})
+			this.$store.dispatch('fetchUsers');
 		},
 	}
 </script>
