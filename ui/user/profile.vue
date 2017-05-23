@@ -67,8 +67,12 @@
 			gravatar: Gravatar,
 		},
 		created() {
-			this.$store.dispatch('fetchUser', this.$route.params.username);
-			this.$store.dispatch('fetchUserRepositories', this.$route.params.username);
+			this.$store.commit('loading', true);
+
+			Promise.all([
+				this.$store.dispatch('fetchUser', this.$route.params.username),
+				this.$store.dispatch('fetchUserRepositories', this.$route.params.username),
+			]).then(() => this.$store.commit('loading', false))
 		},
 		computed: {
 			user() {
