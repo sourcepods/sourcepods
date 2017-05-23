@@ -4,6 +4,7 @@ import axios from "axios";
 export const store = new Vuex.Store({
 	strict: process.env.NODE_ENV !== 'production',
 	state: {
+		loading: false,
 		user: null,
 		users: [],
 		repositories: [],
@@ -20,6 +21,9 @@ export const store = new Vuex.Store({
 		}
 	},
 	mutations: {
+		loading(state, isLoading) {
+			state.loading = isLoading;
+		},
 		setUser(state, user) {
 			state.user = user;
 		},

@@ -21,6 +21,8 @@
 				</li>
 			</ul>
 
+			<div uk-spinner v-if="loading"></div>
+
 		</div>
 
 		<div class="uk-navbar-right">
@@ -35,7 +37,8 @@
 			<ul class="uk-navbar-nav" v-if="user !== null">
 				<li>
 					<router-link :to="`/${user.username}`">
-						<gravatar class="uk-border-circle" :email="user.email" :size="46" default-img="mm"></gravatar>
+						<gravatar class="uk-border-circle" :email="user.email" :size="46"
+								  default-img="mm"></gravatar>
 						<span uk-icon="icon: more-vertical"></span>
 					</router-link>
 					<div class="uk-navbar-dropdown">
@@ -68,6 +71,9 @@
 		computed: {
 			user() {
 				return this.$store.state.user;
+			},
+			loading() {
+				return this.$store.state.loading;
 			}
 		},
 	}
