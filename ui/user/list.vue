@@ -16,11 +16,6 @@
 						<br>
 						<span>{{ user.email }}</span>
 					</div>
-					<div>
-						<router-link class="uk-button uk-button-default" :to="`/${user.username}/edit`">
-							edit
-						</router-link>
-					</div>
 				</div>
 			</li>
 		</ul>
