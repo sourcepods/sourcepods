@@ -152,7 +152,7 @@ func apiAction(c *cli.Context) error {
 
 			router.Mount("/user", user.NewUserHandler(us))
 			router.Mount("/users", user.NewUsersHandler(us))
-			router.Mount("/users/:username/repositories", repository.NewHandler(rs))
+			router.Mount("/users/:username/repositories", repository.NewUsersHandler(rs))
 		})
 	})
 
