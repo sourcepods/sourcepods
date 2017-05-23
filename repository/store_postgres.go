@@ -89,3 +89,56 @@ ORDER BY updated_at DESC`
 
 	return repositories, nil
 }
+
+func (s *Postgres) Find(owner string, name string) (*Repository, error) {
+	query := `
+SELECT
+	id,
+	description,
+	website,
+	default_branch,
+	private,
+	bare,
+	created_at,
+	updated_at
+FROM repositories
+WHERE
+	name = $2 AND
+	owner_id = (SELECT id FROM users WHERE username = $1) `
+
+	row := s.db.QueryRow(query, owner, name)
+
+	var id string
+	var description sql.NullString
+	var website sql.NullString
+	var defaultBranch string
+	var private bool
+	var bare bool
+	var created time.Time
+	var updated time.Time
+
+	if err := row.Scan(
+		&id,
+		&description,
+		&website,
+		&defaultBranch,
+		&private,
+		&bare,
+		&created,
+		&updated,
+	); err != nil {
+		return nil, err
+	}
+
+	return &Repository{
+		ID:            id,
+		Name:          name,
+		Description:   description.String,
+		Website:       website.String,
+		DefaultBranch: defaultBranch,
+		Private:       private,
+		Bare:          bare,
+		Created:       created,
+		Updated:       updated,
+	}, nil
+}

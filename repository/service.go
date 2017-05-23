@@ -4,11 +4,13 @@ type (
 	// Store or retrieve repositories from some database.
 	Store interface {
 		ListAggregateByOwnerUsername(string) ([]*RepositoryAggregate, error)
+		Find(string, string) (*Repository, error)
 	}
 
 	// Service to interact with repositories.
 	Service interface {
 		ListAggregateByOwnerUsername(string) ([]*RepositoryAggregate, error)
+		Find(string, string) (*Repository, error)
 	}
 
 	service struct {
@@ -25,4 +27,8 @@ func NewService(repositories Store) Service {
 
 func (s *service) ListAggregateByOwnerUsername(username string) ([]*RepositoryAggregate, error) {
 	return s.repositories.ListAggregateByOwnerUsername(username)
+}
+
+func (s *service) Find(owner string, name string) (*Repository, error) {
+	return s.repositories.Find(owner, name)
 }

@@ -33,3 +33,30 @@ func listByOwner(s Service) http.HandlerFunc {
 		w.Write(data)
 	}
 }
+
+func NewHandler(s Service) *chi.Mux {
+	r := chi.NewRouter()
+
+	r.Get("/", get(s))
+
+	return r
+}
+
+func get(s Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		owner := chi.URLParam(r, "owner")
+		name := chi.URLParam(r, "name")
+
+		repository, err := s.Find(owner, name)
+		if err != nil {
+			return // TODO
+		}
+
+		data, err := json.Marshal(repository)
+		if err != nil {
+			return // TODO
+		}
+
+		w.Write(data)
+	}
+}
