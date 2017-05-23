@@ -3,12 +3,6 @@
 		<form v-on:submit.prevent="saveUser">
 			<table>
 				<tr>
-					<td>id</td>
-					<td>
-						<input class="uk-input" type="text" v-model="user.id"/>
-					</td>
-				</tr>
-				<tr>
 					<td>username</td>
 					<td>
 						<input class="uk-input" type="text" v-model="user.username"/>
