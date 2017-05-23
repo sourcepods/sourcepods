@@ -106,6 +106,7 @@
 	ul.profile-tab li a {
 		padding-top: 20px;
 		padding-bottom: 20px;
+		text-transform: none;
 	}
 
 	ul.repository-list .repository-name {
