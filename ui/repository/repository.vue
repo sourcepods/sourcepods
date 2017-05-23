@@ -2,12 +2,20 @@
 	<div>
 		<div class="repository-nav">
 			<div class="uk-container">
-				<h3>
-					<router-link :to="`/${owner}`">{{owner}}</router-link>
-					<span>/</span>
-					<router-link :to="`/${owner}/${repository}`">{{repository}}</router-link>
-				</h3>
-				<span>git flying in the cloud</span>
+				<div uk-grid>
+					<div>
+						<h3><span uk-icon="icon: lock"></span></h3>
+					</div>
+
+					<div style="padding-left: 16px;">
+						<h3>
+							<router-link :to="`/${owner}`">{{owner}}</router-link>
+							<span>/</span>
+							<router-link :to="`/${owner}/${repository}`">{{repository}}</router-link>
+						</h3>
+						<span>git flying in the cloud</span>
+					</div>
+				</div>
 
 				<ul class="uk-child-width-expand" uk-tab>
 					<li><a href="#">Project</a></li>
@@ -18,7 +26,7 @@
 					</a></li>
 					<li><a href="#">
 						Pull Requests
-						<span class="uk-badge">0</span>
+						<span class="uk-badge">1</span>
 					</a></li>
 					<li><a href="#">Pipelines</a></li>
 					<li><a href="#">Settings</a></li>
