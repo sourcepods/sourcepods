@@ -1,5 +1,6 @@
 <template>
-	<div>
+	<div v-if="loading"></div>
+	<div v-else>
 		<div class="repository-nav">
 			<div class="uk-container">
 				<div uk-grid>
@@ -9,11 +10,11 @@
 
 					<div style="padding-left: 16px;">
 						<h3>
-							<router-link :to="`/${owner}`">{{owner}}</router-link>
+							<router-link :to="`/${owner_name}`">{{owner_name}}</router-link>
 							<span>/</span>
-							<router-link :to="`/${owner}/${repository}`">{{repository}}</router-link>
+							<router-link :to="`/${owner_name}/${repository.name}`">{{repository.name}}</router-link>
 						</h3>
-						<span>git flying in the cloud</span>
+						<span>{{repository.description}}</span>
 					</div>
 				</div>
 
@@ -38,12 +39,29 @@
 
 <script>
 	export default {
+		data() {
+			return {
+				loading: true,
+			}
+		},
+		created() {
+			this.loading = true;
+			this.$store.commit('loading', true);
+
+			this.$store.dispatch('fetchRepository', {
+				owner: this.$route.params.owner,
+				repository: this.$route.params.repository,
+			}).then(() => {
+				this.loading = false;
+				this.$store.commit('loading', false);
+			});
+		},
 		computed: {
-			owner() {
+			owner_name() {
 				return this.$route.params.owner;
 			},
 			repository() {
-				return this.$route.params.repository;
+				return this.$store.state.repository;
 			},
 		},
 	}

@@ -7,6 +7,7 @@ export const store = new Vuex.Store({
 		loading: false,
 		user: null,
 		users: [],
+		repository: null,
 		repositories: [],
 	},
 	getters: {
@@ -55,6 +56,9 @@ export const store = new Vuex.Store({
 		},
 		setRepositories(state, repositories) {
 			state.repositories = repositories;
+		},
+		setRepository(state, repository) {
+			state.repository = repository;
 		},
 	},
 	actions: {
@@ -132,6 +136,18 @@ export const store = new Vuex.Store({
 				.catch((err) => {
 					alert(err);
 				})
+		},
+		fetchRepository(ctx, data) {
+			return new Promise((resolve, reject) => {
+				axios.get(`${window.config.api}/repositories/${data.owner}/${data.repository}`)
+					.then((res) => {
+						ctx.commit('setRepository', res.data);
+						resolve(res.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
 		}
 	},
 });
