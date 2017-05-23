@@ -14,3 +14,9 @@ type Repository struct {
 	Created       time.Time `json:"created_at"`
 	Updated       time.Time `json:"updated_at"`
 }
+
+type RepositoryAggregate struct {
+	*Repository
+	Stars int `json:"stars"`
+	Forks int `json:"forks"`
+}

@@ -20,7 +20,7 @@ func listByOwner(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username := chi.URLParam(r, "username")
 
-		repositories, err := s.ListByOwnerUsername(username)
+		repositories, err := s.ListAggregateByOwnerUsername(username)
 		if err != nil {
 			return // TODO
 		}

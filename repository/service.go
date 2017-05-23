@@ -3,12 +3,12 @@ package repository
 type (
 	// Store or retrieve repositories from some database.
 	Store interface {
-		ListByOwnerUsername(string) ([]*Repository, error)
+		ListAggregateByOwnerUsername(string) ([]*RepositoryAggregate, error)
 	}
 
 	// Service to interact with repositories.
 	Service interface {
-		ListByOwnerUsername(string) ([]*Repository, error)
+		ListAggregateByOwnerUsername(string) ([]*RepositoryAggregate, error)
 	}
 
 	service struct {
@@ -23,11 +23,6 @@ func NewService(repositories Store) Service {
 	}
 }
 
-func (s *service) ListByOwnerUsername(username string) ([]*Repository, error) {
-	repositories, err := s.repositories.ListByOwnerUsername(username)
-	if err != nil {
-		return nil, err
-	}
-
-	return repositories, err
+func (s *service) ListAggregateByOwnerUsername(username string) ([]*RepositoryAggregate, error) {
+	return s.repositories.ListAggregateByOwnerUsername(username)
 }
