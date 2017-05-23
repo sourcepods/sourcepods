@@ -45,12 +45,16 @@
 	.repository-nav {
 		margin-top: -20px;
 		margin-bottom: 20px;
-		padding-top: 20px;
 		background-color: #f8f8f8;
+	}
+
+	.repository-nav h3 {
+		margin: 0;
 	}
 
 	ul.uk-child-width-expand a {
 		line-height: 28px;
+		text-transform: none;
 	}
 
 	ul.uk-child-width-expand span.uk-badge {
