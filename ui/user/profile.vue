@@ -1,5 +1,6 @@
 <template>
-	<div class="uk-container">
+	<div v-if="loading"></div>
+	<div class="uk-container" v-else>
 
 		<div class="uk-grid-small" uk-grid v-if="user!==null">
 			<div class="uk-flex-top uk-padding-small uk-width-2-5@m uk-width-1-4@l">
@@ -38,7 +39,8 @@
 							<div class="uk-flex">
 								<div class="uk-flex-auto">
 									<h4 class="repository-name">
-										<router-link :to="`/${user.username}/${repository.name}`">{{repository.name}}</router-link>
+										<router-link :to="`/${user.username}/${repository.name}`">{{repository.name}}
+										</router-link>
 									</h4>
 									<p class="repository-description">{{repository.description}}</p>
 								</div>
@@ -66,13 +68,22 @@
 		components: {
 			gravatar: Gravatar,
 		},
+		data() {
+			return {
+				loading: true,
+			}
+		},
 		created() {
+			this.loading = true;
 			this.$store.commit('loading', true);
 
 			Promise.all([
 				this.$store.dispatch('fetchUser', this.$route.params.username),
 				this.$store.dispatch('fetchUserRepositories', this.$route.params.username),
-			]).then(() => this.$store.commit('loading', false))
+			]).then(() => {
+				this.loading = false;
+				this.$store.commit('loading', false)
+			})
 		},
 		computed: {
 			user() {
