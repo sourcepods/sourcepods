@@ -12,9 +12,11 @@
 						<h3>
 							<router-link :to="`/${owner_name}`">{{owner_name}}</router-link>
 							<span>/</span>
-							<router-link :to="`/${owner_name}/${repository.name}`">{{repository.name}}</router-link>
+							<router-link :to="`/${owner_name}/${repository.attributes.name}`">
+								{{repository.attributes.name}}
+							</router-link>
 						</h3>
-						<span>{{repository.description}}</span>
+						<span>{{repository.attributes.description}}</span>
 					</div>
 				</div>
 
@@ -23,11 +25,11 @@
 					<li><a href="#">Repository</a></li>
 					<li><a href="#">
 						Issues
-						<span class="uk-badge">{{repository.issue_stats.open_count}}</span>
+						<span class="uk-badge">{{repository.attributes.issue_stats.open_count}}</span>
 					</a></li>
 					<li><a href="#">
 						Pull Requests
-						<span class="uk-badge">{{repository.pull_request_stats.open_count}}</span>
+						<span class="uk-badge">{{repository.attributes.pull_request_stats.open_count}}</span>
 					</a></li>
 					<li><a href="#">Pipelines</a></li>
 					<li><a href="#">Settings</a></li>
@@ -42,27 +44,38 @@
 		data() {
 			return {
 				loading: true,
+				repository_id: '',
 			}
 		},
 		created() {
-			this.loading = true;
-			this.$store.commit('loading', true);
+			this.setLoading(false);
 
-			this.$store.dispatch('fetchRepository', {
+			const payload = {
 				owner: this.$route.params.owner,
 				repository: this.$route.params.repository,
-			}).then(() => {
-				this.loading = false;
-				this.$store.commit('loading', false);
-			});
+			};
+
+			this.$store.dispatch('fetchRepository', payload)
+				.then((repository) => {
+					this.repository_id = repository.id;
+					this.setLoading(false);
+				});
 		},
 		computed: {
 			owner_name() {
 				return this.$route.params.owner;
 			},
 			repository() {
-				return this.$store.state.repository;
+				let repo = this.$store.getters.getRepository(this.repository_id);
+				console.log(repo);
+				return repo;
 			},
+		},
+		methods: {
+			setLoading(isLoading) {
+				this.loading = isLoading;
+				this.$store.commit('loading', isLoading)
+			}
 		},
 	}
 </script>

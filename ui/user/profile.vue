@@ -39,16 +39,17 @@
 							<div class="uk-flex">
 								<div class="uk-flex-auto">
 									<h4 class="repository-name">
-										<router-link :to="`/${user.username}/${repository.name}`">{{repository.name}}
+										<router-link :to="`/${user.username}/${repository.attributes.name}`">
+											{{repository.attributes.name}}
 										</router-link>
 									</h4>
-									<p class="repository-description">{{repository.description}}</p>
+									<p class="repository-description">{{repository.attributes.description}}</p>
 								</div>
 								<div class="uk-text-right">
 									<span uk-icon="icon: star"></span>
-									<span>{{repository.stars}}</span>
+									<span>{{repository.attributes.stars}}</span>
 									<span uk-icon="icon: git-fork"></span>
-									<span>{{repository.forks}}</span>
+									<span>{{repository.attributes.forks}}</span>
 								</div>
 							</div>
 						</li>
@@ -71,27 +72,35 @@
 		data() {
 			return {
 				loading: true,
+				user_id: '',
 			}
 		},
 		created() {
-			this.loading = true;
-			this.$store.commit('loading', true);
-
+			this.setLoading(true);
 			Promise.all([
 				this.$store.dispatch('fetchUser', this.$route.params.username),
 				this.$store.dispatch('fetchUserRepositories', this.$route.params.username),
-			]).then(() => {
-				this.loading = false;
-				this.$store.commit('loading', false)
-			})
+			])
+				.then((a, b, c) => {
+					this.user_id = a[0].id;
+					this.setLoading(false)
+				})
+				.catch(() => this.setLoading(false))
 		},
 		computed: {
 			user() {
 				return this.$store.getters.getUser(this.$route.params.username);
 			},
 			repositories() {
-				return this.$store.state.repositories;
+				console.log(this.user_id);
+				return this.$store.getters.getUserRepositories(this.user_id);
 			},
+		},
+		methods: {
+			setLoading(isLoading) {
+				this.loading = isLoading;
+				this.$store.commit('loading', isLoading)
+			}
 		},
 	}
 </script>

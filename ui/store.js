@@ -7,8 +7,7 @@ export const store = new Vuex.Store({
 		loading: false,
 		user: null,
 		users: [],
-		repository: null,
-		repositories: [],
+		repositories: {},
 	},
 	getters: {
 		getUser: (state) => (username) => {
@@ -19,6 +18,15 @@ export const store = new Vuex.Store({
 				return users[0];
 			}
 			return {};
+		},
+		getUserRepositories: (state) => (user_id) => {
+			return state.repositories;
+		},
+		getRepository: (state) => (id) => {
+			if (state.repositories[id] !== undefined) {
+				return state.repositories[id];
+			}
+			return null;
 		}
 	},
 	mutations: {
@@ -54,11 +62,8 @@ export const store = new Vuex.Store({
 				}
 			}
 		},
-		setRepositories(state, repositories) {
-			state.repositories = repositories;
-		},
 		setRepository(state, repository) {
-			state.repository = repository;
+			state.repositories[repository.id] = repository;
 		},
 	},
 	actions: {
@@ -78,7 +83,9 @@ export const store = new Vuex.Store({
 			return new Promise((resolve, reject) => {
 				axios.get(`${window.config.api}/users/${username}/repositories`)
 					.then((res) => {
-						ctx.commit('setRepositories', res.data);
+						res.data.data.forEach((repository) => {
+							ctx.commit('setRepository', repository);
+						});
 						resolve(res.data);
 					})
 					.catch((err) => {
@@ -99,22 +106,28 @@ export const store = new Vuex.Store({
 			})
 		},
 		fetchUsers(ctx) {
-			axios.get(`${window.config.api}/users`)
-				.then((res) => {
-					ctx.commit('setUsers', res.data);
-				})
-				.catch((err) => {
-					alert(err);
-				})
+			return new Promise((resolve, reject) => {
+				axios.get(`${window.config.api}/users`)
+					.then((res) => {
+						ctx.commit('setUsers', res.data);
+						resolve(res.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
 		},
 		fetchUser(ctx, username) {
-			axios.get(`${window.config.api}/users/${username}`)
-				.then((res) => {
-					ctx.commit('addUser', res.data);
-				})
-				.catch((err) => {
-					alert(err);
-				})
+			return new Promise((resolve, reject) => {
+				axios.get(`${window.config.api}/users/${username}`)
+					.then((res) => {
+						ctx.commit('addUser', res.data);
+						resolve(res.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
 		},
 		updateUser(ctx, user) {
 			return new Promise((resolve, reject) => {
@@ -129,20 +142,23 @@ export const store = new Vuex.Store({
 			})
 		},
 		deleteUser(ctx, username) {
-			axios.delete(`${window.config.api}/users/${username}`)
-				.then((res) => {
-					ctx.dispatch('fetchUsers');
-				})
-				.catch((err) => {
-					alert(err);
-				})
+			return new Promise((resolve, reject) => {
+				axios.delete(`${window.config.api}/users/${username}`)
+					.then((res) => {
+						ctx.dispatch('fetchUsers');
+						resolve(res.data.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
 		},
 		fetchRepository(ctx, data) {
 			return new Promise((resolve, reject) => {
 				axios.get(`${window.config.api}/repositories/${data.owner}/${data.repository}`)
 					.then((res) => {
-						ctx.commit('setRepository', res.data);
-						resolve(res.data);
+						ctx.commit('setRepository', res.data.data);
+						resolve(res.data.data);
 					})
 					.catch((err) => {
 						reject(err);
