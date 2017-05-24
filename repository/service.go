@@ -1,15 +1,21 @@
 package repository
 
+import "errors"
+
+var (
+	OwnerNotFoundError = errors.New("owner not found")
+)
+
 type (
 	// Store or retrieve repositories from some database.
 	Store interface {
-		ListAggregateByOwnerUsername(string) ([]*RepositoryAggregate, error)
+		ListAggregateByOwnerUsername(username string) ([]*Repository, []*Stats, error)
 		Find(string, string) (*Repository, *Stats, error)
 	}
 
 	// Service to interact with repositories.
 	Service interface {
-		ListAggregateByOwnerUsername(string) ([]*RepositoryAggregate, error)
+		ListAggregateByOwnerUsername(username string) ([]*Repository, []*Stats, error)
 		Find(string, string) (*Repository, *Stats, error)
 	}
 
@@ -25,7 +31,7 @@ func NewService(repositories Store) Service {
 	}
 }
 
-func (s *service) ListAggregateByOwnerUsername(username string) ([]*RepositoryAggregate, error) {
+func (s *service) ListAggregateByOwnerUsername(username string) ([]*Repository, []*Stats, error) {
 	return s.repositories.ListAggregateByOwnerUsername(username)
 }
 

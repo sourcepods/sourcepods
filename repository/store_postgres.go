@@ -16,8 +16,18 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 }
 
 // ListAggregateByOwnerUsername retrieves a list of repositories based on their ownership.
-func (s *Postgres) ListAggregateByOwnerUsername(username string) ([]*RepositoryAggregate, error) {
-	query := `
+func (s *Postgres) ListAggregateByOwnerUsername(username string) ([]*Repository, []*Stats, error) {
+	query := `SELECT id FROM users WHERE username = $1`
+	row := s.db.QueryRow(query, username)
+
+	var id string
+	row.Scan(&id)
+
+	if id == "" {
+		return nil, nil, OwnerNotFoundError
+	}
+
+	query = `
 SELECT
 	id,
 	name,
@@ -38,11 +48,13 @@ ORDER BY updated_at DESC`
 
 	rows, err := s.db.Query(query, username)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer rows.Close()
 
-	var repositories []*RepositoryAggregate
+	var repositories []*Repository
+	var stats []*Stats
+
 	for rows.Next() {
 		var id string
 		var name string
@@ -70,24 +82,31 @@ ORDER BY updated_at DESC`
 			&forks,
 		)
 
-		repositories = append(repositories, &RepositoryAggregate{
-			Repository: &Repository{
-				ID:            id,
-				Name:          name,
-				Description:   description.String,
-				Website:       website.String,
-				DefaultBranch: defaultBranch,
-				Private:       private,
-				Bare:          bare,
-				Created:       created,
-				Updated:       updated,
-			},
-			Stars: stars,
-			Forks: forks,
+		repositories = append(repositories, &Repository{
+			ID:            id,
+			Name:          name,
+			Description:   description.String,
+			Website:       website.String,
+			DefaultBranch: defaultBranch,
+			Private:       private,
+			Bare:          bare,
+			Created:       created,
+			Updated:       updated,
+		})
+
+		stats = append(stats, &Stats{
+			Stars:                  stars,
+			Forks:                  forks,
+			IssueTotalCount:        66,
+			IssueOpenCount:         35,
+			IssueClosedCount:       31,
+			PullRequestTotalCount:  20,
+			PullRequestOpenCount:   4,
+			PullRequestClosedCount: 16,
 		})
 	}
 
-	return repositories, nil
+	return repositories, stats, nil
 }
 
 func (s *Postgres) Find(owner string, name string) (*Repository, *Stats, error) {
@@ -142,18 +161,14 @@ WHERE
 			Updated:       updated,
 		},
 		&Stats{
-			Stars: 42,
-			Forks: 23,
-			IssueStats: &IssueStats{
-				TotalCount:  66,
-				OpenCount:   13,
-				ClosedCount: 53,
-			},
-			PullRequestStats: &PullRequestStats{
-				TotalCount:  20,
-				OpenCount:   2,
-				ClosedCount: 18,
-			},
+			Stars:                  42,
+			Forks:                  23,
+			IssueTotalCount:        66,
+			IssueOpenCount:         13,
+			IssueClosedCount:       53,
+			PullRequestTotalCount:  20,
+			PullRequestOpenCount:   2,
+			PullRequestClosedCount: 18,
 		},
 		nil
 }

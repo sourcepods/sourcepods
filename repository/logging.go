@@ -17,10 +17,10 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger: logger, service: s}
 }
 
-func (s *loggingService) ListAggregateByOwnerUsername(username string) ([]*RepositoryAggregate, error) {
+func (s *loggingService) ListAggregateByOwnerUsername(username string) ([]*Repository, []*Stats, error) {
 	start := time.Now()
 
-	repositories, err := s.service.ListAggregateByOwnerUsername(username)
+	repositories, stats, err := s.service.ListAggregateByOwnerUsername(username)
 
 	logger := log.With(s.logger,
 		"method", "ListAggregateByOwnerUsername",
@@ -36,7 +36,7 @@ func (s *loggingService) ListAggregateByOwnerUsername(username string) ([]*Repos
 		level.Debug(logger).Log()
 	}
 
-	return repositories, err
+	return repositories, stats, err
 
 }
 
