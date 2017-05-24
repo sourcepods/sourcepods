@@ -90,7 +90,7 @@ ORDER BY updated_at DESC`
 	return repositories, nil
 }
 
-func (s *Postgres) Find(owner string, name string) (*Repository, error) {
+func (s *Postgres) Find(owner string, name string) (*Repository, *Stats, error) {
 	query := `
 SELECT
 	id,
@@ -127,18 +127,33 @@ WHERE
 		&created,
 		&updated,
 	); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	return &Repository{
-		ID:            id,
-		Name:          name,
-		Description:   description.String,
-		Website:       website.String,
-		DefaultBranch: defaultBranch,
-		Private:       private,
-		Bare:          bare,
-		Created:       created,
-		Updated:       updated,
-	}, nil
+			ID:            id,
+			Name:          name,
+			Description:   description.String,
+			Website:       website.String,
+			DefaultBranch: defaultBranch,
+			Private:       private,
+			Bare:          bare,
+			Created:       created,
+			Updated:       updated,
+		},
+		&Stats{
+			Stars: 42,
+			Forks: 23,
+			IssueStats: &IssueStats{
+				TotalCount:  66,
+				OpenCount:   13,
+				ClosedCount: 53,
+			},
+			PullRequestStats: &PullRequestStats{
+				TotalCount:  20,
+				OpenCount:   2,
+				ClosedCount: 18,
+			},
+		},
+		nil
 }

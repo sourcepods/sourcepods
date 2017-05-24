@@ -20,3 +20,22 @@ type RepositoryAggregate struct {
 	Stars int `json:"stars"`
 	Forks int `json:"forks"`
 }
+
+type Stats struct {
+	Stars            int               `json:"stars"`
+	Forks            int               `json:"forks"`
+	IssueStats       *IssueStats       `json:"issue_stats"`
+	PullRequestStats *PullRequestStats `json:"pull_request_stats"`
+}
+
+type IssueStats struct {
+	TotalCount  int `json:"total_count"`
+	OpenCount   int `json:"open_count"`
+	ClosedCount int `json:"closed_count"`
+}
+
+type PullRequestStats struct {
+	TotalCount  int `json:"total_count"`
+	OpenCount   int `json:"open_count"`
+	ClosedCount int `json:"closed_count"`
+}

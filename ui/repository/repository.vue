@@ -23,11 +23,11 @@
 					<li><a href="#">Repository</a></li>
 					<li><a href="#">
 						Issues
-						<span class="uk-badge">3</span>
+						<span class="uk-badge">{{repository.issue_stats.open_count}}</span>
 					</a></li>
 					<li><a href="#">
 						Pull Requests
-						<span class="uk-badge">1</span>
+						<span class="uk-badge">{{repository.pull_request_stats.open_count}}</span>
 					</a></li>
 					<li><a href="#">Pipelines</a></li>
 					<li><a href="#">Settings</a></li>

@@ -42,17 +42,27 @@ func NewHandler(s Service) *chi.Mux {
 	return r
 }
 
+type responseWithStats struct {
+	*Repository
+	*Stats
+}
+
 func get(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		owner := chi.URLParam(r, "owner")
 		name := chi.URLParam(r, "name")
 
-		repository, err := s.Find(owner, name)
+		repository, stats, err := s.Find(owner, name)
 		if err != nil {
 			return // TODO
 		}
 
-		data, err := json.Marshal(repository)
+		res := responseWithStats{
+			repository,
+			stats,
+		}
+
+		data, err := json.Marshal(res)
 		if err != nil {
 			return // TODO
 		}
