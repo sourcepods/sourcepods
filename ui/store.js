@@ -5,38 +5,39 @@ export const store = new Vuex.Store({
 	strict: process.env.NODE_ENV !== 'production',
 	state: {
 		loading: false,
-		user: null,
+		user_id: null,
 		users: [],
-		repositories: {},
+		repositories: [],
 	},
 	getters: {
-		getUser: (state) => (username) => {
-			const users = state.users.filter((user) => {
-				return user.username === username;
-			});
-			if (users.length > 0) {
-				return users[0];
+		getAuthUser(state) {
+			if (state.user_id === null) {
+				return null;
 			}
-			return {};
+
+			let index = state.users.findIndex((user) => user.id === state.user_id);
+			if (index >= 0) {
+				return state.users[index];
+			}
+			return null;
+		},
+		getUsers: (state) => {
+			return state.users;
+		},
+		getUserByUsername: (state) => (username) => {
+			let index = state.users.findIndex((user) => user.attributes.username === username);
+			if (index >= 0) {
+				return state.users[index];
+			}
+			return null;
 		},
 		getUserRepositories: (state) => (user_id) => {
-			let userRepositories = [];
-
-			const repositories = state.repositories;
-			for (let id in repositories) {
-				if (repositories.hasOwnProperty(id)) {
-					const repository = repositories[id];
-					if (repository.relationships.owner.data.id === user_id) {
-						userRepositories.push(repository);
-					}
-				}
-			}
-
-			return userRepositories;
+			return state.repositories.filter((repository) => repository.relationships.owner.data.id === user_id);
 		},
 		getRepository: (state) => (id) => {
-			if (state.repositories[id] !== undefined) {
-				return state.repositories[id];
+			let index = state.repositories.findIndex((repository) => repository.id === id)
+			if (index >= 0) {
+				return state.repositories[index]
 			}
 			return null;
 		}
@@ -45,37 +46,24 @@ export const store = new Vuex.Store({
 		loading(state, isLoading) {
 			state.loading = isLoading;
 		},
+		setAuthUser(state, user_id) {
+			state.user_id = user_id;
+		},
 		setUser(state, user) {
-			state.user = user;
-		},
-		setUsers(state, users) {
-			state.users = users;
-		},
-		addUser(state, newUser) {
-			for (let i = 0; i < state.users.length; i++) {
-				if (state.users[i].username === newUser.username) {
-					state.users[i] = newUser;
-					return
-				}
-			}
-			state.users.push(newUser);
-		},
-		updateUser(state, updatedUser) {
-			for (let i = 0; i < state.users.length; i++) {
-				if (state.users[i].id === updatedUser.id) {
-					state.users[i] = updatedUser;
-
-					// If the current user was updated, update it in the store too
-					if (state.user.id === updatedUser.id) {
-						state.user = updatedUser;
-					}
-
-					return
-				}
+			let index = state.users.findIndex((u) => u.id === user.id);
+			if (index >= 0) {
+				state.users[index] = user;
+			} else {
+				state.users.push(user);
 			}
 		},
 		setRepository(state, repository) {
-			state.repositories[repository.id] = repository;
+			let index = state.repositories.findIndex((r) => r.id === repository.id);
+			if (index >= 0) {
+				state.repositories[index] = repository;
+			} else {
+				state.repositories.push(repository);
+			}
 		},
 	},
 	actions: {
@@ -83,7 +71,8 @@ export const store = new Vuex.Store({
 			return new Promise((resolve, reject) => {
 				axios.get(`${window.config.api}/user`)
 					.then((res) => {
-						ctx.commit('setUser', res.data);
+						ctx.commit('setUser', res.data.data);
+						ctx.commit('setAuthUser', res.data.data.id);
 						resolve(res.data);
 					})
 					.catch((err) => {
@@ -121,7 +110,9 @@ export const store = new Vuex.Store({
 			return new Promise((resolve, reject) => {
 				axios.get(`${window.config.api}/users`)
 					.then((res) => {
-						ctx.commit('setUsers', res.data);
+						res.data.data.forEach((user) => {
+							ctx.commit('setUser', user);
+						});
 						resolve(res.data);
 					})
 					.catch((err) => {
@@ -133,7 +124,7 @@ export const store = new Vuex.Store({
 			return new Promise((resolve, reject) => {
 				axios.get(`${window.config.api}/users/${username}`)
 					.then((res) => {
-						ctx.commit('addUser', res.data);
+						ctx.commit('setUser', res.data.data);
 						resolve(res.data);
 					})
 					.catch((err) => {

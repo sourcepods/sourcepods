@@ -5,19 +5,19 @@
 				<tr>
 					<td>username</td>
 					<td>
-						<input class="uk-input" type="text" v-model="user.username"/>
+						<input class="uk-input" type="text" v-model="user.attributes.username"/>
 					</td>
 				</tr>
 				<tr>
 					<td>name</td>
 					<td>
-						<input class="uk-input" type="text" v-model="user.name"/>
+						<input class="uk-input" type="text" v-model="user.attributes.name"/>
 					</td>
 				</tr>
 				<tr>
 					<td>email</td>
 					<td>
-						<input class="uk-input" type="email" v-model="user.email"/>
+						<input class="uk-input" type="email" v-model="user.attributes.email"/>
 					</td>
 				</tr>
 				<tr>
@@ -42,7 +42,7 @@
 		},
 		computed: {
 			user() {
-				const user = this.$store.getters.getUser(this.$route.params.username);
+				const user = this.$store.getters.getUserByUsername(this.$route.params.username);
 				return Object.assign({}, user);
 			}
 		},
@@ -50,7 +50,7 @@
 			saveUser() {
 				this.$store.dispatch('updateUser', this.user)
 					.then((user) => {
-						this.$router.push(`/${user.username}`);
+						this.$router.push(`/${user.attributes.username}`);
 						UIkit.notification('User updated', {status: 'success', pos: 'bottom-center'});
 					})
 					.catch((err) => {

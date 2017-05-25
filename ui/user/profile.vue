@@ -4,20 +4,21 @@
 
 		<div class="uk-grid-small" uk-grid v-if="user!==null">
 			<div class="uk-flex-top uk-padding-small uk-width-2-5@m uk-width-1-4@l">
-				<gravatar :email="user.email" default-img="mm" :size="512" class="uk-border-rounded"></gravatar>
-				<h3 class="user-name">{{user.name}}</h3>
-				<h4 class="uk-text-muted user-username">@{{user.username}}</h4>
+				<gravatar :email="user.attributes.email" default-img="mm" :size="512"
+						  class="uk-border-rounded"></gravatar>
+				<h3 class="user-name">{{user.attributes.name}}</h3>
+				<h4 class="uk-text-muted user-username">@{{user.attributes.username}}</h4>
 
 				<hr class="uk-divider-icon">
 
 				<ul class="uk-list user-details">
 					<li>
 						<span class="uk-icon-link" uk-icon="icon: mail"></span>
-						<a :href="`mailto:${user.email}`">{{user.email}}</a>
+						<a :href="`mailto:${user.attributes.email}`">{{user.attributes.email}}</a>
 					</li>
 					<li>
 						<span uk-icon="icon: clock"></span>
-						<span>Joined on {{user.created_at}}</span>
+						<span>Joined on {{user.attributes.created_at}}</span>
 					</li>
 					<li></li>
 				</ul>
@@ -39,7 +40,7 @@
 							<div class="uk-flex">
 								<div class="uk-flex-auto">
 									<h4 class="repository-name">
-										<router-link :to="`/${user.username}/${repository.attributes.name}`">
+										<router-link :to="`/${user.attributes.username}/${repository.attributes.name}`">
 											{{repository.attributes.name}}
 										</router-link>
 									</h4>
@@ -72,7 +73,6 @@
 		data() {
 			return {
 				loading: true,
-				user_id: '',
 			}
 		},
 		created() {
@@ -81,18 +81,19 @@
 				this.$store.dispatch('fetchUser', this.$route.params.username),
 				this.$store.dispatch('fetchUserRepositories', this.$route.params.username),
 			])
-				.then((a, b, c) => {
-					this.user_id = a[0].id;
-					this.setLoading(false)
+				.then((responses) => {
+					this.setLoading(false);
 				})
-				.catch(() => this.setLoading(false))
+				.catch(() => {
+					this.setLoading(false);
+				})
 		},
 		computed: {
 			user() {
-				return this.$store.getters.getUser(this.$route.params.username);
+				return this.$store.getters.getUserByUsername(this.$route.params.username);
 			},
 			repositories() {
-				return this.$store.getters.getUserRepositories(this.user_id);
+				return this.$store.getters.getUserRepositories(this.user.id);
 			},
 		},
 		methods: {
@@ -125,7 +126,6 @@
 	ul.profile-tab li a {
 		padding-top: 20px;
 		padding-bottom: 20px;
-		text-transform: none;
 	}
 
 	ul.repository-list .repository-name {

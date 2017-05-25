@@ -70,7 +70,7 @@
 		},
 		computed: {
 			user() {
-				return this.$store.state.user;
+				return this.$store.getters.getAuthUser;
 			},
 			loading() {
 				return this.$store.state.loading;
