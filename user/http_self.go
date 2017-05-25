@@ -1,10 +1,10 @@
 package user
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/gitpods/gitpods/session"
+	"github.com/google/jsonapi"
 	"github.com/pressly/chi"
 )
 
@@ -27,11 +27,17 @@ func self(s Service) http.HandlerFunc {
 			return // TODO
 		}
 
-		data, err := json.Marshal(user)
-		if err != nil {
-			return // TODO
+		res := &response{
+			ID:       user.ID,
+			Email:    user.Email,
+			Username: user.Username,
+			Name:     user.Name,
+			Created:  user.Created,
+			Updated:  user.Updated,
 		}
 
-		w.Write(data)
+		if err := jsonapi.MarshalOnePayload(w, res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
