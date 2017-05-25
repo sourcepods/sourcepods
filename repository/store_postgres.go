@@ -15,8 +15,8 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 	return &Postgres{db: db}
 }
 
-// ListAggregateByOwnerUsername retrieves a list of repositories based on their ownership.
-func (s *Postgres) ListAggregateByOwnerUsername(username string) ([]*Repository, []*Stats, error) {
+// ListByOwnerUsername retrieves a list of repositories based on their ownership.
+func (s *Postgres) ListByOwnerUsername(username string) ([]*Repository, []*Stats, *Owner, error) {
 	query := `SELECT id FROM users WHERE username = $1`
 	row := s.db.QueryRow(query, username)
 
@@ -24,8 +24,10 @@ func (s *Postgres) ListAggregateByOwnerUsername(username string) ([]*Repository,
 	row.Scan(&id)
 
 	if id == "" {
-		return nil, nil, OwnerNotFoundError
+		return nil, nil, nil, OwnerNotFoundError
 	}
+
+	owner := &Owner{ID: id}
 
 	query = `
 SELECT
@@ -48,7 +50,7 @@ ORDER BY updated_at DESC`
 
 	rows, err := s.db.Query(query, username)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	defer rows.Close()
 
@@ -106,10 +108,10 @@ ORDER BY updated_at DESC`
 		})
 	}
 
-	return repositories, stats, nil
+	return repositories, stats, owner, nil
 }
 
-func (s *Postgres) Find(owner string, name string) (*Repository, *Stats, error) {
+func (s *Postgres) Find(owner string, name string) (*Repository, *Stats, *Owner, error) {
 	query := `
 SELECT
 	id,
@@ -119,7 +121,8 @@ SELECT
 	private,
 	bare,
 	created_at,
-	updated_at
+	updated_at,
+	owner_id
 FROM repositories
 WHERE
 	name = $2 AND
@@ -135,6 +138,7 @@ WHERE
 	var bare bool
 	var created time.Time
 	var updated time.Time
+	var ownerID string
 
 	if err := row.Scan(
 		&id,
@@ -145,8 +149,9 @@ WHERE
 		&bare,
 		&created,
 		&updated,
+		&ownerID,
 	); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	return &Repository{
@@ -170,5 +175,6 @@ WHERE
 			PullRequestOpenCount:   2,
 			PullRequestClosedCount: 18,
 		},
+		&Owner{ID: ownerID},
 		nil
 }

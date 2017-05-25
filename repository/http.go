@@ -24,6 +24,8 @@ type response struct {
 	Forks            int                       `jsonapi:"attr,forks"`
 	IssueStats       *responseIssueStats       `jsonapi:"attr,issue_stats"`
 	PullRequestStats *responsePullRequestStats `jsonapi:"attr,pull_request_stats"`
+
+	Owner *ResponseOwner `jsonapi:"relation,owner"`
 }
 
 type responseIssueStats struct {
@@ -36,6 +38,10 @@ type responsePullRequestStats struct {
 	TotalCount  int `json:"total_count"`
 	OpenCount   int `json:"open_count"`
 	ClosedCount int `json:"closed_count"`
+}
+
+type ResponseOwner struct {
+	ID string `jsonapi:"primary,user"`
 }
 
 // NewUsersHandler returns a RESTful http router interacting with the Service.
@@ -51,7 +57,7 @@ func listByOwner(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username := chi.URLParam(r, "username")
 
-		repositories, stats, err := s.ListAggregateByOwnerUsername(username)
+		repositories, stats, owner, err := s.ListByOwnerUsername(username)
 		if err != nil {
 			jsonapi.MarshalErrors(w, []*jsonapi.ErrorObject{{
 				Title:  http.StatusText(http.StatusNotFound),
@@ -86,11 +92,15 @@ func listByOwner(s Service) http.HandlerFunc {
 					OpenCount:   stats[i].PullRequestOpenCount,
 					ClosedCount: stats[i].PullRequestClosedCount,
 				},
+
+				Owner: &ResponseOwner{ID: owner.ID},
 			}
 		}
 
 		w.Header().Set("Content-Type", jsonapi.MediaType)
-		jsonapi.MarshalManyPayload(w, resRepos)
+		if err := jsonapi.MarshalManyPayload(w, resRepos); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 
@@ -104,14 +114,14 @@ func NewHandler(s Service) *chi.Mux {
 
 func get(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		owner := chi.URLParam(r, "owner")
+		ownerUsername := chi.URLParam(r, "owner")
 		name := chi.URLParam(r, "name")
 
-		repository, stats, err := s.Find(owner, name)
+		repository, stats, owner, err := s.Find(ownerUsername, name)
 		if err != nil {
 			jsonapi.MarshalErrors(w, []*jsonapi.ErrorObject{{
 				Title:  http.StatusText(http.StatusNotFound),
-				Detail: "The repository with this owner and name does not exist",
+				Detail: "Repository with this owner and name does not exist",
 				Status: fmt.Sprintf("%d", http.StatusNotFound),
 			}})
 			return
@@ -142,6 +152,8 @@ func get(s Service) http.HandlerFunc {
 				OpenCount:   stats.PullRequestOpenCount,
 				ClosedCount: stats.PullRequestClosedCount,
 			},
+
+			Owner: &ResponseOwner{ID: owner.ID},
 		}
 
 		w.Header().Set("Content-Type", jsonapi.MediaType)
