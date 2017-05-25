@@ -92,7 +92,6 @@
 				return this.$store.getters.getUser(this.$route.params.username);
 			},
 			repositories() {
-				console.log(this.user_id);
 				return this.$store.getters.getUserRepositories(this.user_id);
 			},
 		},

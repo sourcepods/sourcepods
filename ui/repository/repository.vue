@@ -66,9 +66,7 @@
 				return this.$route.params.owner;
 			},
 			repository() {
-				let repo = this.$store.getters.getRepository(this.repository_id);
-				console.log(repo);
-				return repo;
+				return this.$store.getters.getRepository(this.repository_id);
 			},
 		},
 		methods: {

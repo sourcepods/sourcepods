@@ -20,7 +20,19 @@ export const store = new Vuex.Store({
 			return {};
 		},
 		getUserRepositories: (state) => (user_id) => {
-			return state.repositories;
+			let userRepositories = [];
+
+			const repositories = state.repositories;
+			for (let id in repositories) {
+				if (repositories.hasOwnProperty(id)) {
+					const repository = repositories[id];
+					if (repository.relationships.owner.data.id === user_id) {
+						userRepositories.push(repository);
+					}
+				}
+			}
+
+			return userRepositories;
 		},
 		getRepository: (state) => (id) => {
 			if (state.repositories[id] !== undefined) {
