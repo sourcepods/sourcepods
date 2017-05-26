@@ -11,13 +11,13 @@
 					<li>
 						<router-link to="/issues">
 							Issues
-							<span class="uk-badge">12</span>
+							<!--<span class="uk-badge">12</span>-->
 						</router-link>
 					</li>
 					<li>
 						<router-link to="/pulls">
 							Pull Requests
-							<span class="uk-badge">1</span>
+							<!--<span class="uk-badge">1</span>-->
 						</router-link>
 					</li>
 				</ul>
