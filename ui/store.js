@@ -35,7 +35,7 @@ export const store = new Vuex.Store({
 			return state.repositories.filter((repository) => repository.relationships.owner.data.id === user_id);
 		},
 		getRepository: (state) => (id) => {
-			let index = state.repositories.findIndex((repository) => repository.id === id)
+			let index = state.repositories.findIndex((repository) => repository.id === id);
 			if (index >= 0) {
 				return state.repositories[index]
 			}

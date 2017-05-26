@@ -1,5 +1,5 @@
 <template>
-	<div v-if="loading"></div>
+	<div v-if="loading || user === null"></div>
 	<div class="uk-container" v-else>
 
 		<div class="uk-grid-small" uk-grid v-if="user!==null">
@@ -81,12 +81,8 @@
 				this.$store.dispatch('fetchUser', this.$route.params.username),
 				this.$store.dispatch('fetchUserRepositories', this.$route.params.username),
 			])
-				.then((responses) => {
-					this.setLoading(false);
-				})
-				.catch(() => {
-					this.setLoading(false);
-				})
+				.then(() => this.setLoading(false))
+				.catch(() => this.setLoading(false))
 		},
 		computed: {
 			user() {

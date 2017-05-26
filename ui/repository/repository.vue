@@ -1,5 +1,5 @@
 <template>
-	<div v-if="loading"></div>
+	<div v-if="loading || repository === null"></div>
 	<div v-else>
 		<div class="repository-nav">
 			<div class="uk-container">
@@ -48,7 +48,7 @@
 			}
 		},
 		created() {
-			this.setLoading(false);
+			this.setLoading(true);
 
 			const payload = {
 				owner: this.$route.params.owner,
