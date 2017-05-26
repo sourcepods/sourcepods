@@ -30,16 +30,16 @@ type service struct {
 
 // AuthenticateUser by hashing the given password an comparing it against the one stored.
 func (s *service) AuthenticateUser(email, password string) (*user.User, error) {
-	user, err := s.store.FindUserByEmail(email)
+	u, err := s.store.FindUserByEmail(email)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return u, nil
 }
 
 func (s *service) CreateSession(userID, userUsername string) (*session.Session, error) {
