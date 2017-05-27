@@ -36,7 +36,9 @@
 		},
 		computed: {
 			users() {
-				return this.$store.getters.getUsers;
+				let users = this.$store.getters.getUsers;
+				// slice copies the array to not modify the one in vuex
+				return users.slice().sort((a, b) => a.attributes.name > b.attributes.name)
 			}
 		},
 		created(){
