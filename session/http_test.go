@@ -98,8 +98,8 @@ func TestAuthorizedInvalidCookie(t *testing.T) {
 
 func TestGetSessionUser(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	ctx := context.WithValue(req.Context(), cookieUserID, "id")
-	ctx = context.WithValue(ctx, cookieUserUsername, "username")
+	ctx := context.WithValue(req.Context(), CookieUserID, "id")
+	ctx = context.WithValue(ctx, CookieUserUsername, "username")
 	req = req.WithContext(ctx)
 
 	user := GetSessionUser(req)

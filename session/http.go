@@ -14,8 +14,8 @@ type ctxKey int
 const (
 	// CookieName is the name to store the cookie in the browser with.
 	CookieName                = "_gitpods_session"
-	cookieUserID       ctxKey = iota
-	cookieUserUsername ctxKey = iota
+	CookieUserID       ctxKey = iota
+	CookieUserUsername ctxKey = iota
 )
 
 var (
@@ -56,8 +56,8 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), cookieUserID, session.User.ID)
-			ctx = context.WithValue(ctx, cookieUserUsername, session.User.Username)
+			ctx := context.WithValue(r.Context(), CookieUserID, session.User.ID)
+			ctx = context.WithValue(ctx, CookieUserUsername, session.User.Username)
 			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
@@ -69,7 +69,7 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 func GetSessionUser(r *http.Request) *User {
 	ctx := r.Context()
 	return &User{
-		ID:       ctx.Value(cookieUserID).(string),
-		Username: ctx.Value(cookieUserUsername).(string),
+		ID:       ctx.Value(CookieUserID).(string),
+		Username: ctx.Value(CookieUserUsername).(string),
 	}
 }
