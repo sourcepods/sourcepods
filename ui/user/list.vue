@@ -7,14 +7,15 @@
 			<li v-for="user in users">
 				<div class="uk-grid">
 					<div>
-						<gravatar class="uk-border-circle" :email="user.email" :size="46" default-img="mm"></gravatar>
+						<gravatar class="uk-border-circle" :email="user.attributes.email" :size="46"
+								  default-img="mm"></gravatar>
 					</div>
 					<div class="uk-width-expand">
-						<router-link class="uk-link-reset uk-text-bold" :to="`/${user.username}`">
-							{{user.name}}
+						<router-link class="uk-link-reset uk-text-bold" :to="`/${user.attributes.username}`">
+							{{user.attributes.name}}
 						</router-link>
 						<br>
-						<span>{{ user.email }}</span>
+						<span>{{ user.attributes.email }}</span>
 					</div>
 				</div>
 			</li>
@@ -35,7 +36,7 @@
 		},
 		computed: {
 			users() {
-				return this.$store.state.users;
+				return this.$store.getters.getUsers;
 			}
 		},
 		created(){

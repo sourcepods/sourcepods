@@ -17,13 +17,13 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger: logger, service: s}
 }
 
-func (s *loggingService) ListAggregateByOwnerUsername(username string) ([]*RepositoryAggregate, error) {
+func (s *loggingService) ListByOwnerUsername(username string) ([]*Repository, []*Stats, *Owner, error) {
 	start := time.Now()
 
-	repositories, err := s.service.ListAggregateByOwnerUsername(username)
+	repositories, stats, owner, err := s.service.ListByOwnerUsername(username)
 
 	logger := log.With(s.logger,
-		"method", "ListAggregateByOwnerUsername",
+		"method", "ListByOwnerUsername",
 		"duration", time.Since(start),
 	)
 
@@ -36,14 +36,14 @@ func (s *loggingService) ListAggregateByOwnerUsername(username string) ([]*Repos
 		level.Debug(logger).Log()
 	}
 
-	return repositories, err
+	return repositories, stats, owner, err
 
 }
 
-func (s *loggingService) Find(owner string, name string) (*Repository, *Stats, error) {
+func (s *loggingService) Find(ownerUsername string, name string) (*Repository, *Stats, *Owner, error) {
 	start := time.Now()
 
-	repository, stats, err := s.service.Find(owner, name)
+	repository, stats, owner, err := s.service.Find(ownerUsername, name)
 
 	logger := log.With(s.logger,
 		"method", "Find",
@@ -59,5 +59,5 @@ func (s *loggingService) Find(owner string, name string) (*Repository, *Stats, e
 		level.Debug(logger).Log()
 	}
 
-	return repository, stats, err
+	return repository, stats, owner, err
 }

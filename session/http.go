@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/google/jsonapi"
 )
 
 type ctxKey int
@@ -16,6 +18,14 @@ const (
 	cookieUserUsername ctxKey = iota
 )
 
+var (
+	errUnauthorized = []*jsonapi.ErrorObject{{
+		Title:  http.StatusText(http.StatusUnauthorized),
+		Detail: "Your Cookie is not valid",
+		Status: fmt.Sprintf("%d", http.StatusUnauthorized),
+	}}
+)
+
 // Authorized users will have a user information in the next handlers.
 func Authorized(s Service) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -23,28 +33,27 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 			cookie, err := r.Cookie(CookieName)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintln(w, err)
-				return // TODO
+				jsonapi.MarshalErrors(w, errUnauthorized)
+				return
 			}
 
 			if cookie.Value == "" {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintln(w, err)
-				return // TODO
+				jsonapi.MarshalErrors(w, errUnauthorized)
+				return
 			}
 
 			if time.Now().Before(cookie.Expires) {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintln(w, "your cookie is expired")
-				return // TODO
+				jsonapi.MarshalErrors(w, errUnauthorized)
+				return
 			}
 
 			session, err := s.FindSession(cookie.Value)
 			if err != nil {
-				println(err)
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintln(w, err)
-				return // TODO
+				jsonapi.MarshalErrors(w, errUnauthorized)
+				return
 			}
 
 			ctx := context.WithValue(r.Context(), cookieUserID, session.User.ID)

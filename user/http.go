@@ -2,11 +2,23 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"time"
 
+	"github.com/google/jsonapi"
 	"github.com/pressly/chi"
 )
+
+type response struct {
+	ID       string    `jsonapi:"primary,users"`
+	Email    string    `jsonapi:"attr,email"`
+	Username string    `jsonapi:"attr,username"`
+	Name     string    `jsonapi:"attr,name"`
+	Created  time.Time `jsonapi:"attr,created_at"`
+	Updated  time.Time `jsonapi:"attr,updated_at"`
+}
 
 // NewUsersHandler returns a RESTful http router interacting with the Service.
 func NewUsersHandler(s Service) *chi.Mux {
@@ -23,15 +35,28 @@ func list(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := s.FindAll()
 		if err != nil {
-			return // TODO
+			jsonapi.MarshalErrors(w, []*jsonapi.ErrorObject{{
+				Title:  http.StatusText(http.StatusInternalServerError),
+				Status: fmt.Sprintf("%d", http.StatusInternalServerError),
+			}})
+			return
 		}
 
-		data, err := json.Marshal(users)
-		if err != nil {
-			return // TODO
+		res := make([]interface{}, len(users))
+		for i, user := range users {
+			res[i] = &response{
+				ID:       user.ID,
+				Email:    user.Email,
+				Username: user.Username,
+				Name:     user.Name,
+				Created:  user.Created,
+				Updated:  user.Updated,
+			}
 		}
 
-		w.Write(data)
+		if err := jsonapi.MarshalManyPayload(w, res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 
@@ -41,16 +66,26 @@ func get(s Service) http.HandlerFunc {
 
 		user, err := s.FindByUsername(username)
 		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			return // TODO
+			jsonapi.MarshalErrors(w, []*jsonapi.ErrorObject{{
+				Title:  http.StatusText(http.StatusNotFound),
+				Detail: "Can't find user with this username",
+				Status: fmt.Sprintf("%d", http.StatusNotFound),
+			}})
+			return
 		}
 
-		data, err := json.Marshal(user)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return // TODO
+		res := &response{
+			ID:       user.ID,
+			Email:    user.Email,
+			Username: user.Username,
+			Name:     user.Name,
+			Created:  user.Created,
+			Updated:  user.Updated,
 		}
-		w.Write(data)
+
+		if err := jsonapi.MarshalOnePayload(w, res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 

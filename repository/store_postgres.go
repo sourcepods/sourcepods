@@ -15,9 +15,21 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 	return &Postgres{db: db}
 }
 
-// ListAggregateByOwnerUsername retrieves a list of repositories based on their ownership.
-func (s *Postgres) ListAggregateByOwnerUsername(username string) ([]*RepositoryAggregate, error) {
-	query := `
+// ListByOwnerUsername retrieves a list of repositories based on their ownership.
+func (s *Postgres) ListByOwnerUsername(username string) ([]*Repository, []*Stats, *Owner, error) {
+	query := `SELECT id FROM users WHERE username = $1`
+	row := s.db.QueryRow(query, username)
+
+	var id string
+	row.Scan(&id)
+
+	if id == "" {
+		return nil, nil, nil, OwnerNotFoundError
+	}
+
+	owner := &Owner{ID: id}
+
+	query = `
 SELECT
 	id,
 	name,
@@ -38,11 +50,13 @@ ORDER BY updated_at DESC`
 
 	rows, err := s.db.Query(query, username)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 	defer rows.Close()
 
-	var repositories []*RepositoryAggregate
+	var repositories []*Repository
+	var stats []*Stats
+
 	for rows.Next() {
 		var id string
 		var name string
@@ -70,27 +84,34 @@ ORDER BY updated_at DESC`
 			&forks,
 		)
 
-		repositories = append(repositories, &RepositoryAggregate{
-			Repository: &Repository{
-				ID:            id,
-				Name:          name,
-				Description:   description.String,
-				Website:       website.String,
-				DefaultBranch: defaultBranch,
-				Private:       private,
-				Bare:          bare,
-				Created:       created,
-				Updated:       updated,
-			},
-			Stars: stars,
-			Forks: forks,
+		repositories = append(repositories, &Repository{
+			ID:            id,
+			Name:          name,
+			Description:   description.String,
+			Website:       website.String,
+			DefaultBranch: defaultBranch,
+			Private:       private,
+			Bare:          bare,
+			Created:       created,
+			Updated:       updated,
+		})
+
+		stats = append(stats, &Stats{
+			Stars:                  stars,
+			Forks:                  forks,
+			IssueTotalCount:        66,
+			IssueOpenCount:         35,
+			IssueClosedCount:       31,
+			PullRequestTotalCount:  20,
+			PullRequestOpenCount:   4,
+			PullRequestClosedCount: 16,
 		})
 	}
 
-	return repositories, nil
+	return repositories, stats, owner, nil
 }
 
-func (s *Postgres) Find(owner string, name string) (*Repository, *Stats, error) {
+func (s *Postgres) Find(owner string, name string) (*Repository, *Stats, *Owner, error) {
 	query := `
 SELECT
 	id,
@@ -100,7 +121,8 @@ SELECT
 	private,
 	bare,
 	created_at,
-	updated_at
+	updated_at,
+	owner_id
 FROM repositories
 WHERE
 	name = $2 AND
@@ -116,6 +138,7 @@ WHERE
 	var bare bool
 	var created time.Time
 	var updated time.Time
+	var ownerID string
 
 	if err := row.Scan(
 		&id,
@@ -126,8 +149,9 @@ WHERE
 		&bare,
 		&created,
 		&updated,
+		&ownerID,
 	); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	return &Repository{
@@ -142,18 +166,15 @@ WHERE
 			Updated:       updated,
 		},
 		&Stats{
-			Stars: 42,
-			Forks: 23,
-			IssueStats: &IssueStats{
-				TotalCount:  66,
-				OpenCount:   13,
-				ClosedCount: 53,
-			},
-			PullRequestStats: &PullRequestStats{
-				TotalCount:  20,
-				OpenCount:   2,
-				ClosedCount: 18,
-			},
+			Stars:                  42,
+			Forks:                  23,
+			IssueTotalCount:        66,
+			IssueOpenCount:         13,
+			IssueClosedCount:       53,
+			PullRequestTotalCount:  20,
+			PullRequestOpenCount:   2,
+			PullRequestClosedCount: 18,
 		},
+		&Owner{ID: ownerID},
 		nil
 }

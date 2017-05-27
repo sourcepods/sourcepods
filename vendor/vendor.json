@@ -82,6 +82,12 @@
 			"revisionTime": "2017-03-07T00:15:33Z"
 		},
 		{
+			"checksumSHA1": "8lXiwKFgUG1tjL09WiV/kgBr/5I=",
+			"path": "github.com/google/jsonapi",
+			"revision": "ebb79233134caefd9f6705f0176a59822c0451b7",
+			"revisionTime": "2017-05-24T03:17:04Z"
+		},
+		{
 			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
 			"path": "github.com/gorilla/context",
 			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
