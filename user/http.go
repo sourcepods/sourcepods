@@ -35,7 +35,11 @@ func list(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := s.FindAll()
 		if err != nil {
-			return // TODO
+			jsonapi.MarshalErrors(w, []*jsonapi.ErrorObject{{
+				Title:  http.StatusText(http.StatusInternalServerError),
+				Status: fmt.Sprintf("%d", http.StatusInternalServerError),
+			}})
+			return
 		}
 
 		res := make([]interface{}, len(users))
