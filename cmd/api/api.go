@@ -18,6 +18,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/pressly/chi"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli"
 )
 
@@ -174,6 +175,20 @@ func apiAction(c *cli.Context) error {
 		Handler: router,
 	}
 
+	privateRouter := chi.NewRouter()
+	privateRouter.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, http.StatusText(http.StatusOK))
+	})
+	privateRouter.Mount("/metrics", promhttp.Handler())
+	privateRouter.Get("/version", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "0.0.0") // TODO: Return json
+	})
+
+	privateServer := &http.Server{
+		Addr:    "0.0.0.0:3021",
+		Handler: privateRouter,
+	}
+
 	var gr group.Group
 	{
 		gr.Add(func() error {
@@ -205,6 +220,14 @@ func apiAction(c *cli.Context) error {
 				return
 			}
 			level.Info(logger).Log("msg", "http server shutdown gracefully")
+		})
+	}
+	{
+		// TODO: Add more logging
+		gr.Add(func() error {
+			return privateServer.ListenAndServe()
+		}, func(err error) {
+			privateServer.Shutdown(context.TODO())
 		})
 	}
 
