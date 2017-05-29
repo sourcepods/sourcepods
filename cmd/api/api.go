@@ -155,6 +155,7 @@ func apiAction(c *cli.Context) error {
 			router.Mount("/users/:username/repositories", repository.NewUsersHandler(rs))
 
 			router.Mount("/repositories/:owner/:name", repository.NewHandler(rs))
+			router.Mount("/repositories/git/", repository.NewProxy())
 		})
 	})
 
