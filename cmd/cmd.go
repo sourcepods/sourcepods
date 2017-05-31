@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	FlagAddr              = "addr"
+	FlagAddr              = "listen-addr"
 	FlagListenAddrPrivate = "listen-addr-private"
-	FlagAddrAPI           = "addr-api"
+	FlagAddrAPI           = "api-url"
 	FlagAPIPrefix         = "api-prefix"
 	FlagDatabaseDriver    = "database-driver"
 	FlagDatabaseDSN       = "database-dsn"
@@ -22,9 +22,9 @@ const (
 	FlagLogLevel          = "log-level"
 	FlagSecret            = "secret"
 
-	EnvAddr              = "GITPODS_ADDR"
+	EnvAddr              = "GITPODS_LISTEN_ADDR"
 	EnvListenAddrPrivate = "GITPODS_LISTEN_ADDR_PRIVATE"
-	EnvAddrAPI           = "GITPODS_ADDR_API"
+	EnvAddrAPI           = "GITPODS_API_URL"
 	EnvAPIPrefix         = "GITPODS_API_PREFIX"
 	EnvDatabaseDriver    = "GITPODS_DATABASE_DRIVER"
 	EnvDatabaseDSN       = "GITPODS_DATABASE_DSN"
