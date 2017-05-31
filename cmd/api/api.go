@@ -25,13 +25,14 @@ import (
 )
 
 type apiConf struct {
-	Addr           string
-	APIPrefix      string
-	DatabaseDriver string
-	DatabaseDSN    string
-	LogJSON        bool
-	LogLevel       string
-	Secret         string
+	Addr              string
+	ListenAddrPrivate string
+	APIPrefix         string
+	DatabaseDriver    string
+	DatabaseDSN       string
+	LogJSON           bool
+	LogLevel          string
+	Secret            string
 }
 
 var (
@@ -42,8 +43,15 @@ var (
 			Name:        cmd.FlagAddr,
 			EnvVar:      cmd.EnvAddr,
 			Usage:       "The address gitpods API runs on",
-			Value:       ":3010",
+			Value:       ":3020",
 			Destination: &apiConfig.Addr,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagListenAddrPrivate,
+			EnvVar:      cmd.EnvListenAddrPrivate,
+			Usage:       "The address gitpods runs a http server only for internal access",
+			Value:       ":3021",
+			Destination: &apiConfig.ListenAddrPrivate,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagAPIPrefix,
@@ -191,7 +199,7 @@ func apiAction(c *cli.Context) error {
 	})
 
 	privateServer := &http.Server{
-		Addr:    "0.0.0.0:3021",
+		Addr:    apiConfig.ListenAddrPrivate,
 		Handler: privateRouter,
 	}
 
@@ -229,11 +237,24 @@ func apiAction(c *cli.Context) error {
 		})
 	}
 	{
-		// TODO: Add more logging
 		gr.Add(func() error {
+			level.Info(logger).Log(
+				"msg", "starting internal gitpods api",
+				"addr", apiConfig.ListenAddrPrivate,
+			)
 			return privateServer.ListenAndServe()
 		}, func(err error) {
-			privateServer.Shutdown(context.TODO())
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+
+			if err := privateServer.Shutdown(ctx); err != nil {
+				level.Error(logger).Log(
+					"msg", "ailed to shutdown internal http server gracefully",
+					"err", err,
+				)
+				return
+			}
+			level.Info(logger).Log("msg", "internal http server shutdown gracefully")
 		})
 	}
 
