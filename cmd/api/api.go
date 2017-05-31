@@ -15,10 +15,12 @@ import (
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/kit/metrics"
+	"github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/pressly/chi"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
 )
 
@@ -93,6 +95,8 @@ func apiAction(c *cli.Context) error {
 	logger := cmd.NewLogger(apiConfig.LogJSON, apiConfig.LogLevel)
 	logger = log.WithPrefix(logger, "app", "api")
 
+	apiMetrics := apiMetrics()
+
 	//
 	// Stores
 	//
@@ -120,10 +124,12 @@ func apiAction(c *cli.Context) error {
 	//
 	var ss session.Service
 	ss = session.NewService(sessions)
+	ss = session.NewMetricsService(ss, apiMetrics.SessionsCreated, apiMetrics.SessionsCleared)
 
 	var as authorization.Service
 	as = authorization.NewService(users.(authorization.Store), ss)
 	as = authorization.NewLoggingService(log.WithPrefix(logger, "service", "authorization"), as)
+	as = authorization.NewMetricsService(apiMetrics.LoginAttempts, as)
 
 	var us user.Service
 	us = user.NewService(users)
@@ -179,7 +185,7 @@ func apiAction(c *cli.Context) error {
 	privateRouter.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, http.StatusText(http.StatusOK))
 	})
-	privateRouter.Mount("/metrics", promhttp.Handler())
+	privateRouter.Mount("/metrics", prom.UninstrumentedHandler())
 	privateRouter.Get("/version", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "0.0.0") // TODO: Return json
 	})
@@ -232,4 +238,35 @@ func apiAction(c *cli.Context) error {
 	}
 
 	return gr.Run()
+}
+
+type APIMetrics struct {
+	LoginAttempts   metrics.Counter
+	SessionsCreated metrics.Counter
+	SessionsCleared metrics.Counter
+}
+
+func apiMetrics() *APIMetrics {
+	namespace := "gitpods"
+
+	return &APIMetrics{
+		LoginAttempts: prometheus.NewCounterFrom(prom.CounterOpts{
+			Namespace: namespace,
+			Subsystem: "authentication",
+			Name:      "login_attempts_total",
+			Help:      "Number of login attempts that succeeded and failed",
+		}, []string{"status"}),
+		SessionsCreated: prometheus.NewCounterFrom(prom.CounterOpts{
+			Namespace: namespace,
+			Subsystem: "sessions",
+			Name:      "created_total",
+			Help:      "Number of created sessions",
+		}, []string{}),
+		SessionsCleared: prometheus.NewCounterFrom(prom.CounterOpts{
+			Namespace: namespace,
+			Subsystem: "sessions",
+			Name:      "cleared_total",
+			Help:      "Number of cleared sessions",
+		}, []string{}),
+	}
 }
