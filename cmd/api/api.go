@@ -15,20 +15,24 @@ import (
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/kit/metrics"
+	"github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/pressly/chi"
+	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
 )
 
 type apiConf struct {
-	Addr           string
-	APIPrefix      string
-	DatabaseDriver string
-	DatabaseDSN    string
-	LogJSON        bool
-	LogLevel       string
-	Secret         string
+	Addr              string
+	ListenAddrPrivate string
+	APIPrefix         string
+	DatabaseDriver    string
+	DatabaseDSN       string
+	LogJSON           bool
+	LogLevel          string
+	Secret            string
 }
 
 var (
@@ -39,8 +43,15 @@ var (
 			Name:        cmd.FlagAddr,
 			EnvVar:      cmd.EnvAddr,
 			Usage:       "The address gitpods API runs on",
-			Value:       ":3010",
+			Value:       ":3020",
 			Destination: &apiConfig.Addr,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagListenAddrPrivate,
+			EnvVar:      cmd.EnvListenAddrPrivate,
+			Usage:       "The address gitpods runs a http server only for internal access",
+			Value:       ":3021",
+			Destination: &apiConfig.ListenAddrPrivate,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagAPIPrefix,
@@ -92,6 +103,8 @@ func apiAction(c *cli.Context) error {
 	logger := cmd.NewLogger(apiConfig.LogJSON, apiConfig.LogLevel)
 	logger = log.WithPrefix(logger, "app", "api")
 
+	apiMetrics := apiMetrics()
+
 	//
 	// Stores
 	//
@@ -119,10 +132,12 @@ func apiAction(c *cli.Context) error {
 	//
 	var ss session.Service
 	ss = session.NewService(sessions)
+	ss = session.NewMetricsService(ss, apiMetrics.SessionsCreated, apiMetrics.SessionsCleared)
 
 	var as authorization.Service
 	as = authorization.NewService(users.(authorization.Store), ss)
 	as = authorization.NewLoggingService(log.WithPrefix(logger, "service", "authorization"), as)
+	as = authorization.NewMetricsService(apiMetrics.LoginAttempts, as)
 
 	var us user.Service
 	us = user.NewService(users)
@@ -174,6 +189,20 @@ func apiAction(c *cli.Context) error {
 		Handler: router,
 	}
 
+	privateRouter := chi.NewRouter()
+	privateRouter.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, http.StatusText(http.StatusOK))
+	})
+	privateRouter.Mount("/metrics", prom.UninstrumentedHandler())
+	privateRouter.Get("/version", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "0.0.0") // TODO: Return json
+	})
+
+	privateServer := &http.Server{
+		Addr:    apiConfig.ListenAddrPrivate,
+		Handler: privateRouter,
+	}
+
 	var gr group.Group
 	{
 		gr.Add(func() error {
@@ -207,6 +236,58 @@ func apiAction(c *cli.Context) error {
 			level.Info(logger).Log("msg", "http server shutdown gracefully")
 		})
 	}
+	{
+		gr.Add(func() error {
+			level.Info(logger).Log(
+				"msg", "starting internal gitpods api",
+				"addr", apiConfig.ListenAddrPrivate,
+			)
+			return privateServer.ListenAndServe()
+		}, func(err error) {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+
+			if err := privateServer.Shutdown(ctx); err != nil {
+				level.Error(logger).Log(
+					"msg", "ailed to shutdown internal http server gracefully",
+					"err", err,
+				)
+				return
+			}
+			level.Info(logger).Log("msg", "internal http server shutdown gracefully")
+		})
+	}
 
 	return gr.Run()
+}
+
+type APIMetrics struct {
+	LoginAttempts   metrics.Counter
+	SessionsCreated metrics.Counter
+	SessionsCleared metrics.Counter
+}
+
+func apiMetrics() *APIMetrics {
+	namespace := "gitpods"
+
+	return &APIMetrics{
+		LoginAttempts: prometheus.NewCounterFrom(prom.CounterOpts{
+			Namespace: namespace,
+			Subsystem: "authentication",
+			Name:      "login_attempts_total",
+			Help:      "Number of login attempts that succeeded and failed",
+		}, []string{"status"}),
+		SessionsCreated: prometheus.NewCounterFrom(prom.CounterOpts{
+			Namespace: namespace,
+			Subsystem: "sessions",
+			Name:      "created_total",
+			Help:      "Number of created sessions",
+		}, []string{}),
+		SessionsCleared: prometheus.NewCounterFrom(prom.CounterOpts{
+			Namespace: namespace,
+			Subsystem: "sessions",
+			Name:      "cleared_total",
+			Help:      "Number of cleared sessions",
+		}, []string{}),
+	}
 }

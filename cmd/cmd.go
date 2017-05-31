@@ -12,23 +12,25 @@ import (
 )
 
 const (
-	FlagAddr           = "addr"
-	FlagAddrAPI        = "addr-api"
-	FlagAPIPrefix      = "api-prefix"
-	FlagDatabaseDriver = "database-driver"
-	FlagDatabaseDSN    = "database-dsn"
-	FlagLogJSON        = "log-json"
-	FlagLogLevel       = "log-level"
-	FlagSecret         = "secret"
+	FlagAddr              = "addr"
+	FlagListenAddrPrivate = "listen-addr-private"
+	FlagAddrAPI           = "addr-api"
+	FlagAPIPrefix         = "api-prefix"
+	FlagDatabaseDriver    = "database-driver"
+	FlagDatabaseDSN       = "database-dsn"
+	FlagLogJSON           = "log-json"
+	FlagLogLevel          = "log-level"
+	FlagSecret            = "secret"
 
-	EnvAddr           = "GITPODS_ADDR"
-	EnvAddrAPI        = "GITPODS_ADDR_API"
-	EnvAPIPrefix      = "GITPODS_API_PREFIX"
-	EnvDatabaseDriver = "GITPODS_DATABASE_DRIVER"
-	EnvDatabaseDSN    = "GITPODS_DATABASE_DSN"
-	EnvLogJSON        = "GITPODS_LOG_JSON"
-	EnvLogLevel       = "GITPODS_LOG_LEVEL"
-	EnvSecret         = "GITPODS_SECRET"
+	EnvAddr              = "GITPODS_ADDR"
+	EnvListenAddrPrivate = "GITPODS_LISTEN_ADDR_PRIVATE"
+	EnvAddrAPI           = "GITPODS_ADDR_API"
+	EnvAPIPrefix         = "GITPODS_API_PREFIX"
+	EnvDatabaseDriver    = "GITPODS_DATABASE_DRIVER"
+	EnvDatabaseDSN       = "GITPODS_DATABASE_DSN"
+	EnvLogJSON           = "GITPODS_LOG_JSON"
+	EnvLogLevel          = "GITPODS_LOG_LEVEL"
+	EnvSecret            = "GITPODS_SECRET"
 )
 
 func NewLogger(json bool, loglevel string) log.Logger {
