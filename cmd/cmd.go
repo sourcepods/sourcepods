@@ -20,6 +20,7 @@ const (
 	FlagDatabaseDSN       = "database-dsn"
 	FlagLogJSON           = "log-json"
 	FlagLogLevel          = "log-level"
+	FlagMigrationsPath    = "migrations-path"
 	FlagSecret            = "secret"
 
 	EnvAddr              = "GITPODS_LISTEN_ADDR"
@@ -30,6 +31,7 @@ const (
 	EnvDatabaseDSN       = "GITPODS_DATABASE_DSN"
 	EnvLogJSON           = "GITPODS_LOG_JSON"
 	EnvLogLevel          = "GITPODS_LOG_LEVEL"
+	EnvMigrationsPath    = "GITPODS_MIGRATIONS_PATH"
 	EnvSecret            = "GITPODS_SECRET"
 )
 
