@@ -175,7 +175,7 @@ func apiAction(c *cli.Context) error {
 
 	if apiConfig.APIPrefix != "/" {
 		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, apiConfig.APIPrefix, http.StatusPermanentRedirect)
+			fmt.Fprintln(w, "API is available at ", apiConfig.APIPrefix)
 		})
 	}
 
