@@ -1,7 +1,7 @@
 {
   "name": "gitpod",
   "version": "0.0.0",
-  "description": "git flying in the cloud!",
+  "description": "git in the cloud!",
   "main": "webpack.config.js",
   "dependencies": {
     "axios": "^0.16.1",

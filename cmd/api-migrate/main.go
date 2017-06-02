@@ -14,7 +14,7 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Name = "gitpods-api"
-	app.Usage = "git flying loudly in the cloud!"
+	app.Usage = "git in the cloud!"
 
 	app.Action = migrateAction
 	app.Flags = migrateFlags
