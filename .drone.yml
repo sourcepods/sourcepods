@@ -53,7 +53,7 @@ pipeline:
       branch: master
       event: push
 
-  docker-api:
+  docker-api-migrate:
     group: docker
     image: plugins/docker
     repo: gitpods/api-migrate
