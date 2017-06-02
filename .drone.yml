@@ -20,7 +20,12 @@ pipeline:
     image: golang:1.8
     commands:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api/api ./cmd/api
-      - ls -lah ./cmd/api
+
+  api-migrate:
+    group: build
+    image: golang:1.8
+    commands:
+      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api-migrate/api-migrate ./cmd/api-migrate
 
   gitpods:
     group: build
@@ -42,6 +47,18 @@ pipeline:
     repo: gitpods/api
     context: ./cmd/api
     dockerfile: ./cmd/api/Dockerfile
+    secrets: [ docker_username, docker_password ]
+    tag: [ latest ]
+    when:
+      branch: master
+      event: push
+
+  docker-api:
+    group: docker
+    image: plugins/docker
+    repo: gitpods/api-migrate
+    context: ./cmd/api-migrate
+    dockerfile: ./cmd/api-migrate/Dockerfile
     secrets: [ docker_username, docker_password ]
     tag: [ latest ]
     when:
