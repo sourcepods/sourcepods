@@ -118,6 +118,36 @@
 			"revisionTime": "2017-03-24T20:46:54Z"
 		},
 		{
+			"checksumSHA1": "2uE2HXbrp0BDgpT+Pvm3vgHMgKg=",
+			"path": "github.com/mattes/migrate",
+			"revision": "448a36c5cbdcc34f348f605a5080b23629c7fbbc",
+			"revisionTime": "2017-05-04T18:05:03Z"
+		},
+		{
+			"checksumSHA1": "+xa6thZtcl3kUUDJyigle/o151o=",
+			"path": "github.com/mattes/migrate/database",
+			"revision": "448a36c5cbdcc34f348f605a5080b23629c7fbbc",
+			"revisionTime": "2017-05-04T18:05:03Z"
+		},
+		{
+			"checksumSHA1": "QSLooIeXnzHZElwTfIZoPH4FNH0=",
+			"path": "github.com/mattes/migrate/database/postgres",
+			"revision": "448a36c5cbdcc34f348f605a5080b23629c7fbbc",
+			"revisionTime": "2017-05-04T18:05:03Z"
+		},
+		{
+			"checksumSHA1": "Pe/0J9ptlSCGtfj8+Le8mQijHAA=",
+			"path": "github.com/mattes/migrate/source",
+			"revision": "448a36c5cbdcc34f348f605a5080b23629c7fbbc",
+			"revisionTime": "2017-05-04T18:05:03Z"
+		},
+		{
+			"checksumSHA1": "8uIdYxIjjUB1z65ejfpumt7oAFY=",
+			"path": "github.com/mattes/migrate/source/file",
+			"revision": "448a36c5cbdcc34f348f605a5080b23629c7fbbc",
+			"revisionTime": "2017-05-04T18:05:03Z"
+		},
+		{
 			"checksumSHA1": "bKMZjd2wPw13VwoE7mBeSv5djFA=",
 			"path": "github.com/matttproud/golang_protobuf_extensions/pbutil",
 			"revision": "c12348ce28de40eed0136aa2b644d0ee0650e56c",
