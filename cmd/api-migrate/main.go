@@ -57,10 +57,17 @@ var (
 )
 
 func migrateAction(c *cli.Context) error {
+	log.Println("start migration...")
+
 	m, err := migrate.New("file://"+migrateConfig.MigrationsPath, migrateConfig.DatabaseDSN)
 	if err != nil {
 		return err
 	}
 
-	return m.Up()
+	if err := m.Up(); err != nil {
+		return err
+	}
+
+	log.Println("migration successful")
+	return nil
 }
