@@ -57,7 +57,6 @@ pipeline:
     group: docker
     image: plugins/docker
     repo: gitpods/api-migrate
-    context: ./cmd/api-migrate
     dockerfile: ./cmd/api-migrate/Dockerfile
     secrets: [ docker_username, docker_password ]
     tag: [ latest ]
