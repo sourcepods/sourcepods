@@ -39,7 +39,6 @@ pipeline:
     group: docker
     image: plugins/docker
     repo: gitpods/api
-    context: ./cmd/api
     dockerfile: ./cmd/api/Dockerfile
     secrets: [ docker_username, docker_password ]
     tag: [ latest ]
