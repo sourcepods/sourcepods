@@ -17,9 +17,12 @@ func main() {
 	app.Name = "gitpods"
 
 	app.Commands = []cli.Command{{
+		Name:   "build",
+		Action: buildAction,
+	}, {
 		Name:   "dev",
 		Usage:  "Runs gitpods on you local development machine",
-		Action: actionDev,
+		Action: devAction,
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "addr-ui",
@@ -66,7 +69,7 @@ func main() {
 	}
 }
 
-func actionDev(c *cli.Context) error {
+func devAction(c *cli.Context) error {
 	if c.Bool("setup") {
 		return ActionDevSetup(c)
 	}
