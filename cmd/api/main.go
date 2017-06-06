@@ -15,6 +15,20 @@ func main() {
 	app.Action = apiAction
 	app.Flags = apiFlags
 
+	app.Commands = []cli.Command{{
+		Name:  "db",
+		Usage: "Run actions on the database",
+		Subcommands: []cli.Command{{
+			Name:   "migrate",
+			Flags:  dbFlags,
+			Action: dbMigrateAction,
+		}, {
+			Name:   "reset",
+			Flags:  dbFlags,
+			Action: dbResetAction,
+		}},
+	}}
+
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
