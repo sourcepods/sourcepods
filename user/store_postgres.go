@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Postgres implementation of the Store.
@@ -131,8 +133,18 @@ LIMIT 1`, email)
 }
 
 // Create a user in postgres and return it with the ID set in the store.
-func (s *Postgres) Create(*User) (*User, error) {
-	panic("implement me")
+func (s *Postgres) Create(u *User) (*User, error) {
+	pass, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.db.QueryRow(
+		`INSERT INTO users (email, username, name, password) VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at`,
+		u.Email, u.Username, u.Name, pass,
+	).Scan(&u.ID, &u.Created, &u.Updated)
+
+	return u, err
 }
 
 // Update a user by its username.

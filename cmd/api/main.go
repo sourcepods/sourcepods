@@ -27,6 +27,20 @@ func main() {
 			Flags:  dbFlags,
 			Action: dbResetAction,
 		}},
+	}, {
+		Name:  "users",
+		Usage: "Manage users",
+		Flags: usersFlags,
+		Subcommands: []cli.Command{{
+			Name:   "create",
+			Action: usersCreateAction,
+			Flags: []cli.Flag{
+				cli.StringFlag{Name: usersEmail},
+				cli.StringFlag{Name: usersUsername},
+				cli.StringFlag{Name: usersName},
+				cli.StringFlag{Name: usersPassword},
+			},
+		}},
 	}}
 
 	if err := app.Run(os.Args); err != nil {
