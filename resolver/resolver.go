@@ -1,10 +1,12 @@
 package resolver
 
+// Resolver is the root with all other resolvers embedded which really implement all funcs.
 type Resolver struct {
 	*UserResolver
 	*RepositoryResolver
 }
 
+// Schema to build the GraphQL API against.
 var Schema = `
 	schema {
 		query: Query

@@ -11,6 +11,7 @@ import (
 	"github.com/neelance/graphql-go"
 )
 
+// UserResolver communicates with the service to interact with repositories.
 type UserResolver struct {
 	repositories repository.Service
 	users        user.Service
@@ -25,10 +26,12 @@ type graphqlUser struct {
 	Updated  time.Time
 }
 
+// NewUser returns a new UserResolver.
 func NewUser(rs repository.Service, us user.Service) *UserResolver {
 	return &UserResolver{repositories: rs, users: us}
 }
 
+// Me returns a userResolver based on the authenticated user which is retrieved from the context.
 func (r *UserResolver) Me(ctx context.Context) *userResolver {
 	sessionUser := session.GetSessionUser(ctx)
 
@@ -55,6 +58,7 @@ type userArgs struct {
 	Username *string
 }
 
+// User returns a userResolver based on an ID and Username.
 func (r *UserResolver) User(args userArgs) *userResolver {
 	//if args.ID != nil { TODO
 	//	for _, user := range users {
@@ -82,6 +86,7 @@ func (r *UserResolver) User(args userArgs) *userResolver {
 	return nil
 }
 
+// Users returns a slice of userResolver.
 func (r *UserResolver) Users() []*userResolver {
 	var uResolvers []*userResolver
 

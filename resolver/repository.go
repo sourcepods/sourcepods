@@ -8,6 +8,7 @@ import (
 	graphql "github.com/neelance/graphql-go"
 )
 
+// RepositoryResolver communicates with the service to interact with repositories.
 type RepositoryResolver struct {
 	repositories repository.Service
 }
@@ -24,6 +25,7 @@ type graphqlRepository struct {
 	Updated       time.Time
 }
 
+// NewRepository returns a new RepositoryResolver.
 func NewRepository(rs repository.Service) *RepositoryResolver {
 	return &RepositoryResolver{repositories: rs}
 }
@@ -34,8 +36,9 @@ type repositoryArgs struct {
 	Name  *string
 }
 
+// Repository returns a repositoryResolver based on an ID or Owner and Name.
 func (r *RepositoryResolver) Repository(args repositoryArgs) *repositoryResolver {
-	if args.ID != nil {
+	if args.ID != nil { // TODO
 		return nil
 	}
 	if args.Owner != nil && args.Name != nil {
@@ -60,6 +63,7 @@ func (r *RepositoryResolver) Repository(args repositoryArgs) *repositoryResolver
 	return nil
 }
 
+// Repositories returns a slice of repositoryResolver based on their owner.
 func (r *RepositoryResolver) Repositories(args struct{ Owner string }) []*repositoryResolver {
 	repos, _, _, err := r.repositories.ListByOwnerUsername(args.Owner)
 	if err != nil {
