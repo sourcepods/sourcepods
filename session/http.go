@@ -66,8 +66,7 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 }
 
 // GetSessionUser from the http.Request
-func GetSessionUser(r *http.Request) *User {
-	ctx := r.Context()
+func GetSessionUser(ctx context.Context) *User {
 	return &User{
 		ID:       ctx.Value(CookieUserID).(string),
 		Username: ctx.Value(CookieUserUsername).(string),

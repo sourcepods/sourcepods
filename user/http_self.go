@@ -20,7 +20,7 @@ func NewUserHandler(s Service) *chi.Mux {
 
 func self(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sessionUser := session.GetSessionUser(r)
+		sessionUser := session.GetSessionUser(r.Context())
 
 		user, err := s.FindByUsername(sessionUser.Username)
 		if err != nil {
