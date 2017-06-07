@@ -11,6 +11,7 @@ import (
 	"github.com/gitpods/gitpods/authorization"
 	"github.com/gitpods/gitpods/cmd"
 	"github.com/gitpods/gitpods/repository"
+	"github.com/gitpods/gitpods/resolver"
 	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-kit/kit/log"
@@ -18,6 +19,8 @@ import (
 	"github.com/go-kit/kit/metrics"
 	"github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
+	graphql "github.com/neelance/graphql-go"
+	"github.com/neelance/graphql-go/relay"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/pressly/chi"
 	prom "github.com/prometheus/client_golang/prometheus"
@@ -148,6 +151,19 @@ func apiAction(c *cli.Context) error {
 	rs = repository.NewLoggingService(log.WithPrefix(logger, "service", "repository"), rs)
 
 	//
+	// Resolvers
+	//
+	res := &resolver.Resolver{
+		resolver.NewUser(rs, us),
+		resolver.NewRepository(rs),
+	}
+
+	schema, err := graphql.ParseSchema(resolver.Schema, res)
+	if err != nil {
+		panic(err)
+	}
+
+	//
 	// Router
 	//
 	router := chi.NewRouter()
@@ -157,7 +173,7 @@ func apiAction(c *cli.Context) error {
 	// Change via APIPrefix.
 	router.Route(apiConfig.APIPrefix, func(router chi.Router) {
 		router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "hi")
+			w.Write(page)
 		})
 
 		router.Mount("/authorize", authorization.NewHandler(as))
@@ -165,6 +181,7 @@ func apiAction(c *cli.Context) error {
 		router.Group(func(router chi.Router) {
 			router.Use(session.Authorized(ss))
 
+			router.Mount("/query", &relay.Handler{Schema: schema})
 			router.Mount("/user", user.NewUserHandler(us))
 			router.Mount("/users", user.NewUsersHandler(us))
 			router.Mount("/users/:username/repositories", repository.NewUsersHandler(rs))
@@ -291,3 +308,42 @@ func apiMetrics() *APIMetrics {
 		}, []string{}),
 	}
 }
+
+var page = []byte(`
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.7.8/graphiql.css" />
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/1.0.0/fetch.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react-dom.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.7.8/graphiql.js"></script>
+	</head>
+	<body style="width: 100%; height: 100%; margin: 0; overflow: hidden;">
+		<div id="graphiql" style="height: 100vh;">Loading...</div>
+		<script>
+			function graphQLFetcher(graphQLParams) {
+				graphQLParams.variables = graphQLParams.variables ? JSON.parse(graphQLParams.variables) : null;
+				return fetch("/api/query", {
+					method: "post",
+					body: JSON.stringify(graphQLParams),
+					credentials: "include",
+				}).then(function (response) {
+					return response.text();
+				}).then(function (responseBody) {
+					try {
+						return JSON.parse(responseBody);
+					} catch (error) {
+						return responseBody;
+					}
+				});
+			}
+
+			ReactDOM.render(
+				React.createElement(GraphiQL, {fetcher: graphQLFetcher}),
+				document.getElementById("graphiql")
+			);
+		</script>
+	</body>
+</html>
+`)
