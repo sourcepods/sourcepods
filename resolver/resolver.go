@@ -1,0 +1,45 @@
+package resolver
+
+type Resolver struct {
+	*UserResolver
+	*RepositoryResolver
+}
+
+var Schema = `
+	schema {
+		query: Query
+		#mutation: Mutation
+	}
+	# The query type, represents all of the entry points into our object graph
+	type Query {
+		me: User
+		user(id: ID, username: String): User
+		users: [User]!
+		repository(id: ID, owner: String, name: String): Repository
+		repositories(owner: String!): [Repository]!
+	}
+	# The mutation type, represents all updates we can make to our data
+	#type Mutation {
+	#}
+	type User {
+		id: ID!
+		email: String!
+		username: String!
+		name: String!
+		created_at: Int!
+		updated_at: Int!
+		repositories: [Repository]!
+	}
+	# Something about a repository
+	type Repository {
+		id: ID!
+		name: String!
+		description: String!
+		website: String!
+		default_branch: String!
+		private: Boolean!
+		bare: Boolean!
+		created_at: Int!
+		updated_at: Int!
+	}
+`
