@@ -45,7 +45,7 @@ func (s *testService) ClearSessions() (int64, error) {
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTeapot)
-	user := GetSessionUser(r)
+	user := GetSessionUser(r.Context())
 	w.Write([]byte(fmt.Sprintf(`{"id":"%s","username":"%s"}`, user.ID, user.Username)))
 }
 
@@ -102,7 +102,7 @@ func TestGetSessionUser(t *testing.T) {
 	ctx = context.WithValue(ctx, CookieUserUsername, "username")
 	req = req.WithContext(ctx)
 
-	user := GetSessionUser(req)
+	user := GetSessionUser(req.Context())
 	assert.Equal(t, "id", user.ID)
 	assert.Equal(t, "username", user.Username)
 }
