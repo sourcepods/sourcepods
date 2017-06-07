@@ -154,10 +154,106 @@
 			"revisionTime": "2016-04-24T11:30:07Z"
 		},
 		{
+			"checksumSHA1": "MEfrTGi+dqWbqiy+e05QZJ8t7Qc=",
+			"path": "github.com/neelance/graphql-go",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "2xo5wWbyp/TuujcXVKIEPVXzrU0=",
+			"path": "github.com/neelance/graphql-go/errors",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "G5EgrmrBH4Ff0Vh9qbZTmhD/JgI=",
+			"path": "github.com/neelance/graphql-go/internal/common",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "BCgntIJgm65/5izmReUwwFbhL6k=",
+			"path": "github.com/neelance/graphql-go/internal/exec",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "N5vH/oTEDpHUXrFCL3AIaOsXuW4=",
+			"path": "github.com/neelance/graphql-go/internal/exec/resolvable",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "HFYmq2ECTKd0uSJ1a5VZRpdsQwY=",
+			"path": "github.com/neelance/graphql-go/internal/exec/selected",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "9gS7LUWp7G78ZYvbGtOHlqCp448=",
+			"path": "github.com/neelance/graphql-go/internal/query",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "UQDy8HWW0f3Ra/BIamumRNEOXNo=",
+			"path": "github.com/neelance/graphql-go/internal/schema",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "lm4eMItTymOnxqEjocli8DafSSY=",
+			"path": "github.com/neelance/graphql-go/internal/validation",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "jpGTrWqoBIeW5d+ROIgWWDr9fzM=",
+			"path": "github.com/neelance/graphql-go/introspection",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "/Z0UFL0llSFn7HkOSzJlr05waz0=",
+			"path": "github.com/neelance/graphql-go/log",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "SMJcg2jarQIR6U0D9IV8JdXNaZ0=",
+			"path": "github.com/neelance/graphql-go/relay",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
+			"checksumSHA1": "rpQOH1goO/+oS+1xFcwvGAsRY7I=",
+			"path": "github.com/neelance/graphql-go/trace",
+			"revision": "073edccda088f21eb03050184190bbe1e66289eb",
+			"revisionTime": "2017-06-06T15:30:47Z"
+		},
+		{
 			"checksumSHA1": "gkyBg/2hcIWR/8qGEeGVoHwOyfo=",
 			"path": "github.com/oklog/oklog/pkg/group",
 			"revision": "4ea5507dbd70a177c5b951e24b93f1680c25e4e8",
 			"revisionTime": "2017-04-13T08:35:20Z"
+		},
+		{
+			"checksumSHA1": "wCBBku+/rkHOsEOst7qTpUbmSfA=",
+			"path": "github.com/opentracing/opentracing-go",
+			"revision": "eaaf4e1eeb7a5373b38e70901270c83577dc6fb9",
+			"revisionTime": "2017-05-06T18:27:58Z"
+		},
+		{
+			"checksumSHA1": "XPOyfxsryU1pByZESwduVu9OEQU=",
+			"path": "github.com/opentracing/opentracing-go/ext",
+			"revision": "eaaf4e1eeb7a5373b38e70901270c83577dc6fb9",
+			"revisionTime": "2017-05-06T18:27:58Z"
+		},
+		{
+			"checksumSHA1": "+rbKrafLHDnrQFgeWawo9tfZhV4=",
+			"path": "github.com/opentracing/opentracing-go/log",
+			"revision": "eaaf4e1eeb7a5373b38e70901270c83577dc6fb9",
+			"revisionTime": "2017-05-06T18:27:58Z"
 		},
 		{
 			"checksumSHA1": "ynJSWoF6v+3zMnh9R0QmmG6iGV8=",
@@ -249,6 +345,12 @@
 			"path": "golang.org/x/crypto/blowfish",
 			"revision": "13d9f6188e639cb843a0568d05540a4cec71cc14",
 			"revisionTime": "2016-08-02T02:34:46Z"
+		},
+		{
+			"checksumSHA1": "Y+HGqEkYM15ir+J93MEaHdyFy0c=",
+			"path": "golang.org/x/net/context",
+			"revision": "59a0b19b5533c7977ddeb86b017bf507ed407b12",
+			"revisionTime": "2017-06-03T08:13:02Z"
 		},
 		{
 			"checksumSHA1": "ZVZBntvdoK/qUq/6uF8YMWmuMC4=",
