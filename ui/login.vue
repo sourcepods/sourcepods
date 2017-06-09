@@ -62,9 +62,7 @@
 						window.location.replace('/');
 					})
 					.catch((err) => {
-						if (err.response.status === 401) {
-							this.failed = true;
-						}
+						this.failed = true;
 					})
 			},
 		}
