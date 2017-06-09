@@ -43,5 +43,7 @@ var Schema = `
 		bare: Boolean!
 		created_at: Int!
 		updated_at: Int!
+		stars: Int!
+		forks: Int!
 	}
 `

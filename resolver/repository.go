@@ -23,6 +23,9 @@ type graphqlRepository struct {
 	Bare          bool
 	Created       time.Time
 	Updated       time.Time
+
+	Stars int
+	Forks int
 }
 
 // NewRepository returns a new RepositoryResolver.
@@ -42,7 +45,7 @@ func (r *RepositoryResolver) Repository(args repositoryArgs) *repositoryResolver
 		return nil
 	}
 	if args.Owner != nil && args.Name != nil {
-		repo, _, _, err := r.repositories.Find(*args.Owner, *args.Name)
+		repo, stats, _, err := r.repositories.Find(*args.Owner, *args.Name)
 		if err != nil {
 			log.Println(err)
 			return nil
@@ -58,6 +61,9 @@ func (r *RepositoryResolver) Repository(args repositoryArgs) *repositoryResolver
 			Bare:          repo.Bare,
 			Created:       repo.Created,
 			Updated:       repo.Updated,
+
+			Stars: stats.Stars,
+			Forks: stats.Forks,
 		}}
 	}
 	return nil
@@ -65,7 +71,7 @@ func (r *RepositoryResolver) Repository(args repositoryArgs) *repositoryResolver
 
 // Repositories returns a slice of repositoryResolver based on their owner.
 func (r *RepositoryResolver) Repositories(args struct{ Owner string }) []*repositoryResolver {
-	repos, _, _, err := r.repositories.ListByOwnerUsername(args.Owner)
+	repos, stats, _, err := r.repositories.ListByOwnerUsername(args.Owner)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -83,6 +89,9 @@ func (r *RepositoryResolver) Repositories(args struct{ Owner string }) []*reposi
 			Bare:          repos[i].Bare,
 			Created:       repos[i].Created,
 			Updated:       repos[i].Updated,
+
+			Stars: stats[i].Stars,
+			Forks: stats[i].Forks,
 		}})
 	}
 	return res
@@ -126,4 +135,12 @@ func (r *repositoryResolver) CreatedAt() int32 {
 
 func (r *repositoryResolver) UpdatedAt() int32 {
 	return int32(r.repository.Updated.Unix())
+}
+
+func (r *repositoryResolver) Stars() int32 {
+	return int32(r.repository.Stars)
+}
+
+func (r *repositoryResolver) Forks() int32 {
+	return int32(r.repository.Forks)
 }

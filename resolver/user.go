@@ -140,7 +140,7 @@ func (r *userResolver) UpdatedAt() int32 {
 }
 
 func (r *userResolver) Repositories() []*repositoryResolver {
-	repos, _, _, err := r.rs.ListByOwnerUsername(r.user.Username)
+	repos, stats, _, err := r.rs.ListByOwnerUsername(r.user.Username)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -158,6 +158,9 @@ func (r *userResolver) Repositories() []*repositoryResolver {
 			Bare:          repos[i].Bare,
 			Created:       repos[i].Created,
 			Updated:       repos[i].Updated,
+
+			Stars: stats[i].Stars,
+			Forks: stats[i].Forks,
 		}})
 	}
 	return res
