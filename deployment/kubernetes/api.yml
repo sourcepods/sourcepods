@@ -1,0 +1,75 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: api
+  namespace: gitpods
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: gitpods/api
+        env:
+        - name: GITPODS_LISTEN_ADDR
+          value: '0.0.0.0:3020'
+        - name: GITPODS_API_PREFIX
+          value: '/api'
+        - name: GITPODS_DATABASE_DRIVER
+          value: 'postgres'
+        - name: GITPODS_DATABASE_DSN
+          valueFrom:
+            secretKeyRef:
+              name: gitpods-try-dsn
+              key: dsn
+        - name: GITPODS_LOG_JSON
+          value: 'true'
+        - name: GITPODS_LOG_LEVEL
+          value: 'info'
+        - name: GITPODS_MIGRATIONS_PATH
+          value: /migrations
+        # This hash is not needed and only used to track with version is deployed when using :latest
+        - name: HASH
+          value: {{ build.commit }}
+        ports:
+        - containerPort: 3020
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3021
+            httpHeaders:
+              - name: X-Custom-Header
+                value: Awesome
+          initialDelaySeconds: 3
+          periodSeconds: 3
+      - image: gcr.io/cloudsql-docker/gce-proxy:1.09
+        name: cloudsql-proxy
+        command:
+        - '/cloud_sql_proxy'
+        - '--dir=/cloudsql'
+        - '-instances=gitpods:europe-west1:gitpods-try=tcp:5432'
+        - '-credential_file=/secrets/cloudsql/credentials.json'
+        volumeMounts:
+          - name: cloudsql-instance-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+          - name: cloudsql
+            mountPath: /cloudsql
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
+        - name: cloudsql
+          emptyDir:
