@@ -58,6 +58,19 @@ pipeline:
       branch: master
       event: push
 
+  kubernetes-api:
+    group: deployment
+    image: vallard/drone-kube
+    namespace: gitpods
+    template: deployment/kubernetes/api.yml
+
+  kubernetes-ui:
+    group: deployment
+    image: vallard/drone-kube
+    namespace: gitpods
+    template: deployment/kubernetes/ui.yml
+
+
   gitter:
     image: plugins/gitter
     secrets: [ gitter_webhook ]
