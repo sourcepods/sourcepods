@@ -45,5 +45,22 @@ var Schema = `
 		updated_at: Int!
 		stars: Int!
 		forks: Int!
+		issue_stats: IssueStats!
+		pull_request_stats: PullRequestStats!
+	}
+	interface OpenClosedStats {
+		total: Int!
+		open: Int!
+		closed: Int!
+	}
+	type IssueStats implements OpenClosedStats {
+		total: Int!
+		open: Int!
+		closed: Int!
+	}
+	type PullRequestStats implements OpenClosedStats {
+		total: Int!
+		open: Int!
+		closed: Int!
 	}
 `

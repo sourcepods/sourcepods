@@ -26,6 +26,21 @@ type graphqlRepository struct {
 
 	Stars int
 	Forks int
+
+	IssueStats       graphqlIssueStats
+	PullRequestStats graphqlPullRequestStats
+}
+
+type graphqlIssueStats struct {
+	Total  int32
+	Open   int32
+	Closed int32
+}
+
+type graphqlPullRequestStats struct {
+	Total  int32
+	Open   int32
+	Closed int32
 }
 
 // NewRepository returns a new RepositoryResolver.
@@ -64,6 +79,17 @@ func (r *RepositoryResolver) Repository(args repositoryArgs) *repositoryResolver
 
 			Stars: stats.Stars,
 			Forks: stats.Forks,
+
+			IssueStats: graphqlIssueStats{
+				Total:  int32(stats.IssueTotalCount),
+				Open:   int32(stats.IssueOpenCount),
+				Closed: int32(stats.IssueClosedCount),
+			},
+			PullRequestStats: graphqlPullRequestStats{
+				Total:  int32(stats.PullRequestTotalCount),
+				Open:   int32(stats.PullRequestOpenCount),
+				Closed: int32(stats.PullRequestClosedCount),
+			},
 		}}
 	}
 	return nil
@@ -143,4 +169,56 @@ func (r *repositoryResolver) Stars() int32 {
 
 func (r *repositoryResolver) Forks() int32 {
 	return int32(r.repository.Forks)
+}
+
+func (r *repositoryResolver) IssueStats() *issueStatsResolver {
+	return &issueStatsResolver{
+		total:  r.repository.IssueStats.Total,
+		open:   r.repository.IssueStats.Open,
+		closed: r.repository.IssueStats.Closed,
+	}
+}
+
+func (r *repositoryResolver) PullRequestStats() *pullRequestStatsResolver {
+	return &pullRequestStatsResolver{
+		total:  r.repository.PullRequestStats.Total,
+		open:   r.repository.PullRequestStats.Open,
+		closed: r.repository.PullRequestStats.Closed,
+	}
+}
+
+type issueStatsResolver struct {
+	total  int32
+	open   int32
+	closed int32
+}
+
+func (r *issueStatsResolver) Total() int32 {
+	return r.total
+}
+
+func (r *issueStatsResolver) Open() int32 {
+	return r.open
+}
+
+func (r *issueStatsResolver) Closed() int32 {
+	return r.closed
+}
+
+type pullRequestStatsResolver struct {
+	total  int32
+	open   int32
+	closed int32
+}
+
+func (r *pullRequestStatsResolver) Total() int32 {
+	return r.total
+}
+
+func (r *pullRequestStatsResolver) Open() int32 {
+	return r.open
+}
+
+func (r *pullRequestStatsResolver) Closed() int32 {
+	return r.closed
 }
