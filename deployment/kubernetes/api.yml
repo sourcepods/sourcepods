@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: gitpods/api
+        image: gitpods/api:latest
         env:
         - name: GITPODS_LISTEN_ADDR
           value: '0.0.0.0:3020'
@@ -31,7 +31,12 @@ spec:
           value: 'info'
         - name: GITPODS_MIGRATIONS_PATH
           value: /migrations
-        # This hash is not needed and only used to track with version is deployed when using :latest
+        - name: GITPODS_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: gitpods-try-secret
+              key: secret
+        # This hash is not needed and only used to track which version is deployed when using :latest
         - name: HASH
           value: {{ build.commit }}
         ports:

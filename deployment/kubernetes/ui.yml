@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
       - name: ui
-        image: gitpods/ui
+        image: gitpods/ui:latest
         env:
         - name: GITPODS_LISTEN_ADDR
           value: 0.0.0.0:3010
@@ -22,7 +22,7 @@ spec:
           value: debug
         - name: GITPODS_LOG_JSON
           value: 'true'
-        # This hash is not needed and only used to track with version is deployed when using :latest
+        # This hash is not needed and only used to track which version is deployed when using :latest
         - name: HASH
           value: {{ build.commit }}
         ports:
