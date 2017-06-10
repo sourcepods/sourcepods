@@ -62,7 +62,7 @@ pipeline:
     group: deployment
     image: vallard/drone-kube
     namespace: gitpods
-    template: deployment/kubernetes/api.yml
+    template: deployment/kubernetes/api/deployment.yml
     secrets: [ KUBE_SERVER, KUBE_CA, KUBE_TOKEN ]
     when:
       branch: master
@@ -72,7 +72,7 @@ pipeline:
     group: deployment
     image: vallard/drone-kube
     namespace: gitpods
-    template: deployment/kubernetes/ui.yml
+    template: deployment/kubernetes/ui/deployment.yml
     secrets: [ KUBE_SERVER, KUBE_CA, KUBE_TOKEN ]
     when:
       branch: master
