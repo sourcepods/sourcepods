@@ -7,15 +7,15 @@
 			<li v-for="user in users">
 				<div class="uk-grid">
 					<div>
-						<gravatar class="uk-border-circle" :email="user.attributes.email" :size="46"
+						<gravatar class="uk-border-circle" :email="user.email" :size="46"
 								  default-img="mm"></gravatar>
 					</div>
 					<div class="uk-width-expand">
-						<router-link class="uk-link-reset uk-text-bold" :to="`/${user.attributes.username}`">
-							{{user.attributes.name}}
+						<router-link class="uk-link-reset uk-text-bold" :to="`/${user.username}`">
+							{{user.name}}
 						</router-link>
 						<br>
-						<span>{{ user.attributes.email }}</span>
+						<span>{{ user.email }}</span>
 					</div>
 				</div>
 			</li>
@@ -38,7 +38,7 @@
 			users() {
 				let users = this.$store.getters.getUsers;
 				// slice copies the array to not modify the one in vuex
-				return users.slice().sort((a, b) => a.attributes.name > b.attributes.name)
+				return users.slice().sort((a, b) => a.name > b.name)
 			}
 		},
 		created(){

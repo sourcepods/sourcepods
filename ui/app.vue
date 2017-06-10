@@ -12,14 +12,6 @@
 		components: {
 			Navbar,
 		},
-		created() {
-			this.$store.dispatch('fetchAuthenticatedUser')
-				.then((res) => {
-				})
-				.catch((err) => {
-					this.$router.push('/login');
-				})
-		}
 	}
 </script>
 

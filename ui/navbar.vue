@@ -35,15 +35,15 @@
 				<!--</div>-->
 				<ul class="uk-navbar-nav" v-if="user !== null">
 					<li>
-						<router-link :to="`/${user.attributes.username}`">
-							<gravatar class="uk-border-circle" :email="user.attributes.email" :size="46"
+						<router-link :to="`/${user.username}`">
+							<gravatar class="uk-border-circle" :email="user.email" :size="46"
 									  default-img="mm"></gravatar>
 							<span uk-icon="icon: more-vertical"></span>
 						</router-link>
 						<div class="uk-navbar-dropdown">
 							<ul class="uk-nav uk-navbar-dropdown-nav">
 								<li>
-									<router-link :to="`/${user.attributes.username}`">Profile</router-link>
+									<router-link :to="`/${user.username}`">Profile</router-link>
 								</li>
 								<li>
 									<router-link to="/settings/profile">Settings</router-link>
@@ -67,6 +67,15 @@
 	export default {
 		components: {
 			Gravatar,
+		},
+		created() {
+			this.$store.dispatch('fetchAuthenticatedUser')
+				.then((res) => {
+				})
+				.catch((err) => {
+					// TODO: Make this an apollo middleware
+					this.$router.push('/login');
+				});
 		},
 		computed: {
 			user() {

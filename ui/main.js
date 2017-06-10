@@ -1,7 +1,9 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 
+import {createProvider} from './apollo';
 import {store} from "./store";
+
 import App from "./app.vue";
 import Login from "./login.vue";
 import UserList from "./user/list.vue";
@@ -30,5 +32,6 @@ new Vue({
 	el: '#app',
 	store: store,
 	router: router,
+	apolloProvider: createProvider(),
 	render: h => h(App)
 });

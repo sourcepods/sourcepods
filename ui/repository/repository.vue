@@ -12,11 +12,11 @@
 						<h3>
 							<router-link :to="`/${owner_name}`">{{owner_name}}</router-link>
 							<span>/</span>
-							<router-link :to="`/${owner_name}/${repository.attributes.name}`">
-								{{repository.attributes.name}}
+							<router-link :to="`/${owner_name}/${repository.name}`">
+								{{repository.name}}
 							</router-link>
 						</h3>
-						<span>{{repository.attributes.description}}</span>
+						<span>{{repository.description}}</span>
 					</div>
 				</div>
 
@@ -25,11 +25,11 @@
 					<li><a href="#">Repository</a></li>
 					<li><a href="#">
 						Issues
-						<span class="uk-badge">{{repository.attributes.issue_stats.open_count}}</span>
+						<span class="uk-badge">{{repository.issue_stats.open}}</span>
 					</a></li>
 					<li><a href="#">
 						Pull Requests
-						<span class="uk-badge">{{repository.attributes.pull_request_stats.open_count}}</span>
+						<span class="uk-badge">{{repository.pull_request_stats.open}}</span>
 					</a></li>
 					<li><a href="#">Pipelines</a></li>
 					<li><a href="#">Settings</a></li>
