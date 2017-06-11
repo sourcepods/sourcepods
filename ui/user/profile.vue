@@ -18,7 +18,10 @@
 					</li>
 					<li>
 						<span uk-icon="icon: clock"></span>
-						<span>Joined on {{user.created_at}}</span>
+						<span
+							:title="new Date(user.created_at*1000) | moment('YYYY MMMM DD, HH:mm:ss')">
+							Joined on {{new Date(user.created_at * 1000) | moment("from")}}
+						</span>
 					</li>
 					<li></li>
 				</ul>

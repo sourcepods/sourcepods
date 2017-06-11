@@ -37,8 +37,6 @@ export const store = new Vuex.Store({
 		getUserRepositories: (state) => (user_id) => {
 			let userIndex = state.users.findIndex((user) => user.id === user_id);
 
-			console.log(state.users[userIndex].repositories === undefined);
-
 			if (state.users[userIndex].repositories === undefined) {
 				return null;
 			}
@@ -65,10 +63,8 @@ export const store = new Vuex.Store({
 		setUser(state, user) {
 			let index = state.users.findIndex((u) => u.id === user.id);
 			if (index >= 0) {
-				console.log('updating', user.username);
 				state.users[index] = Object.assign({}, state.users[index], user);
 			} else {
-				console.log('adding', user.username);
 				state.users.push(user);
 			}
 		},
