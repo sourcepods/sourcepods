@@ -1,5 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
+import VueMoment from 'vue-moment';
 
 import {createProvider} from './apollo';
 import {store} from "./store";
@@ -14,6 +15,7 @@ import Issues from "./issues/issues.vue";
 import Repository from './repository/repository.vue';
 
 Vue.use(VueRouter);
+Vue.use(VueMoment);
 
 const router = new VueRouter({
 	mode: 'history',
