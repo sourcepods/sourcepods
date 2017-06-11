@@ -4,7 +4,7 @@
 
 			<img src="/img/logo.svg" class="uk-align-center logo"/>
 
-			<h3 class="uk-heading-line"><span>Sign in to GitPod</span></h3>
+			<h3 class="uk-heading-line"><span>Sign in to GitPods</span></h3>
 
 			<!-- TODO: set failed = false on @hide -->
 			<div class="uk-alert-danger" uk-alert v-if="failed">
@@ -32,9 +32,9 @@
 					<button class="uk-button uk-button-primary uk-width-1-1 uk-margin-small-bottom">Sign in</button>
 				</div>
 
-				<div class="uk-text-right">
-					<a href="">Forgot your password?</a>
-				</div>
+				<!--<div class="uk-text-right">-->
+					<!--<a href="">Forgot your password?</a>-->
+				<!--</div>-->
 			</form>
 
 		</div>
