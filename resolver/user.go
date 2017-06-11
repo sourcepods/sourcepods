@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -108,6 +109,37 @@ func (r *UserResolver) Users() []*userResolver {
 	}
 
 	return uResolvers
+}
+
+type profileInput struct {
+	ID       graphql.ID
+	Username string
+	Name     string
+}
+
+func (r *UserResolver) UpdateProfile(args *struct{ Profile profileInput }) (*userResolver, error) {
+	u := &user.User{
+		ID:       string(args.Profile.ID),
+		Username: args.Profile.Username,
+		Name:     args.Profile.Name,
+	}
+
+	fmt.Printf("user: %+v\n", u)
+
+	u, err := r.users.Update(u.ID, u)
+	if err != nil {
+		log.Println(err)
+		return nil, fmt.Errorf("updating user failed")
+	}
+
+	return &userResolver{rs: r.repositories, user: &graphqlUser{
+		ID:       graphql.ID(u.ID),
+		Email:    u.Email,
+		Username: u.Username,
+		Name:     u.Name,
+		Created:  u.Created,
+		Updated:  u.Updated,
+	}}, nil
 }
 
 type userResolver struct {

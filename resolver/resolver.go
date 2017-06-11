@@ -6,12 +6,15 @@ type Resolver struct {
 	*RepositoryResolver
 }
 
-// Schema to build the GraphQL API against.
-var Schema = `
+var (
+	// Schema to build the GraphQL API against.
+	Schema = `
 	schema {
 		query: Query
-		#mutation: Mutation
-	}
+		mutation: Mutation
+	}` + Query + Mutation
+
+	Query = `
 	# The query type, represents all of the entry points into our object graph
 	type Query {
 		me: User
@@ -20,9 +23,6 @@ var Schema = `
 		repository(id: ID, owner: String, name: String): Repository
 		repositories(owner: String!): [Repository]!
 	}
-	# The mutation type, represents all updates we can make to our data
-	#type Mutation {
-	#}
 	type User {
 		id: ID!
 		email: String!
@@ -62,5 +62,15 @@ var Schema = `
 		total: Int!
 		open: Int!
 		closed: Int!
+	}`
+	Mutation = `
+	# The mutation type, represents all updates we can make to our data
+	type Mutation {
+		updateProfile(profile: updatedProfile!): User!
 	}
-`
+	input updatedProfile {
+		id: ID!
+		username: String!
+		name: String!
+	}`
+)

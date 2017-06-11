@@ -11,7 +11,8 @@ import UserProfile from "./user/profile.vue";
 import UserEdit from "./user/edit.vue";
 import Pulls from "./pulls/pulls.vue";
 import Issues from "./issues/issues.vue";
-import Repository from './repository/repository.vue';
+import Repository from "./repository/repository.vue";
+import SettingsProfile from './pages/settings/profile.vue';
 
 Vue.use(VueRouter);
 Vue.use(VueMoment);
@@ -23,6 +24,7 @@ const router = new VueRouter({
 		{path: "/login", component: Login},
 		{path: '/pulls', component: Pulls},
 		{path: '/issues', component: Issues},
+		{path: '/settings/profile', component: SettingsProfile},
 		{path: "/:username", component: UserProfile},
 		{path: "/:username/edit", component: UserEdit},
 		{path: '/:owner/:repository', component: Repository},
