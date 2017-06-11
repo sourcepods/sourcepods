@@ -31,17 +31,15 @@
 		components: {
 			Gravatar,
 		},
-		data() {
-			return {}
-		},
 		computed: {
 			users() {
-				let users = this.$store.getters.getUsers;
 				// slice copies the array to not modify the one in vuex
-				return users.slice().sort((a, b) => a.name > b.name)
+				let users = this.$store.getters.getUsers;
+				users = Object.keys(users).map((key) => users[key]);
+				return users.sort((a, b) => a.name > b.name)
 			}
 		},
-		created(){
+		created() {
 			this.$store.dispatch('fetchUsers');
 		},
 	}

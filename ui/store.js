@@ -2,88 +2,72 @@ import Vuex from "vuex";
 import axios from "axios";
 import Lokka from "lokka";
 import {Transport} from "lokka-transport-http";
+import {normalize, schema} from "normalizr";
 
 const client = new Lokka({
 	transport: new Transport(`${window.config.api}/query`)
 });
 
 export const store = new Vuex.Store({
-		strict: process.env.NODE_ENV !== 'production',
-		state: {
-			loading: false,
-			user_id: null,
-			users: [],
-			repositories: [],
-		},
-		getters: {
-			getAuthUser(state) {
-				if (state.user_id === null) {
-					return null;
-				}
-
-				let index = state.users.findIndex((user) => user.id === state.user_id);
-				if (index >= 0) {
-					return state.users[index];
-				}
-				return null;
-			},
-			getUsers: (state) => {
-				return state.users;
-			},
-			getUserByUsername: (state) => (username) => {
-				let index = state.users.findIndex((user) => user.username === username);
-				if (index >= 0) {
-					return state.users[index];
-				}
-				return null;
-			},
-			getUserRepositories: (state) => (user_id) => {
-				let userIndex = state.users.findIndex((user) => user.id === user_id);
-
-				if (state.users[userIndex].repositories === undefined) {
-					return null;
-				}
-
-				return state.repositories.filter(function (e) {
-					return this.indexOf(e.id) >= 0;
-				}, state.users[userIndex].repositories);
-			},
-			getRepository: (state) => (id) => {
-				let index = state.repositories.findIndex((repository) => repository.id === id);
-				if (index >= 0) {
-					return state.repositories[index]
-				}
+	strict: process.env.NODE_ENV !== 'production',
+	state: {
+		loading: false,
+		user_id: null,
+		users: {},
+		repositories: {},
+	},
+	getters: {
+		getAuthUser(state) {
+			if (state.user_id === null) {
 				return null;
 			}
+			return state.users[state.user_id];
 		},
-		mutations: {
-			loading(state, isLoading) {
-				state.loading = isLoading;
-			},
-			setAuthUser(state, user_id) {
-				state.user_id = user_id;
-			},
-			setUser(state, user) {
-				let index = state.users.findIndex((u) => u.id === user.id);
-				if (index >= 0) {
-					state.users[index] = Object.assign({}, state.users[index], user);
-				} else {
-					state.users.push(user);
-				}
-			},
-			setRepository(state, repository) {
-				let index = state.repositories.findIndex((r) => r.id === repository.id);
-				if (index >= 0) {
-					state.repositories[index] = Object.assign({}, state.repositories[index], repository);
-				} else {
-					state.repositories.push(repository);
-				}
-			},
+		getUsers: (state) => {
+			return state.users;
 		},
-		actions: {
-			fetchAuthenticatedUser(ctx) {
-				return new Promise((resolve, reject) => {
-					const query = `
+		getUserByUsername: (state) => (username) => {
+			const users = Object.keys(state.users).map((id) => state.users[id]);
+			return users.filter((user) => user.username === username)[0];
+		},
+		getUserRepositories: (state) => (user_id) => {
+			const user = state.users[user_id];
+
+			if (user.repositories === undefined) {
+				return [];
+			}
+
+			let repositories = [];
+			user.repositories.forEach((repo_id) => {
+				repositories.push(state.repositories[repo_id]);
+			});
+
+			return repositories;
+		},
+		getRepository: (state) => (id) => {
+			return state.repositories[id];
+		}
+	},
+	mutations: {
+		loading(state, isLoading) {
+			state.loading = isLoading;
+		},
+		setAuthUser(state, user_id) {
+			state.user_id = user_id;
+		},
+		setUsers(state, users) {
+			state.users = Object.assign({}, state.users, users);
+		},
+		setRepositories(state, repositories) {
+			state.repositories = Object.assign({}, state.repositories, repositories);
+		},
+	},
+	actions: {
+		fetchAuthenticatedUser(ctx) {
+			const userSchema = new schema.Entity('me');
+
+			return new Promise((resolve, reject) => {
+				const query = `
 					query me {
 						me {
 							id
@@ -94,30 +78,35 @@ export const store = new Vuex.Store({
 							updated_at
 						}
 					}`;
-					client.query(query).then((res) => {
-						ctx.commit('setUser', res.me);
-						ctx.commit('setAuthUser', res.me.id);
-						resolve(res);
-					}).catch((err) => {
+				client.query(query).then((res) => {
+					const data = normalize(res.me, userSchema);
+
+					ctx.commit('setUsers', data.entities.me);
+					ctx.commit('setAuthUser', data.result);
+
+					resolve(res);
+				}).catch((err) => {
+					reject(err);
+				})
+			});
+		},
+		authenticateUser(ctx, payload) {
+			return new Promise((resolve, reject) => {
+				axios.post(`${window.config.api}/authorize`, payload)
+					.then((res) => {
+						ctx.commit('setUsers', res.data);
+						resolve(res.data);
+					})
+					.catch((err) => {
 						reject(err);
 					})
-				});
-			},
-			authenticateUser(ctx, payload) {
-				return new Promise((resolve, reject) => {
-					axios.post(`${window.config.api}/authorize`, payload)
-						.then((res) => {
-							ctx.commit('setUser', res.data);
-							resolve(res.data);
-						})
-						.catch((err) => {
-							reject(err);
-						})
-				})
-			},
-			fetchUsers(ctx) {
-				return new Promise((resolve, reject) => {
-					const query = `
+			})
+		},
+		fetchUsers(ctx) {
+			const userSchema = new schema.Entity('users');
+
+			return new Promise((resolve, reject) => {
+				const query = `
 					query allUsers {
 						users {
 							id
@@ -126,19 +115,25 @@ export const store = new Vuex.Store({
 							email
 						}
 					}`;
-					client.query(query).then((res) => {
-						res.users.forEach((user) => {
-							ctx.commit('setUser', user);
-						});
-						resolve(res);
-					}).catch((err) => {
-						reject(err);
-					});
+				client.query(query).then((res) => {
+					const data = normalize(res.users, [userSchema]);
+
+					ctx.commit('setUsers', data.entities.users);
+
+					resolve(res);
+				}).catch((err) => {
+					reject(err);
 				});
-			},
-			fetchUserProfile(ctx, username) {
-				return new Promise((resolve, reject) => {
-					const query = `
+			});
+		},
+		fetchUserProfile(ctx, username) {
+			const repositorySchema = new schema.Entity('repositories');
+			const userSchema = new schema.Entity('user', {
+				repositories: [repositorySchema],
+			});
+
+			return new Promise((resolve, reject) => {
+				const query = `
 					query userProfile($username: String) {
 						user(username: $username) {
 							id
@@ -155,85 +150,83 @@ export const store = new Vuex.Store({
 							}
 						}
 					}`;
-					client.query(query,
-						{
-							username: username,
-						}
-					).then((res) => {
-						let user = Object.assign({}, res.user);
-						user.repositories.forEach((repository) => {
-							ctx.commit('setRepository', repository);
-						});
-						user.repositories = user.repositories.map(repository => repository.id);
-						ctx.commit('setUser', user);
-						setTimeout(resolve(res), 100);
-					}).catch((err) => {
-						reject(err);
-					});
-				})
-			},
-			updateUser(ctx, user)
-			{
-				return new Promise((resolve, reject) => {
-					axios.put(`${window.config.api}/users/${user.username}`, user)
-						.then((res) => {
-							ctx.commit('updateUser', res.data);
-							resolve(res.data);
-						})
-						.catch((err) => {
-							reject(err);
-						})
-				})
-			}
-			,
-			deleteUser(ctx, username)
-			{
-				return new Promise((resolve, reject) => {
-					axios.delete(`${window.config.api}/users/${username}`)
-						.then((res) => {
-							ctx.dispatch('fetchUsers');
-							resolve(res.data.data);
-						})
-						.catch((err) => {
-							reject(err);
-						})
-				})
-			}
-			,
-			fetchRepository(ctx, data)
-			{
-				return new Promise((resolve, reject) => {
-					const query = `
-						query Repository($owner: String, $name: String) {
-							repository(owner: $owner, name: $name) {
-								id
-								name
-								description
-								website
-								private
-								stars
-								forks
-								issue_stats {
-									open
-								}
-								pull_request_stats {
-									open
-								}
-							}
-						}`;
-					client.query(query,
-						{
-							owner: data.owner,
-							name: data.repository,
-						}
-					).then((res) => {
-						ctx.commit('setRepository', res.repository);
-						resolve(res.repository);
-					}).catch((err) => {
-						reject(err);
-					});
-				})
-			}
+				client.query(query,
+					{
+						username: username,
+					}
+				).then((res) => {
+					const data = normalize(res.user, userSchema);
+
+					ctx.commit('setUsers', data.entities.user);
+					ctx.commit('setRepositories', data.entities.repositories);
+
+					resolve(res);
+				}).catch((err) => {
+					reject(err);
+				});
+			})
 		},
-	})
-;
+		updateUser(ctx, user) {
+			return new Promise((resolve, reject) => {
+				axios.put(`${window.config.api}/users/${user.username}`, user)
+					.then((res) => {
+						ctx.commit('updateUser', res.data);
+						resolve(res.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
+		},
+		deleteUser(ctx, username) {
+			return new Promise((resolve, reject) => {
+				axios.delete(`${window.config.api}/users/${username}`)
+					.then((res) => {
+						ctx.dispatch('fetchUsers');
+						resolve(res.data.data);
+					})
+					.catch((err) => {
+						reject(err);
+					})
+			})
+		},
+		fetchRepository(ctx, data) {
+			const repositorySchema = new schema.Entity('repository');
+
+			return new Promise((resolve, reject) => {
+				const query = `
+					query Repository($owner: String, $name: String) {
+						repository(owner: $owner, name: $name) {
+							id
+							name
+							description
+							website
+							private
+							stars
+							forks
+							issue_stats {
+								open
+							}
+							pull_request_stats {
+								open
+							}
+						}
+					}`;
+				client.query(query,
+					{
+						owner: data.owner,
+						name: data.repository,
+					}
+				).then((res) => {
+					const data = normalize(res.repository, repositorySchema);
+
+					ctx.commit('setRepositories', data.entities.repository);
+
+					resolve(res.repository);
+				}).catch((err) => {
+					reject(err);
+				});
+			})
+		}
+	},
+});

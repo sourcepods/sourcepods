@@ -8,6 +8,7 @@
     "jquery": "^3.2.1",
     "lokka": "^1.7.0",
     "lokka-transport-http": "^1.6.1",
+    "normalizr": "^3.2.3",
     "uikit": "^3.0.0-beta.22",
     "vue": "^2.2.6",
     "vue-gravatar": "^1.1.3",
