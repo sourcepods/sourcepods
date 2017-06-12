@@ -21,18 +21,30 @@
 				</div>
 
 				<ul class="uk-child-width-expand" uk-tab>
-					<li><a href="#">Project</a></li>
-					<li><a href="#">Repository</a></li>
-					<li><a href="#">
-						Issues
-						<span class="uk-badge">{{repository.issue_stats.open}}</span>
-					</a></li>
-					<li><a href="#">
-						Pull Requests
-						<span class="uk-badge">{{repository.pull_request_stats.open}}</span>
-					</a></li>
-					<li><a href="#">Pipelines</a></li>
-					<li><a href="#">Settings</a></li>
+					<li>
+						<a href="#">Project</a>
+					</li>
+					<li>
+						<a href="#">Repository</a>
+					</li>
+					<li>
+						<a href="#">
+							Issues
+							<span class="uk-badge">{{repository.issue_stats.open}}</span>
+						</a>
+					</li>
+					<li>
+						<a href="#">
+							Pull Requests
+							<span class="uk-badge">{{repository.pull_request_stats.open}}</span>
+						</a>
+					</li>
+					<li>
+						<a href="#">Pipelines</a>
+					</li>
+					<li>
+						<a href="#">Settings</a>
+					</li>
 				</ul>
 			</div>
 		</div>
