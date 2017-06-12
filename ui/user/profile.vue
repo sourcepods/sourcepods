@@ -39,6 +39,20 @@
 
 				<div>
 					<ul class="uk-list uk-list-large uk-list-divider repository-list">
+						<li>
+							<div uk-grid>
+								<div class="uk-width-expand uk-margin">
+									<form class="uk-search uk-search-default" style="width: 100%;">
+										<a href="" class="uk-search-icon-flip" uk-search-icon></a>
+										<input class="uk-search-input" type="search" placeholder="Search..."
+											   v-model="search">
+									</form>
+								</div>
+								<div class="uk-width-auto">
+									<router-link class="uk-button uk-button-primary" :to="`/new`">New</router-link>
+								</div>
+							</div>
+						</li>
 						<li v-for="repository in repositories">
 							<div class="uk-flex">
 								<div class="uk-flex-auto">
@@ -76,6 +90,7 @@
 		data() {
 			return {
 				loading: true,
+				search: null,
 			}
 		},
 		created() {
@@ -88,7 +103,11 @@
 				return this.$store.getters.getUserByUsername(this.$route.params.username);
 			},
 			repositories() {
-				return this.$store.getters.getUserRepositories(this.user.id);
+				let repositories = this.$store.getters.getUserRepositories(this.user.id);
+				if (this.search === null) {
+					return repositories;
+				}
+				return repositories.filter((repository) => repository.name.includes(this.search));
 			},
 		},
 		methods: {
