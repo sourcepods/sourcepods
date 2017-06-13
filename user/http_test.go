@@ -42,6 +42,10 @@ func (s *testService) FindAll() ([]*User, error) {
 	return []*User{&u1, &u2}, nil
 }
 
+func (s *testService) Find(string) (*User, error) {
+	panic("implement me")
+}
+
 func (s *testService) FindByUsername(username string) (*User, error) {
 	switch username {
 	case u1.Username:
@@ -57,7 +61,7 @@ func (s *testService) Create(*User) (*User, error) {
 	panic("implement me")
 }
 
-func (s *testService) Update(string, *User) (*User, error) {
+func (s *testService) Update(*User) (*User, error) {
 	panic("implement me")
 }
 
