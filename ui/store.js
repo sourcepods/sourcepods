@@ -167,15 +167,36 @@ export const store = new Vuex.Store({
 			})
 		},
 		updateUser(ctx, user) {
+			const userSchema = new schema.Entity('user');
+
 			return new Promise((resolve, reject) => {
-				axios.put(`${window.config.api}/users/${user.username}`, user)
-					.then((res) => {
-						ctx.commit('updateUser', res.data);
-						resolve(res.data);
-					})
-					.catch((err) => {
-						reject(err);
-					})
+				const query = `
+				($id: ID!, $user: updatedUser!) {
+					updateUser(id: $id, user: $user) {
+						id
+						email
+						username
+						name
+						created_at
+						updated_at
+					}
+				}`;
+				client.mutate(query,
+					{
+						id: user.id,
+						user: {
+							name: user.name,
+						}
+					}
+				).then((res) => {
+					const data = normalize(res.updateUser, userSchema);
+
+					ctx.commit('setUsers', data.entities.user);
+
+					resolve(res.updateUser);
+				}).catch((err) => {
+					reject(err);
+				});
 			})
 		},
 		deleteUser(ctx, username) {

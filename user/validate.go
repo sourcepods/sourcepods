@@ -28,6 +28,32 @@ func ValidateCreate(u *User) []error {
 	return errs
 }
 
+func ValidateUpdate(u *User) []error {
+	var errs []error
+
+	if err := validateID(u.ID); err != nil {
+		errs = append(errs, err)
+	}
+
+	if err := validateEmail(u.Email); err != nil {
+		errs = append(errs, err)
+	}
+
+	if err := validateUsername(u.Username); err != nil {
+		errs = append(errs, err)
+	}
+
+	if err := validateName(u.Name); err != nil {
+		errs = append(errs, err)
+	}
+
+	if err := validatePassword(u.Password); err != nil {
+		errs = append(errs, err)
+	}
+
+	return errs
+}
+
 func validateID(id string) error {
 	if ok := govalidator.IsUUIDv4(id); !ok {
 		return fmt.Errorf("id is not a valid uuid v4")

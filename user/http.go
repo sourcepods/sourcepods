@@ -91,14 +91,14 @@ func get(s Service) http.HandlerFunc {
 
 func update(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		username := chi.URLParam(r, "username")
+		//username := chi.URLParam(r, "username")
 
 		var user *User
 		if err := json.NewDecoder(io.LimitReader(r.Body, 5242880)).Decode(&user); err != nil {
 			return // TODO
 		}
 
-		user, err := s.Update(username, user)
+		user, err := s.Update(user)
 		if err != nil {
 			return // TODO
 		}

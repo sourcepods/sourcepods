@@ -66,11 +66,9 @@ var (
 	Mutation = `
 	# The mutation type, represents all updates we can make to our data
 	type Mutation {
-		updateProfile(profile: updatedProfile!): User!
+		updateUser(id: ID!, user: updatedUser!): User!
 	}
-	input updatedProfile {
-		id: ID!
-		username: String!
+	input updatedUser {
 		name: String!
 	}`
 )

@@ -76,15 +76,15 @@ func (s *loggingService) Create(user *User) (*User, error) {
 	return user, err
 }
 
-func (s *loggingService) Update(username string, user *User) (*User, error) {
+func (s *loggingService) Update(user *User) (*User, error) {
 	start := time.Now()
 
-	user, err := s.Service.Update(username, user)
+	user, err := s.Service.Update(user)
 
 	logger := log.With(s.logger,
 		"method", "Update",
 		"duration", time.Since(start),
-		"username", username,
+		"username", user.Username,
 	)
 
 	if err != nil {

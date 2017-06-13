@@ -59,7 +59,38 @@ ORDER BY name ASC`)
 
 // Find a user by its ID.
 func (s *Postgres) Find(id string) (*User, error) {
-	panic("implement me")
+	query := `SELECT
+	username,
+	email,
+	name,
+	password,
+	created_at,
+	updated_at
+FROM users
+WHERE id = $1
+LIMIT 1`
+
+	row := s.db.QueryRow(query, id)
+
+	var username string
+	var email string
+	var name string
+	var password string
+	var created time.Time
+	var updated time.Time
+	if err := row.Scan(&username, &email, &name, &password, &created, &updated); err != nil {
+		return nil, err
+	}
+
+	return &User{
+		ID:       id,
+		Email:    email,
+		Username: username,
+		Name:     name,
+		Password: password,
+		Created:  created,
+		Updated:  updated,
+	}, nil
 }
 
 // FindByUsername finds a user by its username.
@@ -149,14 +180,14 @@ func (s *Postgres) Create(u *User) (*User, error) {
 
 // Update a user by its username.
 // TODO: Update users by their id?
-func (s *Postgres) Update(username string, user *User) (*User, error) {
-	stmt, err := s.db.Prepare(`UPDATE users SET username = $1, email = $2, name = $3 WHERE username = $1`)
+func (s *Postgres) Update(user *User) (*User, error) {
+	stmt, err := s.db.Prepare(`UPDATE users SET username = $2, email = $3, name = $4, updated_at = now() WHERE id = $1`)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(string(user.Username), user.Email, user.Name)
+	res, err := stmt.Exec(user.ID, user.Username, user.Email, user.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +200,7 @@ func (s *Postgres) Update(username string, user *User) (*User, error) {
 		return nil, errors.New("no rows updated")
 	}
 
-	return s.FindByUsername(username)
+	return s.Find(user.ID)
 }
 
 // Delete a user by its id.

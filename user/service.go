@@ -3,9 +3,10 @@ package user
 // Service handles all interactions with users.
 type Service interface {
 	FindAll() ([]*User, error)
+	Find(string) (*User, error)
 	FindByUsername(string) (*User, error)
 	Create(*User) (*User, error)
-	Update(string, *User) (*User, error)
+	Update(*User) (*User, error)
 	Delete(string) error
 }
 
@@ -15,7 +16,7 @@ type Store interface {
 	Find(string) (*User, error)
 	FindByUsername(string) (*User, error)
 	Create(*User) (*User, error)
-	Update(string, *User) (*User, error)
+	Update(*User) (*User, error)
 	Delete(string) error
 }
 
@@ -32,6 +33,10 @@ func (s *service) FindAll() ([]*User, error) {
 	return s.users.FindAll()
 }
 
+func (s *service) Find(id string) (*User, error) {
+	return s.users.Find(id)
+}
+
 func (s *service) FindByUsername(username string) (*User, error) {
 	return s.users.FindByUsername(username)
 }
@@ -40,8 +45,8 @@ func (s *service) Create(user *User) (*User, error) {
 	return user, nil
 }
 
-func (s *service) Update(username string, user *User) (*User, error) {
-	return s.users.Update(username, user)
+func (s *service) Update(user *User) (*User, error) {
+	return s.users.Update(user)
 }
 
 func (s *service) Delete(username string) error {
