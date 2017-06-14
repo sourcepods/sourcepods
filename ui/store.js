@@ -145,6 +145,7 @@ export const store = new Vuex.Store({
 							repositories {
 								id
 								name
+								description
 								forks
 								stars
 							}
