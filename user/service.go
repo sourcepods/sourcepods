@@ -46,6 +46,11 @@ func (s *service) Create(user *User) (*User, error) {
 }
 
 func (s *service) Update(user *User) (*User, error) {
+	errs := ValidateCreate(user)
+	if len(errs) > 0 {
+		return nil, errs[0]
+	}
+
 	return s.users.Update(user)
 }
 

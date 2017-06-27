@@ -134,11 +134,6 @@ func (r *UserResolver) UpdateUser(ctx context.Context, args updateUserArgs) (*us
 
 	u.Name = strings.TrimSpace(args.User.Name)
 
-	errs := user.ValidateCreate(u)
-	if len(errs) > 0 {
-		return nil, errs[0]
-	}
-
 	u, err = r.users.Update(u)
 	if err != nil {
 		log.Println(err)
