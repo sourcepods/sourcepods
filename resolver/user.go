@@ -28,6 +28,17 @@ type graphqlUser struct {
 	Updated  time.Time
 }
 
+func newGraphqlUser(u *user.User) *graphqlUser {
+	return &graphqlUser{
+		ID:       graphql.ID(u.ID),
+		Email:    u.Email,
+		Username: u.Username,
+		Name:     u.Name,
+		Created:  u.Created,
+		Updated:  u.Updated,
+	}
+}
+
 // NewUser returns a new UserResolver.
 func NewUser(rs repository.Service, us user.Service) *UserResolver {
 	return &UserResolver{repositories: rs, users: us}
@@ -43,16 +54,7 @@ func (r *UserResolver) Me(ctx context.Context) *userResolver {
 		return nil
 	}
 
-	return &userResolver{rs: r.repositories, user: &graphqlUser{
-		ID:       graphql.ID(u.ID),
-		Email:    u.Email,
-		Username: u.Username,
-		Name:     u.Name,
-		Created:  u.Created,
-		Updated:  u.Updated,
-	}}
-
-	return nil
+	return &userResolver{rs: r.repositories, user: newGraphqlUser(u)}
 }
 
 type userArgs struct {
@@ -76,14 +78,7 @@ func (r *UserResolver) User(args userArgs) *userResolver {
 			return nil
 		}
 
-		return &userResolver{rs: r.repositories, user: &graphqlUser{
-			ID:       graphql.ID(u.ID),
-			Email:    u.Email,
-			Username: u.Username,
-			Name:     u.Name,
-			Created:  u.Created,
-			Updated:  u.Updated,
-		}}
+		return &userResolver{rs: r.repositories, user: newGraphqlUser(u)}
 	}
 	return nil
 }
@@ -99,14 +94,7 @@ func (r *UserResolver) Users() []*userResolver {
 	}
 
 	for _, u := range users {
-		uResolvers = append(uResolvers, &userResolver{rs: r.repositories, user: &graphqlUser{
-			ID:       graphql.ID(u.ID),
-			Email:    u.Email,
-			Username: u.Username,
-			Name:     u.Name,
-			Created:  u.Created,
-			Updated:  u.Updated,
-		}})
+		uResolvers = append(uResolvers, &userResolver{rs: r.repositories, user: newGraphqlUser(u)})
 	}
 
 	return uResolvers
@@ -140,14 +128,7 @@ func (r *UserResolver) UpdateUser(ctx context.Context, args updateUserArgs) (*us
 		return nil, fmt.Errorf("updating user failed")
 	}
 
-	return &userResolver{rs: r.repositories, user: &graphqlUser{
-		ID:       graphql.ID(u.ID),
-		Email:    u.Email,
-		Username: u.Username,
-		Name:     u.Name,
-		Created:  u.Created,
-		Updated:  u.Updated,
-	}}, nil
+	return &userResolver{rs: r.repositories, user: newGraphqlUser(u)}, nil
 }
 
 type userResolver struct {
