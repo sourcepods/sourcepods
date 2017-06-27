@@ -6,9 +6,11 @@ CREATE TABLE repositories (
   description    TEXT,
   website        TEXT,
   default_branch TEXT         NOT NULL,
-  private        BOOLEAN                                    DEFAULT TRUE,
-  bare           BOOLEAN                                    DEFAULT TRUE,
+  private        BOOLEAN      NOT NULL                      DEFAULT TRUE,
+  bare           BOOLEAN      NOT NULL                      DEFAULT TRUE,
   created_at     TIMESTAMPTZ  NOT NULL                      DEFAULT now(),
   updated_at     TIMESTAMPTZ  NOT NULL                      DEFAULT now(),
   owner_id       UUID REFERENCES users NOT NULL
 );
+
+ALTER TABLE repositories ADD UNIQUE (name, owner_id);
