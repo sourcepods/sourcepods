@@ -178,3 +178,36 @@ WHERE
 		&Owner{ID: ownerID},
 		nil
 }
+
+func (s *Postgres) Create(ownerID string, r *Repository) (*Repository, error) {
+	query := `
+INSERT INTO repositories (owner_id, name, description, website, default_branch, private, bare)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, created_at, updated_at`
+
+	var description *string
+	if r.Description != "" {
+		description = &r.Description
+	}
+
+	var website *string
+	if r.Website != "" {
+		website = &r.Website
+	}
+
+	row := s.db.QueryRow(query,
+		ownerID,
+		r.Name,
+		description,
+		website,
+		r.DefaultBranch,
+		r.Private,
+		r.Bare,
+	)
+
+	if err := row.Scan(&r.ID, &r.Created, &r.Updated); err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
