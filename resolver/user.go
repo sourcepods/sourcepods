@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gitpods/gitpods/repository"
@@ -131,7 +132,7 @@ func (r *UserResolver) UpdateUser(ctx context.Context, args updateUserArgs) (*us
 		return nil, err
 	}
 
-	u.Name = args.User.Name
+	u.Name = strings.TrimSpace(args.User.Name)
 
 	errs := user.ValidateCreate(u)
 	if len(errs) > 0 {
