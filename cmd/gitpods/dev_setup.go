@@ -33,9 +33,6 @@ func ActionDevSetup(c *cli.Context) error {
 	if err := os.MkdirAll("./dev", 0755); err != nil {
 		return errors.Wrap(err, "failed to create ./dev/ for development")
 	}
-	if err := os.MkdirAll("./dev/sessions/", 0755); err != nil {
-		return errors.Wrap(err, "failed to create ./dev/sessions/ for development")
-	}
 	log.Println("Created ./dev/")
 
 	if err := setupPostgres(); err != nil {

@@ -93,6 +93,7 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("%s=%s", cmd.EnvAddr, apiAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDriver, databaseDriver),
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSN),
+		fmt.Sprintf("%s=%s", cmd.EnvMigrationsPath, "./schema/postgres"),
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvSecret, "secret"),
