@@ -10,7 +10,7 @@
 			</div>
 
 			<div class="uk-margin">
-				<button class="uk-button uk-button-primary" type="submit">Save</button>
+				<button class="uk-button uk-button-primary" type="submit" :disabled="loading">Save</button>
 			</div>
 		</form>
 	</div>
@@ -20,6 +20,11 @@
 	import UIkit from 'uikit';
 
 	export default {
+		data() {
+			return {
+				loading: false,
+			}
+		},
 		created() {
 			this.$store.dispatch('fetchAuthenticatedUser');
 		},
@@ -30,7 +35,12 @@
 			}
 		},
 		methods: {
+			setLoading(isLoading) {
+				this.loading = isLoading;
+				this.$store.commit('loading', isLoading)
+			},
 			saveUser() {
+				this.setLoading(true);
 				this.$store.dispatch('updateUser', this.user)
 					.then((res) => {
 						this.$router.push(`/${this.user.username}`);
@@ -39,7 +49,8 @@
 					.catch((err) => {
 						UIkit.notification('Updating user failed', {status: 'danger', pos: 'bottom-center'})
 					})
-			}
+					.finally(() => this.setLoading(false))
+			},
 		}
 	}
 </script>

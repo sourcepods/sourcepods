@@ -48,7 +48,9 @@
 											   v-model="search">
 									</form>
 								</div>
-								<div class="uk-width-auto">
+
+								<!-- Only show 'New' button to the user on its own profile -->
+								<div class="uk-width-auto" v-if="authUser.username === user.username">
 									<router-link class="uk-button uk-button-primary" :to="`/new`">New</router-link>
 								</div>
 							</div>
@@ -101,6 +103,9 @@
 		computed: {
 			user() {
 				return this.$store.getters.getUserByUsername(this.$route.params.username);
+			},
+			authUser() {
+				return this.$store.getters.getAuthUser;
 			},
 			repositories() {
 				let repositories = this.$store.getters.getUserRepositories(this.user.id);

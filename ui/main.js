@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import VueMoment from 'vue-moment';
+import VueMoment from "vue-moment";
 
 import {store} from "./store";
 
@@ -12,7 +12,8 @@ import UserEdit from "./user/edit.vue";
 import Pulls from "./pulls/pulls.vue";
 import Issues from "./issues/issues.vue";
 import Repository from "./repository/repository.vue";
-import SettingsProfile from './pages/settings/profile.vue';
+import SettingsProfile from "./pages/settings/profile.vue";
+import RepositoryCreate from "./pages/repository_create.vue";
 
 Vue.use(VueRouter);
 Vue.use(VueMoment);
@@ -20,13 +21,14 @@ Vue.use(VueMoment);
 const router = new VueRouter({
 	mode: 'history',
 	routes: [
-		{path: "/", component: UserList},
-		{path: "/login", component: Login},
+		{path: '/', component: UserList},
+		{path: '/login', component: Login},
 		{path: '/pulls', component: Pulls},
 		{path: '/issues', component: Issues},
+		{path: '/new', component: RepositoryCreate},
 		{path: '/settings/profile', component: SettingsProfile},
-		{path: "/:username", component: UserProfile},
-		{path: "/:username/edit", component: UserEdit},
+		{path: '/:username', component: UserProfile},
+		{path: '/:username/edit', component: UserEdit},
 		{path: '/:owner/:repository', component: Repository},
 	],
 });

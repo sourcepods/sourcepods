@@ -22,10 +22,7 @@
 
 				<ul class="uk-child-width-expand" uk-tab>
 					<li>
-						<a href="#">Project</a>
-					</li>
-					<li>
-						<a href="#">Repository</a>
+						<a href="#">Code</a>
 					</li>
 					<li>
 						<a href="#">

@@ -145,6 +145,7 @@ export const store = new Vuex.Store({
 							repositories {
 								id
 								name
+								description
 								forks
 								stars
 							}
@@ -247,6 +248,41 @@ export const store = new Vuex.Store({
 				}).catch((err) => {
 					reject(err);
 				});
+			})
+		},
+		createRepository(ctx, repository) {
+			const ownerSchema = new schema.Entity('owner');
+			const repositorySchema = new schema.Entity('repository', {
+				owner: ownerSchema,
+			});
+
+			return new Promise((resolve, reject) => {
+				const query = `
+					($repository: newRepository!) {
+						createRepository(repository: $repository) {
+							id
+							name
+							description
+							website
+							created_at
+							updated_at
+							owner {
+								id
+								username
+								name
+								email
+							}
+						}
+					}`;
+				client.mutate(query, {repository})
+					.then((res) => {
+						const data = normalize(res.createRepository, repositorySchema);
+						ctx.commit('setRepositories', data.entities.repository);
+						resolve(res.createRepository);
+					})
+					.catch((err) => {
+						reject(err);
+					});
 			})
 		}
 	},
