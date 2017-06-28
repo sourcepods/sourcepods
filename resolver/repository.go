@@ -1,16 +1,21 @@
 package resolver
 
 import (
+	"context"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gitpods/gitpods/repository"
+	"github.com/gitpods/gitpods/session"
+	"github.com/gitpods/gitpods/user"
 	graphql "github.com/neelance/graphql-go"
 )
 
 // RepositoryResolver communicates with the service to interact with repositories.
 type RepositoryResolver struct {
 	repositories repository.Service
+	users        user.Service
 }
 
 type graphqlRepository struct {
@@ -43,9 +48,43 @@ type graphqlPullRequestStats struct {
 	Closed int32
 }
 
+func newGraphqlRepository(repo *repository.Repository, stats *repository.Stats) *graphqlRepository {
+	r := &graphqlRepository{
+		ID:            graphql.ID(repo.ID),
+		Name:          repo.Name,
+		Description:   repo.Description,
+		Website:       repo.Website,
+		DefaultBranch: repo.DefaultBranch,
+		Private:       repo.Private,
+		Bare:          repo.Bare,
+		Created:       repo.Created,
+		Updated:       repo.Updated,
+	}
+
+	if stats != nil {
+		r.Stars = stats.Stars
+		r.Forks = stats.Forks
+		r.IssueStats = graphqlIssueStats{
+			Total:  int32(stats.IssueTotalCount),
+			Open:   int32(stats.IssueOpenCount),
+			Closed: int32(stats.IssueClosedCount),
+		}
+		r.PullRequestStats = graphqlPullRequestStats{
+			Total:  int32(stats.PullRequestTotalCount),
+			Open:   int32(stats.PullRequestOpenCount),
+			Closed: int32(stats.PullRequestClosedCount),
+		}
+	}
+
+	return r
+}
+
 // NewRepository returns a new RepositoryResolver.
-func NewRepository(rs repository.Service) *RepositoryResolver {
-	return &RepositoryResolver{repositories: rs}
+func NewRepository(rs repository.Service, us user.Service) *RepositoryResolver {
+	return &RepositoryResolver{
+		repositories: rs,
+		users:        us,
+	}
 }
 
 type repositoryArgs struct {
@@ -66,31 +105,7 @@ func (r *RepositoryResolver) Repository(args repositoryArgs) *repositoryResolver
 			return nil
 		}
 
-		return &repositoryResolver{repository: &graphqlRepository{
-			ID:            graphql.ID(repo.ID),
-			Name:          repo.Name,
-			Description:   repo.Description,
-			Website:       repo.Website,
-			DefaultBranch: repo.DefaultBranch,
-			Private:       repo.Private,
-			Bare:          repo.Bare,
-			Created:       repo.Created,
-			Updated:       repo.Updated,
-
-			Stars: stats.Stars,
-			Forks: stats.Forks,
-
-			IssueStats: graphqlIssueStats{
-				Total:  int32(stats.IssueTotalCount),
-				Open:   int32(stats.IssueOpenCount),
-				Closed: int32(stats.IssueClosedCount),
-			},
-			PullRequestStats: graphqlPullRequestStats{
-				Total:  int32(stats.PullRequestTotalCount),
-				Open:   int32(stats.PullRequestOpenCount),
-				Closed: int32(stats.PullRequestClosedCount),
-			},
-		}}
+		return &repositoryResolver{repository: newGraphqlRepository(repo, stats)}
 	}
 	return nil
 }
@@ -105,26 +120,61 @@ func (r *RepositoryResolver) Repositories(args struct{ Owner string }) []*reposi
 
 	var res []*repositoryResolver
 	for i := range repos {
-		res = append(res, &repositoryResolver{repository: &graphqlRepository{
-			ID:            graphql.ID(repos[i].ID),
-			Name:          repos[i].Name,
-			Description:   repos[i].Description,
-			Website:       repos[i].Website,
-			DefaultBranch: repos[i].DefaultBranch,
-			Private:       repos[i].Private,
-			Bare:          repos[i].Bare,
-			Created:       repos[i].Created,
-			Updated:       repos[i].Updated,
-
-			Stars: stats[i].Stars,
-			Forks: stats[i].Forks,
-		}})
+		res = append(res, &repositoryResolver{repository: newGraphqlRepository(repos[i], stats[i])})
 	}
+
 	return res
+}
+
+type newRepository struct {
+	Name        string
+	Description *string
+	Website     *string
+	Private     bool
+}
+
+func (r *RepositoryResolver) CreateRepository(ctx context.Context, args struct{ Repository newRepository }) (*repositoryResolver, error) {
+	sessUser := session.GetSessionUser(ctx)
+	ownerID := sessUser.ID
+
+	description := ""
+	if args.Repository.Description != nil {
+		description = strings.TrimSpace(*args.Repository.Description)
+	}
+
+	website := ""
+	if args.Repository.Website != nil {
+		website = strings.TrimSpace(*args.Repository.Website)
+	}
+
+	repo := &repository.Repository{
+		Name:          strings.TrimSpace(args.Repository.Name),
+		Description:   description,
+		Website:       website,
+		DefaultBranch: "master",
+		Private:       args.Repository.Private,
+		Bare:          true,
+	}
+
+	repo, err := r.repositories.Create(ownerID, repo)
+	if err != nil {
+		return nil, err
+	}
+
+	owner, err := r.users.Find(ownerID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &repositoryResolver{
+		repository: newGraphqlRepository(repo, nil),
+		owner:      newGraphqlUser(owner),
+	}, nil
 }
 
 type repositoryResolver struct {
 	repository *graphqlRepository
+	owner      *graphqlUser
 }
 
 func (r *repositoryResolver) ID() graphql.ID {
@@ -221,4 +271,8 @@ func (r *pullRequestStatsResolver) Open() int32 {
 
 func (r *pullRequestStatsResolver) Closed() int32 {
 	return r.closed
+}
+
+func (r *repositoryResolver) Owner() *userResolver {
+	return &userResolver{user: r.owner}
 }

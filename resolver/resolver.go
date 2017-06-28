@@ -47,6 +47,7 @@ var (
 		forks: Int!
 		issue_stats: IssueStats!
 		pull_request_stats: PullRequestStats!
+		owner: User!
 	}
 	interface OpenClosedStats {
 		total: Int!
@@ -67,8 +68,15 @@ var (
 	# The mutation type, represents all updates we can make to our data
 	type Mutation {
 		updateUser(id: ID!, user: updatedUser!): User!
+		createRepository(repository: newRepository!): Repository!
 	}
 	input updatedUser {
 		name: String!
+	}
+	input newRepository {
+		name: String!
+		description: String
+		website: String
+		private: Boolean!
 	}`
 )

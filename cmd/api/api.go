@@ -155,7 +155,7 @@ func apiAction(c *cli.Context) error {
 	//
 	res := &resolver.Resolver{
 		resolver.NewUser(rs, us),
-		resolver.NewRepository(rs),
+		resolver.NewRepository(rs, us),
 	}
 
 	schema, err := graphql.ParseSchema(resolver.Schema, res)
