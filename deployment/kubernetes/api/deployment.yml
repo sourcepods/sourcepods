@@ -5,10 +5,15 @@ metadata:
   namespace: gitpods-try
 spec:
   replicas: 3
+  revisionHistoryLimit: 3
   template:
     metadata:
       labels:
         app: api
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "3021"
+        prometheus.io/scrape: "true"
     spec:
       containers:
       - name: api
@@ -16,15 +21,10 @@ spec:
         env:
         - name: GITPODS_LISTEN_ADDR
           value: '0.0.0.0:3020'
-        - name: GITPODS_API_PREFIX
-          value: '/api'
         - name: GITPODS_DATABASE_DRIVER
           value: 'postgres'
         - name: GITPODS_DATABASE_DSN
-          valueFrom:
-            secretKeyRef:
-              name: gitpods-try-dsn
-              key: dsn
+          value: 'postgres://postgres:postgres@db:5432?sslmode=disable'
         - name: GITPODS_LOG_JSON
           value: 'true'
         - name: GITPODS_LOG_LEVEL
@@ -34,11 +34,11 @@ spec:
         - name: GITPODS_SECRET
           valueFrom:
             secretKeyRef:
-              name: gitpods-try-secret
+              name: secrets
               key: secret
         # This hash is not needed and only used to track which version is deployed when using :latest
-        - name: HASH
-          value: {{ build.commit }}
+#        - name: HASH
+#          value: {{ build.commit }}
         ports:
         - containerPort: 3020
         resources:
@@ -54,27 +54,3 @@ spec:
                 value: Awesome
           initialDelaySeconds: 3
           periodSeconds: 3
-      - image: gcr.io/cloudsql-docker/gce-proxy:1.09
-        name: cloudsql-proxy
-        command:
-        - '/cloud_sql_proxy'
-        - '--dir=/cloudsql'
-        - '-instances=gitpods:europe-west1:gitpods-try=tcp:5432'
-        - '-credential_file=/secrets/cloudsql/credentials.json'
-        volumeMounts:
-          - name: cloudsql-instance-credentials
-            mountPath: /secrets/cloudsql
-            readOnly: true
-          - name: ssl-certs
-            mountPath: /etc/ssl/certs
-          - name: cloudsql
-            mountPath: /cloudsql
-      volumes:
-        - name: cloudsql-instance-credentials
-          secret:
-            secretName: cloudsql-instance-credentials
-        - name: ssl-certs
-          hostPath:
-            path: /etc/ssl/certs
-        - name: cloudsql
-          emptyDir:

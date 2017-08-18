@@ -17,7 +17,7 @@ spec:
         - name: GITPODS_LISTEN_ADDR
           value: 0.0.0.0:3010
         - name: GITPODS_API_URL
-          value: http://try.gitpods.io/api
+          value: https://try.gitpods.io/api
         - name: GITPODS_LOG_LEVEL
           value: debug
         - name: GITPODS_LOG_JSON
