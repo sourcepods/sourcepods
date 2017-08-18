@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: ui
-  namespace: gitpods
+  namespace: gitpods-try
 spec:
   replicas: 3
   template:

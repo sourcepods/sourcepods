@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: gitpods
-  namespace: gitpods
+  namespace: gitpods-try
   annotations:
     kubernetes.io/tls-acme: "true"
     kubernetes.io/ingress.class: "gce"
