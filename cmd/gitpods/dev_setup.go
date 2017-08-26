@@ -29,7 +29,7 @@ const (
 `
 )
 
-func ActionDevSetup(c *cli.Context) error {
+func devSetupAction(c *cli.Context) error {
 	if err := os.MkdirAll("./dev", 0755); err != nil {
 		return errors.Wrap(err, "failed to create ./dev/ for development")
 	}
