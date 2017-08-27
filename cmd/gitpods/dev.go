@@ -1,10 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"net/http"
+	"net/http/httputil"
 	"os"
+	"os/exec"
 	"os/signal"
+	"strings"
+	"time"
 
 	"github.com/gitpods/gitpods/cmd"
 	"github.com/oklog/oklog/pkg/group"
@@ -22,6 +28,10 @@ var (
 			Name:  "addr-api",
 			Usage: "The address to run the API on",
 			Value: ":3020",
+		},
+		cli.BoolFlag{
+			Name:  "dart",
+			Usage: "Run pub serve as a development server for dart",
 		},
 		cli.StringFlag{
 			Name:  "database-driver",
@@ -52,6 +62,7 @@ var (
 func devAction(c *cli.Context) error {
 	uiAddrFlag := c.String("addr-ui")
 	apiAddrFlag := c.String("addr-api")
+	dart := c.Bool("dart")
 	databaseDriver := c.String("database-driver")
 	databaseDSN := c.String("database-dsn")
 	loglevelFlag := c.String("log-level")
@@ -87,11 +98,12 @@ func devAction(c *cli.Context) error {
 	var g group.Group
 	{
 		g.Add(func() error {
-			log.Println("starting ui")
-			return uiRunner.Run()
+			log.Println("waiting for interrupt")
+			stop := make(chan os.Signal, 1)
+			signal.Notify(stop, os.Interrupt)
+			<-stop
+			return nil
 		}, func(err error) {
-			log.Println("stopping ui")
-			uiRunner.Shutdown()
 		})
 	}
 	{
@@ -112,27 +124,73 @@ func devAction(c *cli.Context) error {
 			caddy.Stop()
 		})
 	}
-	{
-		g.Add(func() error {
-			stop := make(chan os.Signal, 1)
-			signal.Notify(stop, os.Interrupt)
-			<-stop
-			return nil
-		}, func(err error) {
-		})
-	}
 
-	webpack := &WebpackRunner{}
-	if watch {
-		g.Add(func() error {
-			log.Println("starting webpack")
-			return webpack.Run(true)
-		}, func(err error) {
-			log.Println("stopping webpack")
-			webpack.Stop()
-		})
+	if dart {
+		{
+			c := exec.Command("pub", "serve", "--port=3011")
+			g.Add(func() error {
+				c.Dir = "ui"
+				c.Stdout = os.Stdout
+				c.Stderr = os.Stderr
+				c.Stdin = os.Stdin
+				return c.Run()
+			}, func(err error) {
+				if c == nil || c.Process == nil {
+					return
+				}
+				c.Process.Kill()
+			})
+		}
+		{
+			redirect := func(path string) bool {
+				if path == "/main.dart" {
+					return false
+				}
+				if path == "/main.template.dart" {
+					return false
+				}
+				if strings.HasPrefix(path, "/img") {
+					return false
+				}
+				if strings.HasPrefix(path, "/packages") {
+					return false
+				}
+				return true
+			}
+
+			director := func(r *http.Request) {
+				if redirect(r.URL.Path) {
+					r.URL.Path = "/"
+				}
+				r.URL.Scheme = "http"
+				r.URL.Host = "localhost:3011"
+			}
+
+			server := &http.Server{
+				Addr: ":3010",
+				Handler: &httputil.ReverseProxy{
+					Director: director,
+				},
+			}
+
+			g.Add(func() error {
+				return server.ListenAndServe()
+			}, func(err error) {
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+				defer cancel()
+				server.Shutdown(ctx)
+			})
+		}
 	} else {
-		webpack.Run(false)
+		{
+			g.Add(func() error {
+				log.Println("starting ui")
+				return uiRunner.Run()
+			}, func(err error) {
+				log.Println("stopping ui")
+				uiRunner.Shutdown()
+			})
+		}
 	}
 
 	return g.Run()
