@@ -30,16 +30,18 @@ const (
 )
 
 func devSetupAction(c *cli.Context) error {
+	log.Println("Create ./dev/")
 	if err := os.MkdirAll("./dev", 0755); err != nil {
 		return errors.Wrap(err, "failed to create ./dev/ for development")
 	}
-	log.Println("Created ./dev/")
 
+	log.Println("Create docker container: gitpods-postgres")
 	if err := setupPostgres(); err != nil {
 		return err
 	}
 
-	if err := setupNodeModules(); err != nil {
+	log.Println("Running pub get...")
+	if err := setupPub(); err != nil {
 		return err
 	}
 
@@ -71,13 +73,14 @@ func setupPostgres() error {
 	return cmd.Run()
 }
 
-func setupNodeModules() error {
-	yarn, err := exec.LookPath("yarn")
+func setupPub() error {
+	pub, err := exec.LookPath("pub")
 	if err != nil {
 		return err
 	}
 
-	cmd := exec.Command(yarn)
+	cmd := exec.Command(pub, "get")
+	cmd.Dir = "ui"
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -95,6 +98,7 @@ func setupCaddy() error {
 		archive = "./dev/caddy.tar.gz"
 	}
 
+	log.Printf("Download %s\n", url)
 	if err := downloadCaddy(url, archive); err != nil {
 		return errors.Wrap(err, "failed to download caddy")
 	}
