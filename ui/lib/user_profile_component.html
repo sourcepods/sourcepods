@@ -1,0 +1,78 @@
+<div class="uk-container">
+
+    <div class="uk-grid-small" uk-grid *ngIf="user!=null">
+        <div class="uk-flex-top uk-padding-small uk-width-2-5@m uk-width-1-4@l">
+            <img src="https://www.gravatar.com/avatar/915d80f0d9b6678fad4d1ab36dfc8960?s=512&d=mm&r=g" alt="">
+            <!--<gravatar :email="user.email" default-img="mm" :size="512" class="uk-border-rounded"></gravatar>-->
+            <!--<gitpods-gravatar email="mail@matthiasloibl.com" size="512"></gitpods-gravatar>-->
+            <h3 class="user-name">{{user.name}}</h3>
+            <h4 class="uk-text-muted user-username">@{{user.username}}</h4>
+
+            <hr class="uk-divider-icon">
+
+            <ul class="uk-list user-details">
+                <li>
+                    <span class="uk-icon-link" uk-icon="icon: mail"></span>
+                    <a [href]="user.email | mailto">{{user.email}}</a>
+                </li>
+                <li>
+                    <span uk-icon="icon: clock"></span>
+                    <span>
+                        Joined on {{ user.created | date }}
+                    </span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="uk-width-3-5@m uk-width-3-4@l">
+
+            <div uk-sticky>
+                <ul class="uk-child-width-expand profile-tab" uk-tab>
+                    <li class="uk-active"><a href="#">Repositories</a></li>
+                    <li><a href="#">Activity</a></li>
+                    <li><a href="#">Stars</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <ul class="uk-list uk-list-large uk-list-divider repository-list">
+                    <li>
+                        <div uk-grid>
+                            <div class="uk-width-expand uk-margin">
+                                <form class="uk-search uk-search-default" style="width: 100%;">
+                                    <a href="" class="uk-search-icon-flip" uk-search-icon></a>
+                                    <input class="uk-search-input" type="search" placeholder="Search...">
+                                </form>
+                            </div>
+
+                            <!-- Only show 'New' button to the user on its own profile -->
+                            <!--<div class="uk-width-auto" *ngIf="authUser.username === user.username">-->
+                            <div class="uk-width-auto">
+                                <router-link class="uk-button uk-button-primary">New</router-link>
+                            </div>
+                        </div>
+                    </li>
+                    <li *ngFor="let repository of user.repositories">
+                        <div class="uk-flex">
+                            <div class="uk-flex-auto">
+                                <h4 class="repository-name">
+                                    <router-link>
+                                        {{repository.name}}
+                                    </router-link>
+                                </h4>
+                                <p class="repository-description">{{repository.description}}</p>
+                            </div>
+                            <div class="uk-text-right">
+                                <span uk-icon="icon: star"></span>
+                                <span>{{repository.stars}}</span>
+                                <span uk-icon="icon: git-fork"></span>
+                                <span>{{repository.forks}}</span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,34 @@
+<div class="uk-flex uk-flex-center">
+    <div class="uk-card uk-card-default uk-card-hover uk-card-body">
+        <img src="/img/logo.svg" class="uk-align-center logo">
+        <h3 class="uk-heading-line">
+            <span>Sign in to GitPods</span>
+        </h3>
+
+        <div class="uk-alert-danger" uk-alert *ngIf="error != ''">
+            <a class="uk-alert-close" uk-close></a>
+            <p>{{error}}</p>
+        </div>
+
+        <form class="uk-form-stacked" (submit)="submit($event)">
+            <div class="uk-margin">
+                <label for="email" class="uk-form-label">Email</label>
+                <div class="uk-form-controls">
+                    <input class="uk-input" id="email" type="email"
+                           autocapitalize="off" autocorrect="off" autofocus required
+                           [(ngModel)]="email">
+                </div>
+            </div>
+            <div class="uk-margin"><label for="password" class="uk-form-label">Password</label>
+                <div class="uk-form-controls">
+                    <input class="uk-input" type="password" id="password" required [(ngModel)]="password">
+                </div>
+            </div>
+            <div class="uk-margin">
+                <button class="uk-button uk-button-primary uk-width-1-1 uk-margin-small-bottom">
+                    Sign in
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

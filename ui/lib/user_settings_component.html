@@ -1,0 +1,13 @@
+<div class="uk-container">
+    <form class="uk-form-stacked" *ngIf="user != null" (submit)="submit($event)">
+        <div class="uk-margin">
+            <label for="form-stacked-text" class="uk-form-label">Name</label>
+            <div class="uk-form-controls">
+                <input class="uk-input" id="form-stacked-text" required [(ngModel)]="user.name">
+            </div>
+        </div>
+        <div class="uk-margin">
+            <button class="uk-button uk-button-primary">Save</button>
+        </div>
+    </form>
+</div>

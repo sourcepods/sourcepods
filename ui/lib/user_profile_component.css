@@ -1,0 +1,29 @@
+h3.user-name {
+    margin-top: 16px;
+    margin-bottom: 0;
+}
+
+h4.user-username {
+    margin: 0;
+}
+
+ul.user-details {
+    margin-top: 0;
+}
+
+ul.profile-tab {
+    background-color: white;
+}
+
+ul.profile-tab li a {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+ul.repository-list .repository-name {
+    margin-bottom: 0;
+}
+
+ul.repository-list .repository-description {
+    margin: 0;
+}
