@@ -31,7 +31,7 @@ func authorize(s Service) http.HandlerFunc {
 
 		badCredentials := []*jsonapi.ErrorObject{{
 			Title:  http.StatusText(http.StatusBadRequest),
-			Detail: "Bad Credentials",
+			Detail: "Incorrect email or password",
 			Status: fmt.Sprintf("%d", http.StatusBadRequest),
 		}}
 
