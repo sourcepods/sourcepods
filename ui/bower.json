@@ -1,0 +1,22 @@
+{
+  "name": "gitpods",
+  "homepage": "https://github.com/gitpods/gitpods",
+  "authors": [
+    "Matthias Loibl <mail@matthiasloibl.com>"
+  ],
+  "description": "git flying in the cloud!",
+  "main": "",
+  "license": "Apache-2.0",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "uikit": "3.0.0-beta.30",
+    "jquery": "^3.2.1"
+  }
+}
