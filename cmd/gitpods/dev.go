@@ -149,6 +149,9 @@ func devAction(c *cli.Context) error {
 				if path == "/main.template.dart" {
 					return false
 				}
+				if strings.HasPrefix(path, "/components") {
+					return false
+				}
 				if strings.HasPrefix(path, "/img") {
 					return false
 				}
