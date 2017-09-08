@@ -63,7 +63,7 @@ func TestHTTPAuthorizeBadCredentials(t *testing.T) {
 
 	h.ServeHTTP(w, req)
 
-	badCredentials := `{"errors":[{"title":"Bad Request","detail":"Bad Credentials","status":"400"}]}`
+	badCredentials := `{"errors":[{"title":"Bad Request","detail":"Incorrect email or password","status":"400"}]}`
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Equal(t, "", w.Header().Get("Set-Cookie"))
