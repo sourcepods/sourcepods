@@ -75,8 +75,8 @@ func validateUsername(username string) error {
 }
 
 func validateName(name string) error {
-	if name == "" {
-		return fmt.Errorf("name can't be empty")
+	if ok := govalidator.IsByteLength(name, 2, 64); !ok {
+		return fmt.Errorf("name is not between 2 and 64 characters long")
 	}
 	return nil
 }
