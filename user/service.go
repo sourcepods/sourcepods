@@ -1,5 +1,11 @@
 package user
 
+import "errors"
+
+var (
+	NotFoundError = errors.New("user not found")
+)
+
 // Service handles all interactions with users.
 type Service interface {
 	FindAll() ([]*User, error)
