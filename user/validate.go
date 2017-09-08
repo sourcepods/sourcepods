@@ -47,10 +47,6 @@ func ValidateUpdate(u *User) []error {
 		errs = append(errs, err)
 	}
 
-	if err := validatePassword(u.Password); err != nil {
-		errs = append(errs, err)
-	}
-
 	return errs
 }
 
