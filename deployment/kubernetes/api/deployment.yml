@@ -37,8 +37,8 @@ spec:
               name: secrets
               key: secret
         # This hash is not needed and only used to track which version is deployed when using :latest
-#        - name: HASH
-#          value: {{ build.commit }}
+        - name: HASH
+          value: {{ build.commit }}
         ports:
         - containerPort: 3020
         resources:
