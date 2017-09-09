@@ -77,39 +77,6 @@ func (r *GitPodsRunner) Shutdown() {
 	r.Stop()
 }
 
-// WebpackRunner runs webpack either ones or watches the files.
-type WebpackRunner struct {
-	cmd *exec.Cmd
-}
-
-func (r *WebpackRunner) Run(watch bool) error {
-	file := "./webpack.config.js"
-	_, err := os.Stat(file)
-	if err != nil {
-		// webpack config not found
-		return nil
-	}
-
-	args := []string{}
-	if watch {
-		args = []string{"--watch"}
-	}
-
-	r.cmd = exec.Command(filepath.Join("node_modules", ".bin", "webpack"), args...)
-	r.cmd.Stdin = os.Stdin
-	r.cmd.Stdout = os.Stdout
-	r.cmd.Stderr = os.Stderr
-
-	return r.cmd.Run()
-}
-
-func (r *WebpackRunner) Stop() {
-	if r.cmd == nil || r.cmd.Process == nil {
-		return
-	}
-	r.cmd.Process.Kill()
-}
-
 // CaddyRunner runs caddy
 type CaddyRunner struct {
 	cmd *exec.Cmd
