@@ -8,7 +8,6 @@ pipeline:
     commands:
       - go test -v ./...
 
-  # bower install
   # pub get
 
   api:
