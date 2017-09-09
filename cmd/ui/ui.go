@@ -59,7 +59,7 @@ func ActionUI(c *cli.Context) error {
 
 	// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
 	// The path is relative to this file.
-	box := packr.NewBox("../../public")
+	box := packr.NewBox("../../ui/build/web")
 
 	homeHandler := HomeHandler(box, HTMLConfig{
 		API: uiConfig.AddrAPI,
@@ -71,11 +71,11 @@ func ActionUI(c *cli.Context) error {
 	r.Get("/", homeHandler)
 	r.NotFound(homeHandler)
 
+	r.Handle("/components/*", http.FileServer(box))
 	r.Handle("/favicon.ico", http.FileServer(box))
 	r.Handle("/favicon.png", http.FileServer(box))
 	r.Handle("/img/*", http.FileServer(box))
-	r.Handle("/css/*", http.FileServer(box))
-	r.Handle("/js/*", http.FileServer(box))
+	r.Handle("/main.dart.js", http.FileServer(box))
 
 	level.Info(logger).Log("msg", "starting gitpods ui", "addr", uiConfig.Addr)
 	return http.ListenAndServe(uiConfig.Addr, r)
