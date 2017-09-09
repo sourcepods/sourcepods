@@ -118,6 +118,9 @@ LIMIT 1`
 	var created time.Time
 	var updated time.Time
 	if err := row.Scan(&id, &email, &name, &password, &created, &updated); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, NotFoundError
+		}
 		return nil, err
 	}
 
