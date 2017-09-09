@@ -3,33 +3,29 @@ workspace:
   path: src/github.com/gitpods/gitpods
 
 pipeline:
-  webpack:
-    group: dependencies
-    image: kkarczmarczyk/node-yarn
-    commands:
-      - yarn install
-      - ./node_modules/.bin/webpack
-
   test:
-    image: golang:1.8
+    image: golang:1.9
     commands:
       - go test -v ./...
 
+  # bower install
+  # pub get
+
   api:
     group: build
-    image: golang:1.8
+    image: golang:1.9
     commands:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api/api ./cmd/api
 
   gitpods:
     group: build
-    image: golang:1.8
+    image: golang:1.9
     commands:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/gitpods/gitpods ./cmd/gitpods
 
   ui:
     group: build
-    image: golang:1.8
+    image: golang:1.9
     commands:
       - go get -u github.com/gobuffalo/packr/...
       - packr
