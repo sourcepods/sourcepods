@@ -6,11 +6,23 @@ analyzer:
 # Lint rules and documentation, see http://dart-lang.github.io/linter/lints
 linter:
   rules:
+    - always_declare_return_types
+    - annotate_overrides
+    - avoid_empty_else
+    - avoid_init_to_null
+    - camel_case_types
     - cancel_subscriptions
-    - close_sinks
+    - constant_identifier_names
+    - empty_catches
+    - empty_constructor_bodies
+    - empty_statements
     - hash_and_equals
     - iterable_contains_unrelated_type
     - list_remove_unrelated_type
+    - one_member_abstracts
+    - slash_for_doc_comments
+    - sort_constructors_first
     - test_types_in_equals
+    - unnecessary_brace_in_string_interps
     - unrelated_type_equality_checks
     - valid_regexps
