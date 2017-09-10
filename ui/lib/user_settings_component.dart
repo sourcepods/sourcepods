@@ -28,7 +28,6 @@ class UserSettingsComponent implements OnInit {
   void submit(Event event) {
     event.preventDefault();
 
-
     this._userService.update(user)
         .then((user) => this._router.navigate(['UserProfile', {'username': user.username}]));
   }

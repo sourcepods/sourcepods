@@ -5,6 +5,8 @@ import 'package:gitpods/issues_component.dart';
 import 'package:gitpods/login_component.dart';
 import 'package:gitpods/login_service.dart';
 import 'package:gitpods/pulls_component.dart';
+import 'package:gitpods/repository_component.dart';
+import 'package:gitpods/repository_create_component.dart';
 import 'package:gitpods/user.dart';
 import 'package:gitpods/user_list_component.dart';
 import 'package:gitpods/user_profile_component.dart';
@@ -49,6 +51,16 @@ import 'package:gitpods/user_settings_component.dart';
     path: '/settings/profile',
     name: 'UserSettings',
     component: UserSettingsComponent,
+  ),
+  const Route(
+    path: '/:owner/:name',
+    name: 'Repository',
+    component: RepositoryComponent,
+  ),
+  const Route(
+    path: '/new',
+    name: 'RepositoryCreate',
+    component: RepositoryCreateComponent,
   ),
 ])
 class AppComponent implements OnInit {

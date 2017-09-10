@@ -48,7 +48,7 @@
                             <!-- Only show 'New' button to the user on its own profile -->
                             <!--<div class="uk-width-auto" *ngIf="authUser.username === user.username">-->
                             <div class="uk-width-auto">
-                                <router-link class="uk-button uk-button-primary">New</router-link>
+                                <a class="uk-button uk-button-primary" [routerLink]="['/RepositoryCreate']">New</a>
                             </div>
                         </div>
                     </li>

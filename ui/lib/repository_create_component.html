@@ -1,0 +1,48 @@
+<div class="uk-container uk-container-small">
+
+    <h3>Create a Repository</h3>
+
+    <div class="uk-alert-danger" uk-alert *ngIf="error != ''">
+        <a class="uk-alert-close" uk-close></a>
+        <p>{{error}}</p>
+    </div>
+
+    <form class="uk-form-stacked" (submit)="submit($event)">
+        <div class="uk-margin">
+            <label class="uk-form-label" for="name">Name</label>
+            <div class="uk-form-controls">
+                <input class="uk-input" id="name" type="text" autofocus required [(ngModel)]="repository.name">
+            </div>
+        </div>
+
+        <div class="uk-margin">
+            <label class="uk-form-label" for="description">Description</label>
+            <div class="uk-form-controls">
+                <input class="uk-input" id="description" type="text" [(ngModel)]="repository.description">
+            </div>
+        </div>
+
+        <div class="uk-margin">
+            <label class="uk-form-label" for="website">Website</label>
+            <div class="uk-form-controls">
+                <input class="uk-input" id="website" type="text" [(ngModel)]="repository.website">
+            </div>
+        </div>
+
+        <div class="uk-margin uk-grid-small uk-child-width-auto" uk-grid>
+            <label>
+                <input class="uk-radio" type="radio" name="private" (click)="repository.private = true" [checked]="repository.private == true">
+                Private
+            </label>
+            <label>
+                <input class="uk-radio" type="radio" name="private" (click)="repository.private = false" [checked]="repository.private == false">
+                Public
+            </label>
+        </div>
+
+        <div class="uk-margin">
+            <button class="uk-button uk-button-primary" type="submit">Create Repository</button>
+            <!--:disabled="loading"-->
+        </div>
+    </form>
+</div>

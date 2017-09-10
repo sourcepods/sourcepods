@@ -10,7 +10,7 @@ import 'package:gitpods/user_service.dart';
   templateUrl: 'user_profile_component.html',
   styleUrls: const ['user_profile_component.css'],
   providers: const [UserService],
-  directives: const [COMMON_DIRECTIVES, Gravatar],
+  directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, Gravatar],
   pipes: const [DatePipe, MailtoPipe],
 )
 class UserProfileComponent implements OnInit {
