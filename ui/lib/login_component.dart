@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:html';
 
-import 'package:angular2/angular2.dart';
+import 'package:angular/angular.dart';
+import 'package:angular_forms/angular_forms.dart';
 import 'package:gitpods/login_service.dart';
 
 @Component(
   selector: 'gitpods-selector',
   templateUrl: 'login_component.html',
   styleUrls: const ['login_component.css'],
-  directives: const[COMMON_DIRECTIVES],
+  directives: const[COMMON_DIRECTIVES, formDirectives],
   providers: const[LoginService],
 )
 class LoginComponent {

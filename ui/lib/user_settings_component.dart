@@ -1,14 +1,15 @@
 import 'dart:html';
 
-import 'package:angular2/angular2.dart';
+import 'package:angular/angular.dart';
+import 'package:angular_forms/angular_forms.dart';
+import 'package:angular_router/angular_router.dart';
 import 'package:gitpods/user.dart';
 import 'package:gitpods/user_service.dart';
-import 'package:angular2/router.dart';
 
 @Component(
   selector: 'gitpods-user-settings',
   templateUrl: 'user_settings_component.html',
-  directives: const [COMMON_DIRECTIVES],
+  directives: const [COMMON_DIRECTIVES, formDirectives],
 )
 class UserSettingsComponent implements OnInit {
   final Router _router;
