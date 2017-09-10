@@ -6,6 +6,7 @@ import (
 
 var (
 	OwnerNotFoundError = errors.New("owner not found")
+	AlreadyExistsError = errors.New("repository already exists")
 )
 
 type (

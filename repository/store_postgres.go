@@ -3,6 +3,8 @@ package repository
 import (
 	"database/sql"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 // Postgres implementation of the Store.
@@ -206,6 +208,11 @@ RETURNING id, created_at, updated_at`
 	)
 
 	if err := row.Scan(&r.ID, &r.Created, &r.Updated); err != nil {
+		if err, ok := err.(*pq.Error); ok {
+			if err.Code == pq.ErrorCode("23505") {
+				return nil, AlreadyExistsError
+			}
+		}
 		return nil, err
 	}
 

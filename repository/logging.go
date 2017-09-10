@@ -73,10 +73,12 @@ func (s *loggingService) Create(ownerID string, repository *Repository) (*Reposi
 	)
 
 	if err != nil {
-		level.Warn(logger).Log(
-			"msg", "failed to create repository",
-			"err", err,
-		)
+		if err != AlreadyExistsError {
+			level.Warn(logger).Log(
+				"msg", "failed to create repository",
+				"err", err,
+			)
+		}
 	} else {
 		level.Debug(logger).Log(
 			"owner_id", ownerID,
