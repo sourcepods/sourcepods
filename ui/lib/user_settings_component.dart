@@ -20,12 +20,12 @@ class UserSettingsComponent implements OnInit {
   User user;
 
   @override
-  ngOnInit() {
+  void ngOnInit() {
     this._userService.me()
         .then((user) => this.user = user);
   }
 
-  submit(Event event) {
+  void submit(Event event) {
     event.preventDefault();
 
 

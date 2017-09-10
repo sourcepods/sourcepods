@@ -22,7 +22,7 @@ class UserProfileComponent implements OnInit {
   User user;
 
   @override
-  ngOnInit() {
+  void ngOnInit() {
     String username = this._routeParams.get('username');
     this._userService.profile(username)
         .then((user) => this.user = user);

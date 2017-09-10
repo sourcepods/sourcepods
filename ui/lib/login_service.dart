@@ -31,7 +31,7 @@ class LoginService {
     }
   }
 
-  logout() {
+  void logout() {
     if (document.cookie.contains('_gitpods_session')) {
       document.cookie = '';
       // TODO: Redirect to login page

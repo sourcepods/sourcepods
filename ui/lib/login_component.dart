@@ -22,7 +22,7 @@ class LoginComponent {
 
   LoginComponent(this._loginService);
 
-  submit(Event event) {
+  void submit(Event event) {
     event.preventDefault();
     this.error = '';
 

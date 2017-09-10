@@ -62,13 +62,13 @@ class AppComponent implements OnInit {
   bool loading = false;
 
   @override
-  ngOnInit() {
+  void ngOnInit() {
     this._userService.me()
         .then((User user) => this.user = user)
         .catchError((e) => this._router.navigate(['Login']));
   }
 
-  logout() {
+  void logout() {
     this._loginService.logout();
   }
 }

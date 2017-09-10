@@ -17,7 +17,7 @@ class UserListComponent implements OnInit {
   List<User> users = [];
 
   @override
-  ngOnInit() {
+  void ngOnInit() {
     this._userService.list()
         .then((List<User> users) => this.users = users)
         .catchError((e) => print(e.toString()));

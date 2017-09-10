@@ -6,7 +6,7 @@ import 'package:gitpods/user.dart';
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 
-const USER_ME = '''
+const userMe = '''
 query me {
   me {
     id
@@ -19,7 +19,7 @@ query me {
 }
 ''';
 
-const USERS_QUERY = '''
+const usersQuery = '''
 query UsersQuery {
   users {
     id
@@ -32,7 +32,7 @@ query UsersQuery {
 }
 ''';
 
-const USER_PROFILE = '''
+const userProfile = '''
 query userProfile(\$username: String) {
   user(username: \$username) {
     id
@@ -52,7 +52,7 @@ query userProfile(\$username: String) {
 }
 ''';
 
-const USER_UPDATE = '''
+const userUpdate = '''
 mutation updateUser(\$id: ID!, \$user: updatedUser!) {
   updateUser(id: \$id, user: \$user) {
     id
@@ -73,7 +73,7 @@ class UserService {
 
   Future<User> me() async {
     var payload = JSON.encode({
-      'query': USER_ME,
+      'query': userMe,
     });
 
     Response resp = await this._http.post('/api/query', body: payload);
@@ -89,7 +89,7 @@ class UserService {
 
   Future<List<User>> list() async {
     var payload = JSON.encode({
-      'query': USERS_QUERY,
+      'query': usersQuery,
     });
 
     Response resp = await this._http.post('/api/query', body: payload);
@@ -102,7 +102,7 @@ class UserService {
 
   Future<User> profile(String username) async {
     var payload = JSON.encode({
-      'query': USER_PROFILE,
+      'query': userProfile,
       'variables': {
         'username': username,
       }
@@ -116,7 +116,7 @@ class UserService {
 
   Future<User> update(User user) async {
     var payload = JSON.encode({
-      'query': USER_UPDATE,
+      'query': userUpdate,
       'variables': {
         'id': user.id,
         'user': {
@@ -137,5 +137,6 @@ class UnauthorizedError extends Error {
 
   UnauthorizedError(this.message);
 
+  @override
   String toString() => "Unauthorizted state: $message";
 }

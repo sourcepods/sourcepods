@@ -19,7 +19,7 @@ class NavbarComponent implements OnInit {
   User user;
 
   @override
-  ngOnInit() {
+  void ngOnInit() {
     this._userService.me()
         .then((User user) => this.user = user)
         .catchError((e) => this._router.navigate(['Login']));
