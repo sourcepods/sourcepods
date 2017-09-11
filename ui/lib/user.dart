@@ -28,6 +28,12 @@ class User {
 
     data['name'] != null ? user.name = data['name'] : '';
 
+    if (data['repositories'] != null) {
+      user.repositories = data['repositories']
+          .map((data) => new Repository.fromJSON(data))
+          .toList();
+    }
+
     if (data['created_at'] != null) {
       user.created =
       new DateTime.fromMillisecondsSinceEpoch(data['created_at'] * 1000);
