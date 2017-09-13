@@ -41,7 +41,7 @@
                             <div class="uk-width-expand uk-margin">
                                 <form class="uk-search uk-search-default" style="width: 100%;">
                                     <a href="" class="uk-search-icon-flip" uk-search-icon></a>
-                                    <input class="uk-search-input" type="search" placeholder="Search...">
+                                    <input class="uk-search-input" type="search" placeholder="Search..." [(ngModel)]="repoQuery">
                                 </form>
                             </div>
 
@@ -52,7 +52,7 @@
                             </div>
                         </div>
                     </li>
-                    <li *ngFor="let repository of user.repositories">
+                    <li *ngFor="let repository of (user.repositories | filteredRepos:repoQuery)">
                         <div class="uk-flex">
                             <div class="uk-flex-auto">
                                 <h4 class="repository-name">
