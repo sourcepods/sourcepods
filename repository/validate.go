@@ -31,10 +31,10 @@ func validateID(id string) error {
 
 func validateName(name string) error {
 	if ok := govalidator.IsAlphanumeric(name); !ok {
-		return fmt.Errorf("username is not alphanumeric")
+		return fmt.Errorf("name is not alphanumeric")
 	}
 	if ok := govalidator.IsByteLength(name, 4, 32); !ok {
-		return fmt.Errorf("username is not between 4 and 32 characters long")
+		return fmt.Errorf("name is not between 4 and 32 characters long")
 	}
 	return nil
 }
