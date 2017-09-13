@@ -39,7 +39,8 @@
                             <div class="uk-width-expand uk-margin">
                                 <form class="uk-search uk-search-default" style="width: 100%;">
                                     <a href="" class="uk-search-icon-flip" uk-search-icon></a>
-                                    <input class="uk-search-input" type="search" placeholder="Search..." [(ngModel)]="repoQuery">
+                                    <input class="uk-search-input" type="search" placeholder="Search..."
+                                           [(ngModel)]="repoQuery">
                                 </form>
                             </div>
 
@@ -54,9 +55,9 @@
                         <div class="uk-flex">
                             <div class="uk-flex-auto">
                                 <h4 class="repository-name">
-                                    <router-link>
+                                    <a [routerLink]="['Repository', {'owner': user.username, 'name': repository.name}]">
                                         {{repository.name}}
-                                    </router-link>
+                                    </a>
                                 </h4>
                                 <p class="repository-description">{{repository.description}}</p>
                             </div>

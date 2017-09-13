@@ -7,6 +7,33 @@ import 'package:gitpods/validation_exception.dart';
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 
+const repositoryGet = '''
+query (\$owner: String!, \$name: String!) {
+  repository(owner: \$owner, name: \$name) {
+    id
+    name
+    description
+    website
+    default_branch
+    private
+    created_at
+    updated_at
+    stars
+    forks
+    issue_stats {
+      total
+      open
+      closed
+    }
+    pull_request_stats {
+      total
+      open
+      closed
+    }
+  }
+}
+''';
+
 const repositoryCreate = '''
 mutation (\$repository: newRepository!) {
   createRepository(repository: \$repository) {
@@ -31,6 +58,25 @@ class RepositoryService {
   final BrowserClient _http;
 
   RepositoryService(this._http);
+
+  Future<Repository> get(String owner, String name) async {
+    var payload = JSON.encode({
+      'query': repositoryGet,
+      'variables': {
+        'owner': owner,
+        'name': name,
+      },
+    });
+
+    Response resp = await this._http.post('/api/query', body: payload);
+    var body = JSON.decode(resp.body);
+
+    if (body['errors'] != null) {
+      throw new Exception(body['errors'][0]['message']);
+    }
+
+    return new Repository.fromJSON(body['data']['repository']);
+  }
 
   Future<Repository> create(Repository repository) async {
     var payload = JSON.encode({

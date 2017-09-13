@@ -13,6 +13,8 @@ class Repository {
 
   int stars;
   int forks;
+  Map<String, int> issueStats;
+  Map<String, int> pullRequestStats;
 
   User owner;
 
@@ -43,6 +45,22 @@ class Repository {
     data['bare'] != null ? repository.bare = data['bare'] : '';
     data['stars'] != null ? repository.stars = data['stars'] : '';
     data['forks'] != null ? repository.forks = data['forks'] : '';
+
+    if (data['issue_stats'] != null) {
+      repository.issueStats = {
+        'total': data['issue_stats']['total'],
+        'open': data['issue_stats']['open'],
+        'closed': data['issue_stats']['closed'],
+      };
+    }
+
+    if (data['pull_request_stats'] != null) {
+      repository.pullRequestStats = {
+        'total': data['pull_request_stats']['total'],
+        'open': data['pull_request_stats']['open'],
+        'closed': data['pull_request_stats']['closed'],
+      };
+    }
 
     if (data['owner'] != null) {
       repository.owner = new User.fromJSON(data['owner']);

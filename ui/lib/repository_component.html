@@ -1,0 +1,55 @@
+<div *ngIf="repository != null">
+
+    <div class="repository-nav">
+        <div class="uk-container">
+            <div uk-grid>
+                <div>
+                    <h3><span uk-icon="icon: lock"></span></h3>
+                </div>
+
+                <div style="padding-left: 16px;">
+                    <h3>
+                        <a [routerLink]="['/UserProfile', {'username': ownerName}]">
+                            {{ownerName}}
+                        </a>
+                        <span>/</span>
+                        <a [routerLink]="['/Repository', {'owner':ownerName, 'name': repository.name}]">
+                            {{repository.name}}
+                        </a>
+                    </h3>
+                    <span>{{repository.description}}</span>
+                    <span *ngIf="repository.website != null">
+                        -
+                        <a href="{{repository.website}}">{{repository.website}}</a>
+                    </span>
+
+                </div>
+            </div>
+
+            <ul class="uk-child-width-expand" uk-tab>
+                <li>
+                    <a href="#">Code</a>
+                </li>
+                <li>
+                    <a href="#">
+                        Issues
+                        <span class="uk-badge">{{repository.issueStats['open']}}</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        Pull Requests
+                        <span class="uk-badge">{{repository.pullRequestStats['open']}}</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">Pipelines</a>
+                </li>
+                <li>
+                    <a href="#">Settings</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</div>
