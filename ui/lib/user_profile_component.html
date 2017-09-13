@@ -2,9 +2,7 @@
 
     <div class="uk-grid-small" uk-grid *ngIf="user!=null">
         <div class="uk-flex-top uk-padding-small uk-width-2-5@m uk-width-1-4@l">
-            <img src="https://www.gravatar.com/avatar/915d80f0d9b6678fad4d1ab36dfc8960?s=512&d=mm&r=g" alt="">
-            <!--<gravatar :email="user.email" default-img="mm" :size="512" class="uk-border-rounded"></gravatar>-->
-            <!--<gitpods-gravatar email="mail@matthiasloibl.com" size="512"></gitpods-gravatar>-->
+            <gravatar email="{{user.email}}" size="512"></gravatar>
             <h3 class="user-name">{{user.name}}</h3>
             <h4 class="uk-text-muted user-username">@{{user.username}}</h4>
 

@@ -38,8 +38,7 @@
                 <li>
                     <div>
                         <a [routerLink]="['/UserProfile', {'username': user.username}]">
-                            <img src="https://0.gravatar.com/avatar/915d80f0d9b6678fad4d1ab36dfc8960?s=46&d=mm" alt=""
-                                 class="uk-border-circle"/>
+                            <gravatar email="{{user.email}}" size="46" class="uk-border-circle"></gravatar>
                         </a>
                         <span uk-icon="icon: more-vertical"></span>
                     </div>

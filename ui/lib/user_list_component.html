@@ -4,7 +4,7 @@
         <li *ngFor="let user of users">
             <div class="uk-grid">
                 <div>
-                    <img src="https://0.gravatar.com/avatar/915d80f0d9b6678fad4d1ab36dfc8960?s=46&d=mm" class="uk-border-circle">
+                    <gravatar email="{{user.email}}" size="46" class="uk-border-circle"></gravatar>
                 </div>
                 <div class="uk-width-expand">
                     <a [routerLink]="['UserProfile', {'username': user.username}]" class="uk-link-reset uk-text-bold">{{user.name}}</a><br>
