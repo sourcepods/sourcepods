@@ -12,6 +12,10 @@ type metricsService struct {
 }
 
 func NewMetricsService(loginAttempts metrics.Counter, service Service) Service {
+	// Initialize counters with 0
+	loginAttempts.With("status", "failure").Add(0)
+	loginAttempts.With("status", "success").Add(0)
+
 	return &metricsService{loginAttempts: loginAttempts, service: service}
 }
 

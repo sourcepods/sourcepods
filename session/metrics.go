@@ -9,6 +9,10 @@ type metricsService struct {
 }
 
 func NewMetricsService(service Service, sessionsCreated metrics.Counter, sessionsCleared metrics.Counter) Service {
+	// Initialize counters with 0
+	sessionsCreated.Add(0)
+	sessionsCleared.Add(0)
+
 	return &metricsService{
 		service:         service,
 		sessionsCreated: sessionsCreated,
