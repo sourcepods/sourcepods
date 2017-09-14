@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
-	"github.com/pressly/chi"
 )
 
 type response struct {
@@ -25,8 +25,8 @@ func NewUsersHandler(s Service) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Get("/", list(s))
-	r.Get("/:username", get(s))
-	r.Put("/:username", update(s))
+	r.Get("/{username}", get(s))
+	r.Put("/{username}", update(s))
 
 	return r
 }

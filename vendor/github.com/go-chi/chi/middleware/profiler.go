@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"github.com/pressly/chi"
+	"github.com/go-chi/chi"
 )
 
 // Profiler is a convenient subrouter used for mounting net/http/pprof. ie.
@@ -33,6 +33,7 @@ func Profiler() http.Handler {
 	r.HandleFunc("/pprof/cmdline", pprof.Cmdline)
 	r.HandleFunc("/pprof/profile", pprof.Profile)
 	r.HandleFunc("/pprof/symbol", pprof.Symbol)
+	r.HandleFunc("/pprof/trace", pprof.Trace)
 	r.Handle("/pprof/block", pprof.Handler("block"))
 	r.Handle("/pprof/heap", pprof.Handler("heap"))
 	r.Handle("/pprof/goroutine", pprof.Handler("goroutine"))

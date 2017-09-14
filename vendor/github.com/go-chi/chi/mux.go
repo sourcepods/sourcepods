@@ -75,7 +75,8 @@ func (mx *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Once the request is finished, reset the routing context and put it back
 	// into the pool for reuse from another request.
 	rctx = mx.pool.Get().(*Context)
-	rctx.reset()
+	rctx.Reset()
+	rctx.Routes = mx
 	r = r.WithContext(context.WithValue(r.Context(), RouteCtxKey, rctx))
 	mx.handler.ServeHTTP(w, r)
 	mx.pool.Put(rctx)
@@ -104,6 +105,22 @@ func (mx *Mux) Handle(pattern string, handler http.Handler) {
 // execute the `handlerFn` http.HandlerFunc.
 func (mx *Mux) HandleFunc(pattern string, handlerFn http.HandlerFunc) {
 	mx.handle(mALL, pattern, handlerFn)
+}
+
+// Method adds the route `pattern` that matches `method` http method to
+// execute the `handler` http.Handler.
+func (mx *Mux) Method(method, pattern string, handler http.Handler) {
+	m, ok := methodMap[strings.ToUpper(method)]
+	if !ok {
+		panic(fmt.Sprintf("chi: '%s' http method is not supported.", method))
+	}
+	mx.handle(m, pattern, handler)
+}
+
+// MethodFunc adds the route `pattern` that matches `method` http method to
+// execute the `handlerFn` http.HandlerFunc.
+func (mx *Mux) MethodFunc(method, pattern string, handlerFn http.HandlerFunc) {
+	mx.Method(method, pattern, handlerFn)
 }
 
 // Connect adds the route `pattern` that matches a CONNECT http method to
@@ -253,7 +270,7 @@ func (mx *Mux) Route(pattern string, fn func(r Router)) Router {
 func (mx *Mux) Mount(pattern string, handler http.Handler) {
 	// Provide runtime safety for ensuring a pattern isn't mounted on an existing
 	// routing pattern.
-	if mx.tree.findPattern(pattern+"*") != nil || mx.tree.findPattern(pattern+"/*") != nil {
+	if mx.tree.findPattern(pattern+"*") || mx.tree.findPattern(pattern+"/*") {
 		panic(fmt.Sprintf("chi: attempting to Mount() a handler on an existing path, '%s'", pattern))
 	}
 
@@ -267,15 +284,19 @@ func (mx *Mux) Mount(pattern string, handler http.Handler) {
 	}
 
 	// Wrap the sub-router in a handlerFunc to scope the request path for routing.
-	subHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mountHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rctx := RouteContext(r.Context())
-		rctx.RoutePath = "/" + rctx.URLParams.Del("*")
+		rctx.RoutePath = mx.nextRoutePath(rctx)
 		handler.ServeHTTP(w, r)
 	})
 
 	if pattern == "" || pattern[len(pattern)-1] != '/' {
-		mx.handle(mALL|mSTUB, pattern, subHandler)
-		mx.handle(mALL|mSTUB, pattern+"/", mx.NotFoundHandler())
+		notFoundHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mx.NotFoundHandler().ServeHTTP(w, r)
+		})
+
+		mx.handle(mALL|mSTUB, pattern, mountHandler)
+		mx.handle(mALL|mSTUB, pattern+"/", notFoundHandler)
 		pattern += "/"
 	}
 
@@ -284,39 +305,44 @@ func (mx *Mux) Mount(pattern string, handler http.Handler) {
 	if subroutes != nil {
 		method |= mSTUB
 	}
-	n := mx.handle(method, pattern+"*", subHandler)
+	n := mx.handle(method, pattern+"*", mountHandler)
 
 	if subroutes != nil {
 		n.subroutes = subroutes
 	}
 }
 
-func (mx *Mux) Middlewares() Middlewares {
-	return mx.middlewares
-}
-
+// Routes returns a slice of routing information from the tree,
+// useful for traversing available routes of a router.
 func (mx *Mux) Routes() []Route {
 	return mx.tree.routes()
 }
 
-// FileServer conveniently sets up a http.FileServer handler to serve
-// static files from a http.FileSystem.
-func (mx *Mux) FileServer(path string, root http.FileSystem) {
-	if strings.ContainsAny(path, ":*") {
-		panic("chi: FileServer does not permit URL parameters.")
+// Middlewares returns a slice of middleware handler functions.
+func (mx *Mux) Middlewares() Middlewares {
+	return mx.middlewares
+}
+
+// Match searches the routing tree for a handler that matches the method/path.
+// It's similar to routing a http request, but without executing the handler
+// thereafter.
+//
+// Note: the *Context state is updated during execution, so manage
+// the state carefully or make a NewRouteContext().
+func (mx *Mux) Match(rctx *Context, method, path string) bool {
+	m, ok := methodMap[method]
+	if !ok {
+		return false
 	}
 
-	fs := http.StripPrefix(path, http.FileServer(root))
+	node, _, h := mx.tree.FindRoute(rctx, m, path)
 
-	if path != "/" && path[len(path)-1] != '/' {
-		mx.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
-		path += "/"
+	if node != nil && node.subroutes != nil {
+		rctx.RoutePath = mx.nextRoutePath(rctx)
+		return node.subroutes.Match(rctx, method, rctx.RoutePath)
 	}
-	path += "*"
 
-	mx.Get(path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fs.ServeHTTP(w, r)
-	}))
+	return h != nil
 }
 
 // NotFoundHandler returns the default Mux 404 responder whenever a route
@@ -387,27 +413,34 @@ func (mx *Mux) routeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if method is supported by chi
-	method, ok := methodMap[r.Method]
+	if rctx.RouteMethod == "" {
+		rctx.RouteMethod = r.Method
+	}
+	method, ok := methodMap[rctx.RouteMethod]
 	if !ok {
 		mx.MethodNotAllowedHandler().ServeHTTP(w, r)
 		return
 	}
 
 	// Find the route
-	hs := mx.tree.FindRoute(rctx, routePath)
-	if hs == nil {
-		mx.NotFoundHandler().ServeHTTP(w, r)
+	if _, _, h := mx.tree.FindRoute(rctx, method, routePath); h != nil {
+		h.ServeHTTP(w, r)
 		return
 	}
-
-	h, ok := hs[method]
-	if !ok {
+	if rctx.methodNotAllowed {
 		mx.MethodNotAllowedHandler().ServeHTTP(w, r)
-		return
+	} else {
+		mx.NotFoundHandler().ServeHTTP(w, r)
 	}
+}
 
-	// Serve it up
-	h.ServeHTTP(w, r)
+func (mx *Mux) nextRoutePath(rctx *Context) string {
+	routePath := "/"
+	nx := len(rctx.routeParams.Keys) - 1 // index of last param in list
+	if nx >= 0 && rctx.routeParams.Keys[nx] == "*" && len(rctx.routeParams.Values) > nx {
+		routePath += rctx.routeParams.Values[nx]
+	}
+	return routePath
 }
 
 // Recursively update data on child routers.

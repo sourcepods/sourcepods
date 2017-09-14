@@ -14,6 +14,7 @@ import (
 	"github.com/gitpods/gitpods/resolver"
 	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/user"
+	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics"
@@ -22,7 +23,6 @@ import (
 	graphql "github.com/neelance/graphql-go"
 	"github.com/neelance/graphql-go/relay"
 	"github.com/oklog/oklog/pkg/group"
-	"github.com/pressly/chi"
 	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
 )
@@ -184,9 +184,9 @@ func apiAction(c *cli.Context) error {
 			router.Mount("/query", &relay.Handler{Schema: schema})
 			router.Mount("/user", user.NewUserHandler(us))
 			router.Mount("/users", user.NewUsersHandler(us))
-			router.Mount("/users/:username/repositories", repository.NewUsersHandler(rs))
+			router.Mount("/users/{username}/repositories", repository.NewUsersHandler(rs))
 
-			router.Mount("/repositories/:owner/:name", repository.NewHandler(rs))
+			router.Mount("/repositories/{owner}/{name}", repository.NewHandler(rs))
 		})
 	})
 
@@ -244,10 +244,12 @@ func apiAction(c *cli.Context) error {
 		}, func(err error) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			log.With(logger, "err", err)
 
 			if err := server.Shutdown(ctx); err != nil {
-				level.Error(logger).Log("msg", "failed to shutdown http server gracefully", "err", err)
+				level.Error(logger).Log(
+					"msg", "failed to shutdown http server gracefully",
+					"err", err,
+				)
 				return
 			}
 			level.Info(logger).Log("msg", "http server shutdown gracefully")
@@ -266,7 +268,7 @@ func apiAction(c *cli.Context) error {
 
 			if err := privateServer.Shutdown(ctx); err != nil {
 				level.Error(logger).Log(
-					"msg", "ailed to shutdown internal http server gracefully",
+					"msg", "failed to shutdown internal http server gracefully",
 					"err", err,
 				)
 				return

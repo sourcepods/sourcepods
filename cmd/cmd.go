@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-chi/chi/middleware"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/pressly/chi/middleware"
 )
 
 const (

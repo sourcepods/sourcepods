@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gitpods/gitpods/session"
+	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
-	"github.com/pressly/chi"
 )
 
 // NewUserHandler returns a RESTful http router interacting with the Service

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
-	"github.com/pressly/chi"
 )
 
 type response struct {

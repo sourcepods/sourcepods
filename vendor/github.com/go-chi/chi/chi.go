@@ -9,8 +9,8 @@
 //  import (
 //  	"net/http"
 //
-//  	"github.com/pressly/chi"
-//  	"github.com/pressly/chi/middleware"
+//  	"github.com/go-chi/chi"
+//  	"github.com/go-chi/chi/middleware"
 //  )
 //
 //  func main() {
@@ -25,7 +25,7 @@
 //  	http.ListenAndServe(":3333", r)
 //  }
 //
-// See github.com/pressly/chi/_examples/ for more in-depth examples.
+// See github.com/go-chi/chi/_examples/ for more in-depth examples.
 //
 package chi
 
@@ -63,6 +63,11 @@ type Router interface {
 	Handle(pattern string, h http.Handler)
 	HandleFunc(pattern string, h http.HandlerFunc)
 
+	// Method and MethodFunc adds routes for `pattern` that matches
+	// the `method` HTTP method.
+	Method(method, pattern string, h http.Handler)
+	MethodFunc(method, pattern string, h http.HandlerFunc)
+
 	// HTTP-method routing along `pattern`
 	Connect(pattern string, h http.HandlerFunc)
 	Delete(pattern string, h http.HandlerFunc)
@@ -91,6 +96,11 @@ type Routes interface {
 
 	// Middlewares returns the list of middlewares in use by the router.
 	Middlewares() Middlewares
+
+	// Match searches the routing tree for a handler that matches
+	// the method/path - similar to routing a http request, but without
+	// executing the handler thereafter.
+	Match(rctx *Context, method, path string) bool
 }
 
 // Middlewares type is a slice of standard middleware handlers with methods
