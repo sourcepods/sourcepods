@@ -4,8 +4,11 @@ package main
 // Licensed under Apache-2.0
 
 import (
+	"compress/flate"
+	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -17,38 +20,47 @@ import (
 	"github.com/gitpods/gitpods/cmd"
 	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 )
 
 type GitHTTP struct {
-	root string
-	git  string
+	root   string
+	git    string
+	Logger log.Logger
 }
 
 func NewGitHTTP(root string) *GitHTTP {
 	return &GitHTTP{
-		root: root,
-		git:  "/usr/bin/git",
+		root:   root,
+		git:    "/usr/bin/git",
+		Logger: log.NewNopLogger(),
 	}
 }
 
-func (gh *GitHTTP) Handler(logger log.Logger) *chi.Mux {
+func (gh *GitHTTP) Handler() *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(cmd.NewRequestLogger(logger))
+	r.Use(cmd.NewRequestLogger(gh.Logger))
 
-	r.Get("/{owner}/{name}/HEAD", NoCaching(gh.textFileHandler("HEAD", "text/plain")))
+	//dings := githttp.New(gh.root)
+	//r.Mount("/", dings)
+	//return r
+
+	r.Get("/{owner}/{name}/HEAD", NoCaching(gh.headHandler))
 	r.Get("/{owner}/{name}/info/refs", NoCaching(gh.infoRefsHandler))
 	r.Get("/{owner}/{name}/objects/{folder:[0-9a-f]{2}}/{file:[0-9a-f]{38}}", CacheForever(gh.looseObjectHandler))
 	r.Get("/{owner}/{name}/objects/info/{thing:[^/]*}", NoCaching(gh.infoHandler)) // TODO
-	r.Get("/{owner}/{name}/objects/info/alternates", NoCaching(gh.textFileHandler("/objects/info/alternates", "text/plain")))
-	r.Get("/{owner}/{name}/objects/info/http-alternates", NoCaching(gh.textFileHandler("/objects/info/http-alternates", "text/plain")))
+	r.Get("/{owner}/{name}/objects/info/alternates", NoCaching(gh.alternatesHandler))
+	r.Get("/{owner}/{name}/objects/info/http-alternates", NoCaching(gh.httpAlternatesHandler))
 	r.Get("/{owner}/{name}/objects/info/packs", implementHandler)
 	r.Get("/{owner}/{name}/objects/pack/pack-[0-9a-f]{40}\\.idx", implementHandler)
 	r.Get("/{owner}/{name}/objects/pack/pack-[0-9a-f]{40}\\.pack", implementHandler)
-	r.Post("/{owner}/{name}/git-receive-pack", serviceHandler)
-	r.Post("/{owner}/{name}/git-upload-pack", serviceHandler)
+	r.Post("/{owner}/{name}/git-{service}", gh.serviceHandler)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		println("not found", r.URL.String())
+		level.Debug(gh.Logger).Log(
+			"msg", "not found",
+			"path", r.URL.String(),
+		)
 	})
 
 	return r
@@ -78,6 +90,30 @@ func CacheForever(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func (gh *GitHTTP) headHandler(w http.ResponseWriter, r *http.Request) {
+	owner, name := ownerName(r)
+	path := filepath.Join(gh.root, owner, name, "HEAD")
+
+	h := gh.textFileHandler(path, "text/plain")
+	h.ServeHTTP(w, r)
+}
+
+func (gh *GitHTTP) alternatesHandler(w http.ResponseWriter, r *http.Request) {
+	owner, name := ownerName(r)
+	path := filepath.Join(gh.root, owner, name, "/objects/info/alternates")
+
+	h := gh.textFileHandler(path, "text/plain")
+	h.ServeHTTP(w, r)
+}
+
+func (gh *GitHTTP) httpAlternatesHandler(w http.ResponseWriter, r *http.Request) {
+	owner, name := ownerName(r)
+	path := filepath.Join(gh.root, owner, name, "/objects/info/http-alternates")
+
+	h := gh.textFileHandler(path, "text/plain")
+	h.ServeHTTP(w, r)
+}
+
 func (gh *GitHTTP) textFileHandler(path string, contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		f, err := os.Stat(path)
@@ -93,14 +129,93 @@ func (gh *GitHTTP) textFileHandler(path string, contentType string) http.Handler
 	}
 }
 
-func serviceHandler(w http.ResponseWriter, r *http.Request) {
+func (gh *GitHTTP) serviceHandler(w http.ResponseWriter, r *http.Request) {
 	owner, name := ownerName(r)
-	fmt.Fprintf(w, "%s/%s", owner, name)
+	service := chi.URLParam(r, "service")
+	logger := log.With(gh.Logger,
+		"owner", owner,
+		"name", name,
+		"service", service,
+	)
+
+	defer r.Body.Close()
+
+	var body io.Reader
+	var err error
+	switch r.Header.Get("content-encoding") {
+	case "gzip":
+		body, err = gzip.NewReader(r.Body)
+	case "deflate":
+		body = flate.NewReader(r.Body)
+	default:
+		body = r.Body
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		level.Warn(logger).Log("msg", "failed to create body reader", "err", err)
+		return
+	}
+
+	args := []string{service, "--stateless-rpc", "."}
+	cmd := exec.CommandContext(context.Background(), gh.git, args...)
+	cmd.Dir = filepath.Join(gh.root, owner, name)
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		level.Warn(logger).Log("msg", "failed to create pipe to git's stdin", "err", err)
+		return
+	}
+	defer stdin.Close()
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		level.Warn(logger).Log("msg", "failed to create pipe to git's stdout", "err", err)
+		return
+	}
+	defer stdout.Close()
+
+	if err := cmd.Start(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		level.Warn(logger).Log("msg", "failed to start git", "err", err)
+		return
+	}
+
+	if _, err := io.Copy(stdin, body); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		level.Warn(logger).Log("msg", "failed to copy request to git's stdin", "err", err)
+		return
+	}
+	stdin.Close()
+
+	if _, err := io.Copy(w, stdout); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		level.Warn(logger).Log("msg", "failed to copy git's stdout to response", "err", err)
+		return
+	}
+
+	if err := cmd.Wait(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		level.Warn(logger).Log("msg", "failed to wait for git", "err", err)
+		return
+	}
+
+	// TODO: Fire events to channel
+
+	w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", service))
+
 }
 
 func (gh *GitHTTP) infoRefsHandler(w http.ResponseWriter, r *http.Request) {
 	owner, name := ownerName(r)
 	service := serviceQuery(r)
+	logger := log.With(gh.Logger,
+		"owner", owner,
+		"name", name,
+		"service", service,
+	)
 
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second)
 	defer cancel()
@@ -112,6 +227,7 @@ func (gh *GitHTTP) infoRefsHandler(w http.ResponseWriter, r *http.Request) {
 	refs, err := cmd.Output()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		level.Warn(logger).Log("msg", "failed to get refs", "err", err)
 		return
 	}
 

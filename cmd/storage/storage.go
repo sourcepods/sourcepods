@@ -68,10 +68,11 @@ func storageAction(c *cli.Context) error {
 	}
 
 	gh := NewGitHTTP(storageConfig.Root)
+	gh.Logger = logger
 
 	server := &http.Server{
 		Addr:    storageConfig.Addr,
-		Handler: gh.Handler(logger),
+		Handler: gh.Handler(),
 	}
 
 	var gr group.Group
