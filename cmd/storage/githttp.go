@@ -41,10 +41,6 @@ func (gh *GitHTTP) Handler() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(cmd.NewRequestLogger(gh.Logger))
 
-	//dings := githttp.New(gh.root)
-	//r.Mount("/", dings)
-	//return r
-
 	r.Get("/{owner}/{name}/HEAD", NoCaching(gh.headHandler))
 	r.Get("/{owner}/{name}/info/refs", NoCaching(gh.infoRefsHandler))
 	r.Get("/{owner}/{name}/objects/{folder:[0-9a-f]{2}}/{file:[0-9a-f]{38}}", CacheForever(gh.looseObjectHandler))
