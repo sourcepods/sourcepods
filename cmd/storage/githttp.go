@@ -41,15 +41,15 @@ func (gh *GitHTTP) Handler() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(cmd.NewRequestLogger(gh.Logger))
 
-	r.Get("/{owner}/{name}/HEAD", NoCaching(gh.headHandler))
-	r.Get("/{owner}/{name}/info/refs", NoCaching(gh.infoRefsHandler))
-	r.Get("/{owner}/{name}/objects/{folder:[0-9a-f]{2}}/{file:[0-9a-f]{38}}", CacheForever(gh.looseObjectHandler))
-	r.Get("/{owner}/{name}/objects/info/{thing:[^/]*}", NoCaching(gh.infoHandler)) // TODO
-	r.Get("/{owner}/{name}/objects/info/alternates", NoCaching(gh.alternatesHandler))
-	r.Get("/{owner}/{name}/objects/info/http-alternates", NoCaching(gh.httpAlternatesHandler))
-	r.Get("/{owner}/{name}/objects/info/packs", CacheForever(gh.infoPacksHandler))
-	r.Get("/{owner}/{name}/objects/pack/pack-{hash:[0-9a-f]{40}}.idx", CacheForever(gh.idxHandler))
-	r.Get("/{owner}/{name}/objects/pack/pack-{hash:[0-9a-f]{40}}.pack", CacheForever(gh.packHandler))
+	r.Get("/{owner}/{name}/HEAD", noCaching(gh.headHandler))
+	r.Get("/{owner}/{name}/info/refs", noCaching(gh.infoRefsHandler))
+	r.Get("/{owner}/{name}/objects/{folder:[0-9a-f]{2}}/{file:[0-9a-f]{38}}", cacheForever(gh.looseObjectHandler))
+	r.Get("/{owner}/{name}/objects/info/{file}", noCaching(gh.infoHandler))
+	r.Get("/{owner}/{name}/objects/info/alternates", noCaching(gh.alternatesHandler))
+	r.Get("/{owner}/{name}/objects/info/http-alternates", noCaching(gh.httpAlternatesHandler))
+	r.Get("/{owner}/{name}/objects/info/packs", cacheForever(gh.infoPacksHandler))
+	r.Get("/{owner}/{name}/objects/pack/pack-{hash:[0-9a-f]{40}}.idx", cacheForever(gh.idxHandler))
+	r.Get("/{owner}/{name}/objects/pack/pack-{hash:[0-9a-f]{40}}.pack", cacheForever(gh.packHandler))
 	r.Post("/{owner}/{name}/git-{service}", gh.serviceHandler)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +62,7 @@ func (gh *GitHTTP) Handler() *chi.Mux {
 	return r
 }
 
-func NoCaching(next http.HandlerFunc) http.HandlerFunc {
+func noCaching(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
 		w.Header().Set("Pragma", "no-cache")
@@ -71,7 +71,7 @@ func NoCaching(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func CacheForever(next http.HandlerFunc) http.HandlerFunc {
+func cacheForever(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		expires := now.AddDate(1, 0, 0)
@@ -88,6 +88,54 @@ func (gh *GitHTTP) headHandler(w http.ResponseWriter, r *http.Request) {
 
 	h := gh.textFileHandler(path, "text/plain")
 	h.ServeHTTP(w, r)
+}
+
+func (gh *GitHTTP) infoRefsHandler(w http.ResponseWriter, r *http.Request) {
+	owner, name := ownerName(r)
+	service := serviceQuery(r)
+	logger := log.With(gh.Logger,
+		"owner", owner,
+		"name", name,
+		"service", service,
+	)
+
+	ctx, cancel := context.WithTimeout(r.Context(), time.Second)
+	defer cancel()
+
+	args := []string{service, "--stateless-rpc", "--advertise-refs", "."}
+	cmd := exec.CommandContext(ctx, gh.git, args...)
+	cmd.Dir = filepath.Join(gh.root, owner, name)
+
+	refs, err := cmd.Output()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		level.Warn(logger).Log("msg", "failed to get refs", "err", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", service))
+	w.Write(packetWrite(fmt.Sprintf("# service=git-%s\n", service)))
+	w.Write(packetFlush())
+	w.Write(refs)
+}
+
+func (gh *GitHTTP) looseObjectHandler(w http.ResponseWriter, r *http.Request) {
+	owner, name := ownerName(r)
+	folder := chi.URLParam(r, "folder")
+	file := chi.URLParam(r, "file")
+	path := filepath.Join(gh.root, owner, name, folder, file)
+
+	gh.textFileHandler(path, "application/x-git-loose-object")
+}
+
+func (gh *GitHTTP) infoHandler(w http.ResponseWriter, r *http.Request) {
+	owner, name := ownerName(r)
+	file := chi.URLParam(r, "file")
+	path := filepath.Join(gh.root, owner, name, "objects", "info", file)
+
+	fmt.Println(r.URL.String())
+	gh.textFileHandler(path, "text/plain")
+
 }
 
 func (gh *GitHTTP) alternatesHandler(w http.ResponseWriter, r *http.Request) {
@@ -223,54 +271,6 @@ func (gh *GitHTTP) serviceHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: Fire events to channel
 
 	w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", service))
-
-}
-
-func (gh *GitHTTP) infoRefsHandler(w http.ResponseWriter, r *http.Request) {
-	owner, name := ownerName(r)
-	service := serviceQuery(r)
-	logger := log.With(gh.Logger,
-		"owner", owner,
-		"name", name,
-		"service", service,
-	)
-
-	ctx, cancel := context.WithTimeout(r.Context(), time.Second)
-	defer cancel()
-
-	args := []string{service, "--stateless-rpc", "--advertise-refs", "."}
-	cmd := exec.CommandContext(ctx, gh.git, args...)
-	cmd.Dir = filepath.Join(gh.root, owner, name)
-
-	refs, err := cmd.Output()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		level.Warn(logger).Log("msg", "failed to get refs", "err", err)
-		return
-	}
-
-	w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", service))
-	w.Write(packetWrite(fmt.Sprintf("# service=git-%s\n", service)))
-	w.Write(packetFlush())
-	w.Write(refs)
-}
-
-func (gh *GitHTTP) looseObjectHandler(w http.ResponseWriter, r *http.Request) {
-	owner, name := ownerName(r)
-	folder := chi.URLParam(r, "folder")
-	file := chi.URLParam(r, "file")
-	path := filepath.Join(gh.root, owner, name, folder, file)
-
-	gh.textFileHandler(path, "application/x-git-loose-object")
-}
-
-func (gh *GitHTTP) infoHandler(w http.ResponseWriter, r *http.Request) {
-	owner, name := ownerName(r)
-	thing := chi.URLParam(r, "thing")
-	path := filepath.Join(gh.root, owner, name, "objects", "info", thing)
-
-	fmt.Println(r.URL.String())
-	gh.textFileHandler(path, "text/plain")
 
 }
 
