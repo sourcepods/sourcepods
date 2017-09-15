@@ -51,9 +51,9 @@ func (gh *GitHTTP) Handler() *chi.Mux {
 	r.Get("/{owner}/{name}/objects/info/{thing:[^/]*}", NoCaching(gh.infoHandler)) // TODO
 	r.Get("/{owner}/{name}/objects/info/alternates", NoCaching(gh.alternatesHandler))
 	r.Get("/{owner}/{name}/objects/info/http-alternates", NoCaching(gh.httpAlternatesHandler))
-	r.Get("/{owner}/{name}/objects/info/packs", implementHandler)
-	r.Get("/{owner}/{name}/objects/pack/pack-[0-9a-f]{40}\\.idx", implementHandler)
-	r.Get("/{owner}/{name}/objects/pack/pack-[0-9a-f]{40}\\.pack", implementHandler)
+	r.Get("/{owner}/{name}/objects/info/packs", CacheForever(gh.infoPacksHandler))
+	r.Get("/{owner}/{name}/objects/pack/pack-{hash:[0-9a-f]{40}}.idx", CacheForever(gh.idxHandler))
+	r.Get("/{owner}/{name}/objects/pack/pack-{hash:[0-9a-f]{40}}.pack", CacheForever(gh.packHandler))
 	r.Post("/{owner}/{name}/git-{service}", gh.serviceHandler)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
@@ -64,10 +64,6 @@ func (gh *GitHTTP) Handler() *chi.Mux {
 	})
 
 	return r
-}
-
-func implementHandler(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "not implemented", http.StatusInternalServerError)
 }
 
 func NoCaching(next http.HandlerFunc) http.HandlerFunc {
@@ -111,6 +107,32 @@ func (gh *GitHTTP) httpAlternatesHandler(w http.ResponseWriter, r *http.Request)
 	path := filepath.Join(gh.root, owner, name, "/objects/info/http-alternates")
 
 	h := gh.textFileHandler(path, "text/plain")
+	h.ServeHTTP(w, r)
+}
+
+func (gh *GitHTTP) infoPacksHandler(w http.ResponseWriter, r *http.Request) {
+	owner, name := ownerName(r)
+	path := filepath.Join(gh.root, owner, name, "/objects/info/packs")
+
+	h := gh.textFileHandler(path, "text/plain; charset=utf-8")
+	h.ServeHTTP(w, r)
+}
+
+func (gh *GitHTTP) idxHandler(w http.ResponseWriter, r *http.Request) {
+	owner, name := ownerName(r)
+	hash := chi.URLParam(r, "hash")
+	path := filepath.Join(gh.root, owner, name, fmt.Sprintf("objects/pack/pack-%s.idx", hash))
+
+	h := gh.textFileHandler(path, "application/x-git-packed-objects-toc")
+	h.ServeHTTP(w, r)
+}
+
+func (gh *GitHTTP) packHandler(w http.ResponseWriter, r *http.Request) {
+	owner, name := ownerName(r)
+	hash := chi.URLParam(r, "hash")
+	path := filepath.Join(gh.root, owner, name, fmt.Sprintf("objects/pack/pack-%s.pack", hash))
+
+	h := gh.textFileHandler(path, "application/x-git-packed-objects")
 	h.ServeHTTP(w, r)
 }
 
