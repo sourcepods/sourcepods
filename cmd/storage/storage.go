@@ -28,8 +28,8 @@ var (
 
 	storageFlags = []cli.Flag{
 		cli.StringFlag{
-			Name:        cmd.FlagAddr,
-			EnvVar:      cmd.EnvAddr,
+			Name:        cmd.FlagHTTPAddr,
+			EnvVar:      cmd.EnvHTTPAddr,
 			Value:       ":3030",
 			Destination: &storageConfig.Addr,
 		},

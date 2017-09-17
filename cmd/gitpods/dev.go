@@ -70,14 +70,14 @@ func devAction(c *cli.Context) error {
 	watch := c.Bool("watch")
 
 	uiRunner := NewGitPodsRunner("ui", []string{
-		fmt.Sprintf("%s=%s", cmd.EnvAddr, uiAddrFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvAddrAPI, "http://localhost:3000/api"), // TODO
+		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, uiAddrFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvAPIURL, "http://localhost:3000/api"), // TODO
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
 	})
 
 	apiRunner := NewGitPodsRunner("api", []string{
-		fmt.Sprintf("%s=%s", cmd.EnvAddr, apiAddrFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, apiAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDriver, databaseDriver),
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSN),
 		fmt.Sprintf("%s=%s", cmd.EnvMigrationsPath, "./schema/postgres"),

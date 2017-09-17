@@ -43,15 +43,15 @@ var (
 
 	apiFlags = []cli.Flag{
 		cli.StringFlag{
-			Name:        cmd.FlagAddr,
-			EnvVar:      cmd.EnvAddr,
+			Name:        cmd.FlagHTTPAddr,
+			EnvVar:      cmd.EnvHTTPAddr,
 			Usage:       "The address gitpods API runs on",
 			Value:       ":3020",
 			Destination: &apiConfig.Addr,
 		},
 		cli.StringFlag{
-			Name:        cmd.FlagListenAddrPrivate,
-			EnvVar:      cmd.EnvListenAddrPrivate,
+			Name:        cmd.FlagHTTPAddrPrivate,
+			EnvVar:      cmd.EnvHTTPAddrPrivate,
 			Usage:       "The address gitpods runs a http server only for internal access",
 			Value:       ":3021",
 			Destination: &apiConfig.ListenAddrPrivate,
