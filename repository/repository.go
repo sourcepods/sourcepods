@@ -28,5 +28,6 @@ type Stats struct {
 }
 
 type Owner struct {
-	ID string
+	ID       string
+	Username string
 }

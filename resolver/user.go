@@ -161,7 +161,7 @@ func (r *userResolver) UpdatedAt() int32 {
 }
 
 func (r *userResolver) Repositories() []*repositoryResolver {
-	repos, stats, _, err := r.rs.ListByOwnerUsername(r.user.Username)
+	repos, stats, _, err := r.rs.List(&repository.Owner{Username: r.user.Username})
 	if err != nil {
 		log.Println(err)
 		return nil

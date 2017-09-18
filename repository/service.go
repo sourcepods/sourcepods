@@ -12,16 +12,16 @@ var (
 type (
 	// Store or retrieve repositories from some database.
 	Store interface {
-		ListByOwnerUsername(string) ([]*Repository, []*Stats, *Owner, error)
-		Find(string, string) (*Repository, *Stats, *Owner, error)
-		Create(ownerID string, repository *Repository) (*Repository, error)
+		List(owner *Owner) ([]*Repository, []*Stats, *Owner, error)
+		Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error)
+		Create(owner *Owner, repository *Repository) (*Repository, error)
 	}
 
 	// Service to interact with repositories.
 	Service interface {
-		ListByOwnerUsername(string) ([]*Repository, []*Stats, *Owner, error)
-		Find(string, string) (*Repository, *Stats, *Owner, error)
-		Create(ownerID string, repository *Repository) (*Repository, error)
+		List(owner *Owner) ([]*Repository, []*Stats, *Owner, error)
+		Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error)
+		Create(owner *Owner, repository *Repository) (*Repository, error)
 	}
 
 	service struct {
@@ -36,18 +36,21 @@ func NewService(repositories Store) Service {
 	}
 }
 
-func (s *service) ListByOwnerUsername(username string) ([]*Repository, []*Stats, *Owner, error) {
-	return s.repositories.ListByOwnerUsername(username)
+func (s *service) List(owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
+	return s.repositories.List(owner)
 }
 
-func (s *service) Find(owner string, name string) (*Repository, *Stats, *Owner, error) {
+func (s *service) Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
 	return s.repositories.Find(owner, name)
 }
 
-func (s *service) Create(ownerID string, repository *Repository) (*Repository, error) {
+func (s *service) Create(owner *Owner, repository *Repository) (*Repository, error) {
 	if err := ValidateCreate(repository); err != nil {
 		return nil, err
 	}
 
-	return s.repositories.Create(ownerID, repository)
+	r, err := s.repositories.Create(owner, repository)
+	if err != nil {
+		return r, err
+	}
 }
