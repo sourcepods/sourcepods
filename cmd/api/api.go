@@ -13,6 +13,7 @@ import (
 	"github.com/gitpods/gitpods/repository"
 	"github.com/gitpods/gitpods/resolver"
 	"github.com/gitpods/gitpods/session"
+	"github.com/gitpods/gitpods/storage"
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
@@ -25,6 +26,7 @@ import (
 	"github.com/oklog/oklog/pkg/group"
 	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
+	"google.golang.org/grpc"
 )
 
 type apiConf struct {
@@ -96,6 +98,12 @@ var (
 			Usage:       "This secret is going to be used to generate cookies",
 			Destination: &apiConfig.Secret,
 		},
+		cli.StringFlag{
+			Name:        cmd.FlagStorageGRPCURL,
+			EnvVar:      cmd.EnvStorageGRPCURL,
+			Usage:       "The storage's gprc url to connect with",
+			Destination: &apiConfig.StorageGRPCURL,
+		},
 	}
 )
 
@@ -132,6 +140,18 @@ func apiAction(c *cli.Context) error {
 	}
 
 	//
+	// Storage
+	//
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithInsecure())
+
+	storageConn, err := grpc.DialContext(context.Background(), apiConfig.StorageGRPCURL, opts...)
+	if err != nil {
+		return err
+	}
+	storageClient := storage.NewClient(storageConn)
+
+	//
 	// Services
 	//
 	var ss session.Service
@@ -148,7 +168,7 @@ func apiAction(c *cli.Context) error {
 	us = user.NewLoggingService(log.WithPrefix(logger, "service", "user"), us)
 
 	var rs repository.Service
-	rs = repository.NewService(repositories)
+	rs = repository.NewService(repositories, storageClient)
 	rs = repository.NewLoggingService(log.WithPrefix(logger, "service", "repository"), rs)
 
 	//

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package storage;
+
+service Storage {
+    rpc Create (CreateRequest) returns (EmptyResponse) {
+    }
+}
+
+message CreateRequest {
+    string owner = 1;
+    string name = 2;
+}
+
+message EmptyResponse {
+}

@@ -17,6 +17,11 @@ type (
 		Create(owner *Owner, repository *Repository) (*Repository, error)
 	}
 
+	// Storage manages the git storage
+	Storage interface {
+		Create(owner string, name string) error
+	}
+
 	// Service to interact with repositories.
 	Service interface {
 		List(owner *Owner) ([]*Repository, []*Stats, *Owner, error)
@@ -26,13 +31,15 @@ type (
 
 	service struct {
 		repositories Store
+		storage      Storage
 	}
 )
 
 // NewService to interact with repositories.
-func NewService(repositories Store) Service {
+func NewService(repositories Store, storage Storage) Service {
 	return &service{
 		repositories: repositories,
+		storage:      storage,
 	}
 }
 
@@ -53,4 +60,10 @@ func (s *service) Create(owner *Owner, repository *Repository) (*Repository, err
 	if err != nil {
 		return r, err
 	}
+
+	if err := s.storage.Create(owner.Username, r.Name); err != nil {
+		return r, err
+	}
+
+	return r, nil
 }

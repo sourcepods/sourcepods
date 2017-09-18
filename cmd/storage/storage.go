@@ -4,20 +4,24 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/gitpods/gitpods/cmd"
+	"github.com/gitpods/gitpods/storage"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/urfave/cli"
+	"google.golang.org/grpc"
 )
 
 type storageConf struct {
-	Addr     string
+	GRPCAddr string
+	HTTPAddr string
 	LogJSON  bool
 	LogLevel string
 	Root     string
@@ -69,16 +73,14 @@ func storageAction(c *cli.Context) error {
 		return errors.New("the root has to be a valid path")
 	}
 
-	if err := os.MkdirAll(storageConfig.Root, 0755); err != nil {
-		return fmt.Errorf("failed to create storage root: %s", storageConfig.Root)
+	gitStorage, err := storage.NewStorage(storageConfig.Root)
+	if err != nil {
+		return err
 	}
 
-	gh := NewGitHTTP(storageConfig.Root)
-	gh.Logger = logger
-
-	server := &http.Server{
-		Addr:    storageConfig.Addr,
-		Handler: gh.Handler(),
+	lis, err := net.Listen("tcp", storageConfig.GRPCAddr)
+	if err != nil {
+		return fmt.Errorf("failed to create grpc listener: %v", err)
 	}
 
 	var gr group.Group
@@ -88,15 +90,21 @@ func storageAction(c *cli.Context) error {
 			signal.Notify(sig, os.Interrupt)
 			<-sig
 			return nil
-		}, func(err error) {
-
-		})
+		}, func(err error) {})
 	}
 	{
+		gh := NewGitHTTP(storageConfig.Root)
+		gh.Logger = logger
+
+		server := &http.Server{
+			Addr:    storageConfig.HTTPAddr,
+			Handler: gh.Handler(),
+		}
+
 		gr.Add(func() error {
 			level.Info(logger).Log(
-				"msg", "starting gitpods storage",
-				"addr", storageConfig.Addr,
+				"msg", "starting gitpods storage http server",
+				"addr", storageConfig.HTTPAddr,
 			)
 			return server.ListenAndServe()
 		}, func(err error) {
@@ -111,6 +119,19 @@ func storageAction(c *cli.Context) error {
 				return
 			}
 			level.Info(logger).Log("msg", "http server shutdown gracefully")
+		})
+	}
+	{
+		gs := storage.NewStorageServer(grpc.NewServer(), gitStorage)
+		gr.Add(func() error {
+			level.Info(logger).Log(
+				"msg", "starting gitpods storage grpc server",
+				"addr", storageConfig.GRPCAddr,
+			)
+			return gs.Serve(lis)
+		}, func(err error) {
+			gs.GracefulStop()
+			level.Info(logger).Log("msg", "grpc server shutdown gracefully")
 		})
 	}
 
