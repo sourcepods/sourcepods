@@ -31,8 +31,8 @@ type GitHTTP struct {
 
 func NewGitHTTP(root string) *GitHTTP {
 	return &GitHTTP{
-		root:   root,
 		git:    "/usr/bin/git",
+		root:   root,
 		Logger: log.NewNopLogger(),
 	}
 }

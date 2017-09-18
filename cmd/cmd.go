@@ -24,6 +24,8 @@ const (
 	FlagMigrationsPath  = "migrations-path"
 	FlagRoot            = "root"
 	FlagSecret          = "secret"
+	FlagStorageGRPCURL  = "storage-grpc-url"
+	FlagStorageHTTPURL  = "storage-http-url"
 
 	EnvAPIPrefix       = "GITPODS_API_PREFIX"
 	EnvAPIURL          = "GITPODS_API_URL"
@@ -37,6 +39,8 @@ const (
 	EnvMigrationsPath  = "GITPODS_MIGRATIONS_PATH"
 	EnvRoot            = "GITPODS_ROOT"
 	EnvSecret          = "GITPODS_SECRET"
+	EnvStorageGRPCURL  = "GITPODS_STORAGE_GRPC_URL"
+	EnvStorageHTTPURL  = "GITPODS_STORAGE_HTTP_URL"
 )
 
 func NewLogger(json bool, loglevel string) log.Logger {
