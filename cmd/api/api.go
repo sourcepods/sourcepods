@@ -28,34 +28,21 @@ import (
 )
 
 type apiConf struct {
-	Addr              string
-	ListenAddrPrivate string
-	APIPrefix         string
-	DatabaseDriver    string
-	DatabaseDSN       string
-	LogJSON           bool
-	LogLevel          string
-	Secret            string
+	HTTPAddr        string
+	HTTPPrivateAddr string
+	APIPrefix       string
+	DatabaseDriver  string
+	DatabaseDSN     string
+	LogJSON         bool
+	LogLevel        string
+	Secret          string
+	StorageGRPCURL  string
 }
 
 var (
 	apiConfig = apiConf{}
 
 	apiFlags = []cli.Flag{
-		cli.StringFlag{
-			Name:        cmd.FlagHTTPAddr,
-			EnvVar:      cmd.EnvHTTPAddr,
-			Usage:       "The address gitpods API runs on",
-			Value:       ":3020",
-			Destination: &apiConfig.Addr,
-		},
-		cli.StringFlag{
-			Name:        cmd.FlagHTTPAddrPrivate,
-			EnvVar:      cmd.EnvHTTPAddrPrivate,
-			Usage:       "The address gitpods runs a http server only for internal access",
-			Value:       ":3021",
-			Destination: &apiConfig.ListenAddrPrivate,
-		},
 		cli.StringFlag{
 			Name:        cmd.FlagAPIPrefix,
 			EnvVar:      cmd.EnvAPIPrefix,
@@ -77,17 +64,31 @@ var (
 			Destination: &apiConfig.DatabaseDSN,
 		},
 		cli.StringFlag{
-			Name:        cmd.FlagLogLevel,
-			EnvVar:      cmd.EnvLogLevel,
-			Usage:       "The log level to filter logs with before printing",
-			Value:       "info",
-			Destination: &apiConfig.LogLevel,
+			Name:        cmd.FlagHTTPAddr,
+			EnvVar:      cmd.EnvHTTPAddr,
+			Usage:       "The address gitpods API runs on",
+			Value:       ":3020",
+			Destination: &apiConfig.HTTPAddr,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagHTTPAddrPrivate,
+			EnvVar:      cmd.EnvHTTPAddrPrivate,
+			Usage:       "The address gitpods runs a http server only for internal access",
+			Value:       ":3021",
+			Destination: &apiConfig.HTTPPrivateAddr,
 		},
 		cli.BoolFlag{
 			Name:        cmd.FlagLogJSON,
 			EnvVar:      cmd.EnvLogJSON,
 			Usage:       "The logger will log json lines",
 			Destination: &apiConfig.LogJSON,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagLogLevel,
+			EnvVar:      cmd.EnvLogLevel,
+			Usage:       "The log level to filter logs with before printing",
+			Value:       "info",
+			Destination: &apiConfig.LogLevel,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagSecret,
@@ -154,8 +155,8 @@ func apiAction(c *cli.Context) error {
 	// Resolvers
 	//
 	res := &resolver.Resolver{
-		resolver.NewUser(rs, us),
-		resolver.NewRepository(rs, us),
+		UserResolver:       resolver.NewUser(rs, us),
+		RepositoryResolver: resolver.NewRepository(rs, us),
 	}
 
 	schema, err := graphql.ParseSchema(resolver.Schema, res)
@@ -202,7 +203,7 @@ func apiAction(c *cli.Context) error {
 	})
 
 	server := &http.Server{
-		Addr:    apiConfig.Addr,
+		Addr:    apiConfig.HTTPAddr,
 		Handler: router,
 	}
 
@@ -216,7 +217,7 @@ func apiAction(c *cli.Context) error {
 	})
 
 	privateServer := &http.Server{
-		Addr:    apiConfig.ListenAddrPrivate,
+		Addr:    apiConfig.HTTPPrivateAddr,
 		Handler: privateRouter,
 	}
 
@@ -238,7 +239,7 @@ func apiAction(c *cli.Context) error {
 		gr.Add(func() error {
 			level.Info(logger).Log(
 				"msg", "starting gitpods api",
-				"addr", apiConfig.Addr,
+				"addr", apiConfig.HTTPAddr,
 			)
 			return server.ListenAndServe()
 		}, func(err error) {
@@ -259,7 +260,7 @@ func apiAction(c *cli.Context) error {
 		gr.Add(func() error {
 			level.Info(logger).Log(
 				"msg", "starting internal gitpods api",
-				"addr", apiConfig.ListenAddrPrivate,
+				"addr", apiConfig.HTTPPrivateAddr,
 			)
 			return privateServer.ListenAndServe()
 		}, func(err error) {

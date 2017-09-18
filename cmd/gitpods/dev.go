@@ -20,12 +20,12 @@ import (
 var (
 	devFlags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "addr-ui",
+			Name:  "ui-addr",
 			Usage: "The address to run the UI on",
 			Value: ":3010",
 		},
 		cli.StringFlag{
-			Name:  "addr-api",
+			Name:  "api-addr",
 			Usage: "The address to run the API on",
 			Value: ":3020",
 		},
@@ -60,13 +60,13 @@ var (
 )
 
 func devAction(c *cli.Context) error {
-	uiAddrFlag := c.String("addr-ui")
-	apiAddrFlag := c.String("addr-api")
+	apiAddrFlag := c.String("api-addr")
 	dart := c.Bool("dart")
 	databaseDriver := c.String("database-driver")
 	databaseDSN := c.String("database-dsn")
-	loglevelFlag := c.String("log-level")
 	logJSONFlag := c.Bool("log-json")
+	loglevelFlag := c.String("log-level")
+	uiAddrFlag := c.String("ui-addr")
 	watch := c.Bool("watch")
 
 	uiRunner := NewGitPodsRunner("ui", []string{

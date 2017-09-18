@@ -28,10 +28,16 @@ var (
 
 	storageFlags = []cli.Flag{
 		cli.StringFlag{
+			Name:        cmd.FlagGRPCAddr,
+			EnvVar:      cmd.EnvGRPCAddr,
+			Value:       ":3033",
+			Destination: &storageConfig.GRPCAddr,
+		},
+		cli.StringFlag{
 			Name:        cmd.FlagHTTPAddr,
 			EnvVar:      cmd.EnvHTTPAddr,
 			Value:       ":3030",
-			Destination: &storageConfig.Addr,
+			Destination: &storageConfig.HTTPAddr,
 		},
 		cli.BoolFlag{
 			Name:        cmd.FlagLogJSON,
