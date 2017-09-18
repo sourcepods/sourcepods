@@ -1,6 +1,6 @@
 FROM alpine
 
-RUN apk add --update ca-certificates
+RUN apk add --update ca-certificates git
 
 ADD ./cmd/storage/storage /usr/bin/
 
