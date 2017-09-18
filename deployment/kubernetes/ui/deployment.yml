@@ -14,10 +14,10 @@ spec:
       - name: ui
         image: gitpods/ui:latest
         env:
-        - name: GITPODS_LISTEN_ADDR
-          value: 0.0.0.0:3010
         - name: GITPODS_API_URL
           value: https://try.gitpods.io/api
+        - name: GITPODS_HTTP_ADDR
+          value: 0.0.0.0:3010
         - name: GITPODS_LOG_LEVEL
           value: debug
         - name: GITPODS_LOG_JSON

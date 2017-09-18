@@ -73,8 +73,8 @@ var (
 			Destination: &apiConfig.HTTPAddr,
 		},
 		cli.StringFlag{
-			Name:        cmd.FlagHTTPAddrPrivate,
-			EnvVar:      cmd.EnvHTTPAddrPrivate,
+			Name:        cmd.FlagHTTPPrivateAddr,
+			EnvVar:      cmd.EnvHTTPPrivateAddr,
 			Usage:       "The address gitpods runs a http server only for internal access",
 			Value:       ":3021",
 			Destination: &apiConfig.HTTPPrivateAddr,
