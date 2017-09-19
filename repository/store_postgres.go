@@ -47,12 +47,10 @@ SELECT
 	(SELECT 42) AS stars,
 	(SELECT 23) AS forks
 FROM repositories
-WHERE owner_id = (SELECT id
-		  FROM users
-		  WHERE username = $1)
+WHERE owner_id = $1
 ORDER BY updated_at DESC`
 
-	rows, err := s.db.Query(query, owner.Username)
+	rows, err := s.db.Query(query, owner.ID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
