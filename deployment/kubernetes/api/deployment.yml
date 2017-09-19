@@ -34,14 +34,14 @@ spec:
         - name: GITPODS_LOG_LEVEL
           value: 'info'
         - name: GITPODS_MIGRATIONS_PATH
-          value: /migrations
+          value: '/migrations'
         - name: GITPODS_SECRET
           valueFrom:
             secretKeyRef:
               name: secrets
               key: secret
         - name: GITPODS_STORAGE_GRPC_URL
-          value: 'storage:grpc'
+          value: 'storage:3033'
         # This hash is not needed and only used to track which version is deployed when using :latest
         - name: HASH
           value: {{ build.commit }}

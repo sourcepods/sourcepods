@@ -6,10 +6,15 @@ metadata:
   labels:
     app: storage
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: storage
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 3030
+    - name: grpc
+      protocol: TCP
+      port: 3033
+      targetPort: 3033

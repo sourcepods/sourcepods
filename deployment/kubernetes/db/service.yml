@@ -6,6 +6,7 @@ metadata:
   labels:
     app: db
 spec:
+  type: ClusterIP
   selector:
     app: db
   ports:
