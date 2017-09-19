@@ -25,3 +25,12 @@ func (c *Client) Create(owner string, name string) error {
 	})
 	return err
 }
+
+func (c *Client) Description(owner string, name string, description string) error {
+	_, err := c.client.Descriptions(context.Background(), &DescriptionRequest{
+		Owner:       owner,
+		Name:        name,
+		Description: description,
+	})
+	return err
+}

@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 type (
 	Storage interface {
 		Create(owner, name string) error
+		Description(owner, name, description string) error
 	}
 
 	storage struct {
@@ -39,4 +41,9 @@ func (s *storage) Create(owner, name string) error {
 	cmd := exec.CommandContext(context.Background(), s.git, "init", "--bare")
 	cmd.Dir = dir
 	return cmd.Run()
+}
+
+func (s *storage) Description(owner, name, description string) error {
+	file := filepath.Join(s.root, owner, name, "description")
+	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
 }
