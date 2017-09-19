@@ -13,6 +13,7 @@ import (
 	"github.com/gitpods/gitpods/repository"
 	"github.com/gitpods/gitpods/resolver"
 	"github.com/gitpods/gitpods/session"
+	"github.com/gitpods/gitpods/storage"
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
@@ -25,37 +26,25 @@ import (
 	"github.com/oklog/oklog/pkg/group"
 	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/cli"
+	"google.golang.org/grpc"
 )
 
 type apiConf struct {
-	Addr              string
-	ListenAddrPrivate string
-	APIPrefix         string
-	DatabaseDriver    string
-	DatabaseDSN       string
-	LogJSON           bool
-	LogLevel          string
-	Secret            string
+	HTTPAddr        string
+	HTTPPrivateAddr string
+	APIPrefix       string
+	DatabaseDriver  string
+	DatabaseDSN     string
+	LogJSON         bool
+	LogLevel        string
+	Secret          string
+	StorageGRPCURL  string
 }
 
 var (
 	apiConfig = apiConf{}
 
 	apiFlags = []cli.Flag{
-		cli.StringFlag{
-			Name:        cmd.FlagAddr,
-			EnvVar:      cmd.EnvAddr,
-			Usage:       "The address gitpods API runs on",
-			Value:       ":3020",
-			Destination: &apiConfig.Addr,
-		},
-		cli.StringFlag{
-			Name:        cmd.FlagListenAddrPrivate,
-			EnvVar:      cmd.EnvListenAddrPrivate,
-			Usage:       "The address gitpods runs a http server only for internal access",
-			Value:       ":3021",
-			Destination: &apiConfig.ListenAddrPrivate,
-		},
 		cli.StringFlag{
 			Name:        cmd.FlagAPIPrefix,
 			EnvVar:      cmd.EnvAPIPrefix,
@@ -77,11 +66,18 @@ var (
 			Destination: &apiConfig.DatabaseDSN,
 		},
 		cli.StringFlag{
-			Name:        cmd.FlagLogLevel,
-			EnvVar:      cmd.EnvLogLevel,
-			Usage:       "The log level to filter logs with before printing",
-			Value:       "info",
-			Destination: &apiConfig.LogLevel,
+			Name:        cmd.FlagHTTPAddr,
+			EnvVar:      cmd.EnvHTTPAddr,
+			Usage:       "The address gitpods API runs on",
+			Value:       ":3020",
+			Destination: &apiConfig.HTTPAddr,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagHTTPPrivateAddr,
+			EnvVar:      cmd.EnvHTTPPrivateAddr,
+			Usage:       "The address gitpods runs a http server only for internal access",
+			Value:       ":3021",
+			Destination: &apiConfig.HTTPPrivateAddr,
 		},
 		cli.BoolFlag{
 			Name:        cmd.FlagLogJSON,
@@ -90,10 +86,23 @@ var (
 			Destination: &apiConfig.LogJSON,
 		},
 		cli.StringFlag{
+			Name:        cmd.FlagLogLevel,
+			EnvVar:      cmd.EnvLogLevel,
+			Usage:       "The log level to filter logs with before printing",
+			Value:       "info",
+			Destination: &apiConfig.LogLevel,
+		},
+		cli.StringFlag{
 			Name:        cmd.FlagSecret,
 			EnvVar:      cmd.EnvSecret,
 			Usage:       "This secret is going to be used to generate cookies",
 			Destination: &apiConfig.Secret,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagStorageGRPCURL,
+			EnvVar:      cmd.EnvStorageGRPCURL,
+			Usage:       "The storage's gprc url to connect with",
+			Destination: &apiConfig.StorageGRPCURL,
 		},
 	}
 )
@@ -131,6 +140,18 @@ func apiAction(c *cli.Context) error {
 	}
 
 	//
+	// Storage
+	//
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithInsecure())
+
+	storageConn, err := grpc.DialContext(context.Background(), apiConfig.StorageGRPCURL, opts...)
+	if err != nil {
+		return err
+	}
+	storageClient := storage.NewClient(storageConn)
+
+	//
 	// Services
 	//
 	var ss session.Service
@@ -147,15 +168,15 @@ func apiAction(c *cli.Context) error {
 	us = user.NewLoggingService(log.WithPrefix(logger, "service", "user"), us)
 
 	var rs repository.Service
-	rs = repository.NewService(repositories)
+	rs = repository.NewService(repositories, storageClient)
 	rs = repository.NewLoggingService(log.WithPrefix(logger, "service", "repository"), rs)
 
 	//
 	// Resolvers
 	//
 	res := &resolver.Resolver{
-		resolver.NewUser(rs, us),
-		resolver.NewRepository(rs, us),
+		UserResolver:       resolver.NewUser(rs, us),
+		RepositoryResolver: resolver.NewRepository(rs, us),
 	}
 
 	schema, err := graphql.ParseSchema(resolver.Schema, res)
@@ -202,7 +223,7 @@ func apiAction(c *cli.Context) error {
 	})
 
 	server := &http.Server{
-		Addr:    apiConfig.Addr,
+		Addr:    apiConfig.HTTPAddr,
 		Handler: router,
 	}
 
@@ -216,7 +237,7 @@ func apiAction(c *cli.Context) error {
 	})
 
 	privateServer := &http.Server{
-		Addr:    apiConfig.ListenAddrPrivate,
+		Addr:    apiConfig.HTTPPrivateAddr,
 		Handler: privateRouter,
 	}
 
@@ -238,7 +259,7 @@ func apiAction(c *cli.Context) error {
 		gr.Add(func() error {
 			level.Info(logger).Log(
 				"msg", "starting gitpods api",
-				"addr", apiConfig.Addr,
+				"addr", apiConfig.HTTPAddr,
 			)
 			return server.ListenAndServe()
 		}, func(err error) {
@@ -259,7 +280,7 @@ func apiAction(c *cli.Context) error {
 		gr.Add(func() error {
 			level.Info(logger).Log(
 				"msg", "starting internal gitpods api",
-				"addr", apiConfig.ListenAddrPrivate,
+				"addr", apiConfig.HTTPPrivateAddr,
 			)
 			return privateServer.ListenAndServe()
 		}, func(err error) {

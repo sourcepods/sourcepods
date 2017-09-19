@@ -17,21 +17,23 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 	return &Postgres{db: db}
 }
 
-// ListByOwnerUsername retrieves a list of repositories based on their ownership.
-func (s *Postgres) ListByOwnerUsername(username string) ([]*Repository, []*Stats, *Owner, error) {
-	query := `SELECT id FROM users WHERE username = $1`
-	row := s.db.QueryRow(query, username)
+// List retrieves a list of repositories based on their ownership.
+func (s *Postgres) List(owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
+	if owner.ID == "" && owner.Username != "" {
+		query := `SELECT id FROM users WHERE username = $1`
+		row := s.db.QueryRow(query, owner.Username)
 
-	var id string
-	row.Scan(&id)
+		var id string
+		row.Scan(&id)
 
-	if id == "" {
-		return nil, nil, nil, OwnerNotFoundError
+		if id == "" {
+			return nil, nil, nil, OwnerNotFoundError
+		}
+
+		owner.ID = id
 	}
 
-	owner := &Owner{ID: id}
-
-	query = `
+	query := `
 SELECT
 	id,
 	name,
@@ -45,12 +47,10 @@ SELECT
 	(SELECT 42) AS stars,
 	(SELECT 23) AS forks
 FROM repositories
-WHERE owner_id = (SELECT id
-		  FROM users
-		  WHERE username = $1)
+WHERE owner_id = $1
 ORDER BY updated_at DESC`
 
-	rows, err := s.db.Query(query, username)
+	rows, err := s.db.Query(query, owner.ID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -113,7 +113,7 @@ ORDER BY updated_at DESC`
 	return repositories, stats, owner, nil
 }
 
-func (s *Postgres) Find(owner string, name string) (*Repository, *Stats, *Owner, error) {
+func (s *Postgres) Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
 	query := `
 SELECT
 	id,
@@ -130,7 +130,7 @@ WHERE
 	name = $2 AND
 	owner_id = (SELECT id FROM users WHERE username = $1) `
 
-	row := s.db.QueryRow(query, owner, name)
+	row := s.db.QueryRow(query, owner.Username, name)
 
 	var id string
 	var description sql.NullString
@@ -177,11 +177,11 @@ WHERE
 			PullRequestOpenCount:   2,
 			PullRequestClosedCount: 18,
 		},
-		&Owner{ID: ownerID},
+		owner,
 		nil
 }
 
-func (s *Postgres) Create(ownerID string, r *Repository) (*Repository, error) {
+func (s *Postgres) Create(owner *Owner, r *Repository) (*Repository, error) {
 	query := `
 INSERT INTO repositories (owner_id, name, description, website, default_branch, private, bare)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -198,7 +198,7 @@ RETURNING id, created_at, updated_at`
 	}
 
 	row := s.db.QueryRow(query,
-		ownerID,
+		owner.ID,
 		r.Name,
 		description,
 		website,

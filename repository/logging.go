@@ -17,13 +17,13 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger: logger, service: s}
 }
 
-func (s *loggingService) ListByOwnerUsername(username string) ([]*Repository, []*Stats, *Owner, error) {
+func (s *loggingService) List(owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
 	start := time.Now()
 
-	repositories, stats, owner, err := s.service.ListByOwnerUsername(username)
+	repositories, stats, owner, err := s.service.List(owner)
 
 	logger := log.With(s.logger,
-		"method", "ListByOwnerUsername",
+		"method", "List",
 		"duration", time.Since(start),
 	)
 
@@ -40,10 +40,10 @@ func (s *loggingService) ListByOwnerUsername(username string) ([]*Repository, []
 
 }
 
-func (s *loggingService) Find(ownerUsername string, name string) (*Repository, *Stats, *Owner, error) {
+func (s *loggingService) Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
 	start := time.Now()
 
-	repository, stats, owner, err := s.service.Find(ownerUsername, name)
+	repository, stats, owner, err := s.service.Find(owner, name)
 
 	logger := log.With(s.logger,
 		"method", "Find",
@@ -62,10 +62,10 @@ func (s *loggingService) Find(ownerUsername string, name string) (*Repository, *
 	return repository, stats, owner, err
 }
 
-func (s *loggingService) Create(ownerID string, repository *Repository) (*Repository, error) {
+func (s *loggingService) Create(owner *Owner, repository *Repository) (*Repository, error) {
 	start := time.Now()
 
-	repository, err := s.service.Create(ownerID, repository)
+	repository, err := s.service.Create(owner, repository)
 
 	logger := log.With(s.logger,
 		"method", "Create",
@@ -81,7 +81,7 @@ func (s *loggingService) Create(ownerID string, repository *Repository) (*Reposi
 		}
 	} else {
 		level.Debug(logger).Log(
-			"owner_id", ownerID,
+			"owner", owner.Username,
 			"name", repository.Name,
 		)
 	}

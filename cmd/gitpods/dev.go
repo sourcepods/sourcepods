@@ -20,12 +20,12 @@ import (
 var (
 	devFlags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "addr-ui",
+			Name:  "ui-addr",
 			Usage: "The address to run the UI on",
 			Value: ":3010",
 		},
 		cli.StringFlag{
-			Name:  "addr-api",
+			Name:  "api-addr",
 			Usage: "The address to run the API on",
 			Value: ":3020",
 		},
@@ -52,6 +52,16 @@ var (
 			Name:  "log-json",
 			Usage: "Log json instead of key-value pairs",
 		},
+		cli.StringFlag{
+			Name:  "root",
+			Usage: "Storage's root to write to",
+			Value: "./dev/storage-data",
+		},
+		cli.StringFlag{
+			Name:  "storage-addr",
+			Usage: "The address to run the storage on",
+			Value: ":3030",
+		},
 		cli.BoolFlag{
 			Name:  "watch,w",
 			Usage: "Watch files in this project and rebuild binaries if something changes",
@@ -60,30 +70,40 @@ var (
 )
 
 func devAction(c *cli.Context) error {
-	uiAddrFlag := c.String("addr-ui")
-	apiAddrFlag := c.String("addr-api")
+	apiAddrFlag := c.String("api-addr")
 	dart := c.Bool("dart")
 	databaseDriver := c.String("database-driver")
 	databaseDSN := c.String("database-dsn")
-	loglevelFlag := c.String("log-level")
 	logJSONFlag := c.Bool("log-json")
+	loglevelFlag := c.String("log-level")
+	rootFlag := c.String("root")
+	storageAddrFlag := c.String("storage-addr")
+	uiAddrFlag := c.String("ui-addr")
 	watch := c.Bool("watch")
 
 	uiRunner := NewGitPodsRunner("ui", []string{
-		fmt.Sprintf("%s=%s", cmd.EnvAddr, uiAddrFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvAddrAPI, "http://localhost:3000/api"), // TODO
+		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, uiAddrFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvAPIURL, "http://localhost:3000/api"), // TODO
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
 	})
 
 	apiRunner := NewGitPodsRunner("api", []string{
-		fmt.Sprintf("%s=%s", cmd.EnvAddr, apiAddrFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, apiAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDriver, databaseDriver),
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSN),
 		fmt.Sprintf("%s=%s", cmd.EnvMigrationsPath, "./schema/postgres"),
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvSecret, "secret"),
+		fmt.Sprintf("%s=%s", cmd.EnvStorageGRPCURL, "localhost:3033"),
+	})
+
+	storageRunner := NewGitPodsRunner("storage", []string{
+		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, storageAddrFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
+		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvRoot, rootFlag),
 	})
 
 	caddy := CaddyRunner{}
@@ -113,6 +133,15 @@ func devAction(c *cli.Context) error {
 		}, func(err error) {
 			log.Println("stopping api")
 			apiRunner.Shutdown()
+		})
+	}
+	{
+		g.Add(func() error {
+			log.Println("starting storage")
+			return storageRunner.Run()
+		}, func(err error) {
+			log.Println("stopping storage")
+			storageRunner.Shutdown()
 		})
 	}
 	{

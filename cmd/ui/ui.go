@@ -24,18 +24,18 @@ var (
 
 	uiFlags = []cli.Flag{
 		cli.StringFlag{
-			Name:        cmd.FlagAddr,
-			EnvVar:      cmd.EnvAddr,
-			Usage:       "The address gitpods UI runs on",
-			Value:       ":3010",
-			Destination: &uiConfig.Addr,
-		},
-		cli.StringFlag{
-			Name:        cmd.FlagAddrAPI,
-			EnvVar:      cmd.EnvAddrAPI,
+			Name:        cmd.FlagAPIURL,
+			EnvVar:      cmd.EnvAPIURL,
 			Usage:       "The address gitpods API runs on",
 			Value:       ":3020",
 			Destination: &uiConfig.AddrAPI,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagHTTPAddr,
+			EnvVar:      cmd.EnvHTTPAddr,
+			Usage:       "The address gitpods UI runs on",
+			Value:       ":3010",
+			Destination: &uiConfig.Addr,
 		},
 		cli.BoolFlag{
 			Name:        cmd.FlagLogJSON,

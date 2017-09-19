@@ -57,7 +57,7 @@ func listByOwner(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username := chi.URLParam(r, "username")
 
-		repositories, stats, owner, err := s.ListByOwnerUsername(username)
+		repositories, stats, owner, err := s.List(&Owner{Username: username})
 		if err != nil {
 			jsonapi.MarshalErrors(w, []*jsonapi.ErrorObject{{
 				Title:  http.StatusText(http.StatusNotFound),
@@ -117,7 +117,7 @@ func get(s Service) http.HandlerFunc {
 		ownerUsername := chi.URLParam(r, "owner")
 		name := chi.URLParam(r, "name")
 
-		repository, stats, owner, err := s.Find(ownerUsername, name)
+		repository, stats, owner, err := s.Find(&Owner{Username: ownerUsername}, name)
 		if err != nil {
 			jsonapi.MarshalErrors(w, []*jsonapi.ErrorObject{{
 				Title:  http.StatusText(http.StatusNotFound),

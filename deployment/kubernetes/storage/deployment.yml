@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: storage
+  namespace: gitpods-try
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: storage
+    spec:
+      containers:
+      - name: storage
+        image: gitpods/storage:latest
+        env:
+        - name: GITPODS_GRPC_ADDR
+          value: '0.0.0.0:3033'
+        - name: GITPODS_HTTP_ADDR
+          value: '0.0.0.0:3030'
+        - name: GITPODS_LOG_LEVEL
+          value: info
+        - name: GITPODS_LOG_JSON
+          value: 'true'
+        - name: GITPODS_ROOT
+          value: '/data'
+        # This hash is not needed and only used to track which version is deployed when using :latest
+        - name: HASH
+          value: {{ build.commit }}
+        ports:
+        - containerPort: 3030
+        resources:
+          requests:
+            cpu: 50m
+            memory: 32Mi
