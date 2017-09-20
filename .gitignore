@@ -2,3 +2,12 @@
 
 /dev/
 /dist/
+
+/vendor/**/*.py
+/vendor/**/*.xml
+/vendor/**/*.yml
+/vendor/**/*_test.go
+/vendor/**/*_windows.go
+/vendor/**/.editorconfig
+/vendor/**/.gitignore
+/vendor/**/appengine*
