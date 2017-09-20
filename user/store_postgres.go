@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -97,7 +98,7 @@ LIMIT 1`
 }
 
 // FindByUsername finds a user by its username.
-func (s *Postgres) FindByUsername(username string) (*User, error) {
+func (s *Postgres) FindByUsername(ctx context.Context, username string) (*User, error) {
 	query := `SELECT
 	id,
 	email,

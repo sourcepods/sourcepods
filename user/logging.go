@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -36,10 +37,10 @@ func (s *loggingService) FindAll() ([]*User, error) {
 	return users, err
 }
 
-func (s *loggingService) FindByUsername(username string) (*User, error) {
+func (s *loggingService) FindByUsername(ctx context.Context, username string) (*User, error) {
 	start := time.Now()
 
-	user, err := s.Service.FindByUsername(username)
+	user, err := s.Service.FindByUsername(ctx, username)
 
 	logger := log.With(s.logger,
 		"method", "FindByUsername",

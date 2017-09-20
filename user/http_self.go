@@ -22,7 +22,7 @@ func self(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sessionUser := session.GetSessionUser(r.Context())
 
-		user, err := s.FindByUsername(sessionUser.Username)
+		user, err := s.FindByUsername(r.Context(), sessionUser.Username)
 		if err != nil {
 			return // TODO
 		}

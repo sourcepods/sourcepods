@@ -48,7 +48,7 @@ func NewUser(rs repository.Service, us user.Service) *UserResolver {
 func (r *UserResolver) Me(ctx context.Context) *userResolver {
 	sessionUser := session.GetSessionUser(ctx)
 
-	u, err := r.users.FindByUsername(sessionUser.Username)
+	u, err := r.users.FindByUsername(ctx, sessionUser.Username)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -72,7 +72,7 @@ func (r *UserResolver) User(args userArgs) *userResolver {
 	//	}
 	//}
 	if args.Username != nil {
-		u, err := r.users.FindByUsername(*args.Username)
+		u, err := r.users.FindByUsername(context.TODO(), *args.Username)
 		if err != nil {
 			log.Println(err)
 			return nil

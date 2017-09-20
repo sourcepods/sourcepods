@@ -64,7 +64,7 @@ func get(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username := chi.URLParam(r, "username")
 
-		user, err := s.FindByUsername(username)
+		user, err := s.FindByUsername(r.Context(), username)
 		if err != nil {
 			jsonapi.MarshalErrors(w, []*jsonapi.ErrorObject{{
 				Title:  http.StatusText(http.StatusNotFound),

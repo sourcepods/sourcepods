@@ -1,6 +1,9 @@
 package user
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 var (
 	NotFoundError = errors.New("user not found")
@@ -10,7 +13,7 @@ var (
 type Service interface {
 	FindAll() ([]*User, error)
 	Find(string) (*User, error)
-	FindByUsername(string) (*User, error)
+	FindByUsername(context.Context, string) (*User, error)
 	Create(*User) (*User, error)
 	Update(*User) (*User, error)
 	Delete(string) error
@@ -20,7 +23,7 @@ type Service interface {
 type Store interface {
 	FindAll() ([]*User, error)
 	Find(string) (*User, error)
-	FindByUsername(string) (*User, error)
+	FindByUsername(context.Context, string) (*User, error)
 	Create(*User) (*User, error)
 	Update(*User) (*User, error)
 	Delete(string) error
@@ -43,8 +46,8 @@ func (s *service) Find(id string) (*User, error) {
 	return s.users.Find(id)
 }
 
-func (s *service) FindByUsername(username string) (*User, error) {
-	return s.users.FindByUsername(username)
+func (s *service) FindByUsername(ctx context.Context, username string) (*User, error) {
+	return s.users.FindByUsername(ctx, username)
 }
 
 func (s *service) Create(user *User) (*User, error) {
