@@ -60,9 +60,10 @@ func setupPostgres() error {
 
 	args := []string{
 		"run", "-d",
+		"--env", "POSTGRES_PASSWORD=postgres",
 		"--name", "gitpods-postgres",
-		"-p", "5432:5432",
-		"-e", "POSTGRES_PASSWORD=postgres",
+		"--publish", "5432:5432",
+		"--restart", "always",
 		"postgres:9.6-alpine",
 	}
 
