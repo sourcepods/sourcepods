@@ -3,7 +3,7 @@ package user
 import (
 	"fmt"
 
-	"gopkg.in/asaskevich/govalidator.v6"
+	"github.com/asaskevich/govalidator"
 )
 
 func ValidateCreate(u *User) []error {

@@ -36,7 +36,7 @@ func self(s Service) http.HandlerFunc {
 			Updated:  user.Updated,
 		}
 
-		if err := jsonapi.MarshalOnePayload(w, res); err != nil {
+		if err := jsonapi.MarshalPayload(w, res); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}

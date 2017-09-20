@@ -98,7 +98,7 @@ func listByOwner(s Service) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", jsonapi.MediaType)
-		if err := jsonapi.MarshalManyPayload(w, resRepos); err != nil {
+		if err := jsonapi.MarshalPayload(w, resRepos); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -157,6 +157,6 @@ func get(s Service) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", jsonapi.MediaType)
-		jsonapi.MarshalOnePayload(w, res)
+		jsonapi.MarshalPayload(w, res)
 	}
 }

@@ -54,7 +54,7 @@ func list(s Service) http.HandlerFunc {
 			}
 		}
 
-		if err := jsonapi.MarshalManyPayload(w, res); err != nil {
+		if err := jsonapi.MarshalPayload(w, res); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -83,7 +83,7 @@ func get(s Service) http.HandlerFunc {
 			Updated:  user.Updated,
 		}
 
-		if err := jsonapi.MarshalOnePayload(w, res); err != nil {
+		if err := jsonapi.MarshalPayload(w, res); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
