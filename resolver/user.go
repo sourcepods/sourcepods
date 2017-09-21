@@ -11,6 +11,7 @@ import (
 	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/user"
 	"github.com/neelance/graphql-go"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 // UserResolver communicates with the service to interact with repositories.
@@ -48,6 +49,11 @@ func NewUser(rs repository.Service, us user.Service) *UserResolver {
 func (r *UserResolver) Me(ctx context.Context) *userResolver {
 	sessionUser := session.GetSessionUser(ctx)
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "resolver.UserResolver.Me")
+	span.SetTag("session_id", sessionUser.ID)
+	span.SetTag("session_username", sessionUser.Username)
+	defer span.Finish()
+
 	u, err := r.users.FindByUsername(ctx, sessionUser.Username)
 	if err != nil {
 		log.Println(err)
@@ -64,6 +70,9 @@ type userArgs struct {
 
 // User returns a userResolver based on an ID and Username.
 func (r *UserResolver) User(ctx context.Context, args userArgs) *userResolver {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "resolver.UserResolver.User")
+	defer span.Finish()
+
 	//if args.ID != nil { TODO
 	//	for _, user := range users {
 	//		if user.ID == *args.ID {
@@ -72,6 +81,8 @@ func (r *UserResolver) User(ctx context.Context, args userArgs) *userResolver {
 	//	}
 	//}
 	if args.Username != nil {
+		span.SetTag("username", *args.Username)
+
 		u, err := r.users.FindByUsername(ctx, *args.Username)
 		if err != nil {
 			log.Println(err)
@@ -85,6 +96,9 @@ func (r *UserResolver) User(ctx context.Context, args userArgs) *userResolver {
 
 // Users returns a slice of userResolver.
 func (r *UserResolver) Users(ctx context.Context) []*userResolver {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "resolver.UserResolver.Users")
+	defer span.Finish()
+
 	var uResolvers []*userResolver
 
 	users, err := r.users.FindAll(ctx)
@@ -111,6 +125,14 @@ type updatedUser struct {
 
 func (r *UserResolver) UpdateUser(ctx context.Context, args updateUserArgs) (*userResolver, error) {
 	sessUser := session.GetSessionUser(ctx)
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "resolver.UserResolver.UpdateUser")
+	span.SetTag("session_id", sessUser.ID)
+	span.SetTag("session_username", sessUser.Username)
+	span.SetTag("user_id", args.ID)
+	span.SetTag("updated_user_name", args.User.Name)
+	defer span.Finish()
+
 	if sessUser.ID != string(args.ID) {
 		return nil, fmt.Errorf("not allowed to update other users")
 	}
@@ -161,6 +183,11 @@ func (r *userResolver) UpdatedAt() int32 {
 }
 
 func (r *userResolver) Repositories(ctx context.Context) []*repositoryResolver {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "resolver.UserResolver.Repositories")
+	span.SetTag("id", r.user.ID)
+	span.SetTag("username", r.user.Username)
+	defer span.Finish()
+
 	repos, stats, _, err := r.rs.List(ctx, &repository.Owner{ID: string(r.user.ID), Username: r.user.Username})
 	if err != nil {
 		log.Println(err)

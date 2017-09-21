@@ -9,6 +9,7 @@ import (
 	"github.com/gitpods/gitpods/session"
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 const megabyte = 1024 * 1024 * 1024
@@ -40,6 +41,10 @@ func authorize(s Service) http.HandlerFunc {
 			jsonapi.MarshalErrors(w, badCredentials)
 			return
 		}
+
+		span, ctx := opentracing.StartSpanFromContext(r.Context(), "authorization.Handler.authorize")
+		span.SetTag("email", form.Email)
+		defer span.Finish()
 
 		user, err := s.AuthenticateUser(ctx, form.Email, form.Password)
 		if err != nil {

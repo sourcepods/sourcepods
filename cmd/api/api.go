@@ -157,19 +157,23 @@ func apiAction(c *cli.Context) error {
 	var ss session.Service
 	ss = session.NewService(sessions)
 	ss = session.NewMetricsService(ss, apiMetrics.SessionsCreated, apiMetrics.SessionsCleared)
+	ss = session.NewTracingService(ss)
 
 	var as authorization.Service
 	as = authorization.NewService(users.(authorization.Store), ss)
 	as = authorization.NewLoggingService(log.WithPrefix(logger, "service", "authorization"), as)
 	as = authorization.NewMetricsService(apiMetrics.LoginAttempts, as)
+	as = authorization.NewTracingService(as)
 
 	var us user.Service
 	us = user.NewService(users)
 	us = user.NewLoggingService(log.WithPrefix(logger, "service", "user"), us)
+	us = user.NewTracingService(us)
 
 	var rs repository.Service
 	rs = repository.NewService(repositories, storageClient)
 	rs = repository.NewLoggingService(log.WithPrefix(logger, "service", "repository"), rs)
+	rs = repository.NewTracingService(rs)
 
 	//
 	// Resolvers
@@ -237,7 +241,7 @@ func apiAction(c *cli.Context) error {
 			dur := time.Minute
 			level.Info(logger).Log("msg", "starting session cleaner", "interval", dur)
 			for {
-				if _, err := ss.ClearSessions(); err != nil {
+				if _, err := ss.ClearSessions(context.TODO()); err != nil {
 					return err
 				}
 				time.Sleep(dur)

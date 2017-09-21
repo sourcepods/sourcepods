@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,7 +22,10 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 
 // FindAll users.
 func (s *Postgres) FindAll(ctx context.Context) ([]*User, error) {
-	rows, err := s.db.Query(`SELECT
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.FinAll")
+	defer span.Finish()
+
+	rows, err := s.db.QueryContext(ctx, `SELECT
 	id,
 	email,
 	username,
@@ -60,6 +64,10 @@ ORDER BY name ASC`)
 
 // Find a user by its ID.
 func (s *Postgres) Find(ctx context.Context, id string) (*User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.Find")
+	span.SetTag("id", id)
+	defer span.Finish()
+
 	query := `SELECT
 	username,
 	email,
@@ -71,7 +79,7 @@ FROM users
 WHERE id = $1
 LIMIT 1`
 
-	row := s.db.QueryRow(query, id)
+	row := s.db.QueryRowContext(ctx, query, id)
 
 	var username string
 	var email string
@@ -99,6 +107,10 @@ LIMIT 1`
 
 // FindByUsername finds a user by its username.
 func (s *Postgres) FindByUsername(ctx context.Context, username string) (*User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.FindByUsername")
+	span.SetTag("username", username)
+	defer span.Finish()
+
 	query := `SELECT
 	id,
 	email,
@@ -110,7 +122,7 @@ FROM users
 WHERE username = $1
 LIMIT 1`
 
-	row := s.db.QueryRow(query, username)
+	row := s.db.QueryRowContext(ctx, query, username)
 
 	var id string
 	var email string
@@ -138,7 +150,11 @@ LIMIT 1`
 
 // FindUserByEmail by its email.
 func (s *Postgres) FindUserByEmail(ctx context.Context, email string) (*User, error) {
-	row := s.db.QueryRow(`SELECT
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.FindUserByEmail")
+	span.SetTag("email", email)
+	defer span.Finish()
+
+	row := s.db.QueryRowContext(ctx, `SELECT
 	id,
 	username,
 	name,
@@ -172,12 +188,18 @@ LIMIT 1`, email)
 
 // Create a user in postgres and return it with the ID set in the store.
 func (s *Postgres) Create(ctx context.Context, u *User) (*User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.Create")
+	span.SetTag("user_username", u.Username)
+	span.SetTag("user_email", u.Email)
+	defer span.Finish()
+
 	pass, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.db.QueryRow(
+	err = s.db.QueryRowContext(
+		ctx,
 		`INSERT INTO users (email, username, name, password) VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at`,
 		u.Email, u.Username, u.Name, pass,
 	).Scan(&u.ID, &u.Created, &u.Updated)
@@ -188,13 +210,18 @@ func (s *Postgres) Create(ctx context.Context, u *User) (*User, error) {
 // Update a user by its username.
 // TODO: Update users by their id?
 func (s *Postgres) Update(ctx context.Context, user *User) (*User, error) {
-	stmt, err := s.db.Prepare(`UPDATE users SET username = $2, email = $3, name = $4, updated_at = now() WHERE id = $1`)
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.Update")
+	span.SetTag("id", user.ID)
+	span.SetTag("username", user.Username)
+	defer span.Finish()
+
+	stmt, err := s.db.PrepareContext(ctx, `UPDATE users SET username = $2, email = $3, name = $4, updated_at = now() WHERE id = $1`)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(user.ID, user.Username, user.Email, user.Name)
+	res, err := stmt.ExecContext(ctx, user.ID, user.Username, user.Email, user.Name)
 	if err != nil {
 		return nil, err
 	}

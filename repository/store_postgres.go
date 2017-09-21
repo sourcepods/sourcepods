@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"github.com/opentracing/opentracing-go"
 )
 
 // Postgres implementation of the Store.
@@ -20,9 +21,12 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 
 // List retrieves a list of repositories based on their ownership.
 func (s *Postgres) List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.List")
+	defer span.Finish()
+
 	if owner.ID == "" && owner.Username != "" {
 		query := `SELECT id FROM users WHERE username = $1`
-		row := s.db.QueryRow(query, owner.Username)
+		row := s.db.QueryRowContext(ctx, query, owner.Username)
 
 		var id string
 		row.Scan(&id)
@@ -33,6 +37,9 @@ func (s *Postgres) List(ctx context.Context, owner *Owner) ([]*Repository, []*St
 
 		owner.ID = id
 	}
+
+	span.SetTag("owner_id", owner.ID)
+	span.SetTag("owner_username", owner.Username)
 
 	query := `
 SELECT
@@ -51,7 +58,7 @@ FROM repositories
 WHERE owner_id = $1
 ORDER BY updated_at DESC`
 
-	rows, err := s.db.Query(query, owner.ID)
+	rows, err := s.db.QueryContext(ctx, query, owner.ID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -115,6 +122,10 @@ ORDER BY updated_at DESC`
 }
 
 func (s *Postgres) Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.Find")
+	span.SetTag("owner_username", owner.Username)
+	defer span.Finish()
+
 	query := `
 SELECT
 	id,
@@ -131,7 +142,7 @@ WHERE
 	name = $2 AND
 	owner_id = (SELECT id FROM users WHERE username = $1) `
 
-	row := s.db.QueryRow(query, owner.Username, name)
+	row := s.db.QueryRowContext(ctx, query, owner.Username, name)
 
 	var id string
 	var description sql.NullString
