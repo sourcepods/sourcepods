@@ -20,8 +20,8 @@ type (
 
 	// Storage manages the git storage
 	Storage interface {
-		Create(owner string, name string) error
-		Description(owner, name, description string) error
+		Create(ctx context.Context, owner string, name string) error
+		Description(ctx context.Context, owner, name, description string) error
 	}
 
 	// Service to interact with repositories.
@@ -63,11 +63,11 @@ func (s *service) Create(ctx context.Context, owner *Owner, repository *Reposito
 		return r, err
 	}
 
-	if err := s.storage.Create(owner.Username, r.Name); err != nil {
+	if err := s.storage.Create(ctx, owner.Username, r.Name); err != nil {
 		return r, err
 	}
 
-	if err := s.storage.Description(owner.Username, r.Name, r.Description); err != nil {
+	if err := s.storage.Description(ctx, owner.Username, r.Name, r.Description); err != nil {
 		return r, err
 	}
 
