@@ -62,6 +62,10 @@ var (
 			Usage: "The address to run the storage on",
 			Value: ":3030",
 		},
+		cli.BoolTFlag{
+			Name:  "tracing",
+			Usage: "Enable tracing",
+		},
 		cli.BoolFlag{
 			Name:  "watch,w",
 			Usage: "Watch files in this project and rebuild binaries if something changes",
@@ -78,14 +82,21 @@ func devAction(c *cli.Context) error {
 	loglevelFlag := c.String("log-level")
 	rootFlag := c.String("root")
 	storageAddrFlag := c.String("storage-addr")
+	tracingFlag := c.BoolT("tracing")
 	uiAddrFlag := c.String("ui-addr")
 	watch := c.Bool("watch")
+
+	tracingURL := ""
+	if tracingFlag {
+		tracingURL = "localhost:6831"
+	}
 
 	uiRunner := NewGitPodsRunner("ui", []string{
 		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, uiAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvAPIURL, "http://localhost:3000/api"), // TODO
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
+		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
 	})
 
 	apiRunner := NewGitPodsRunner("api", []string{
@@ -97,6 +108,7 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvSecret, "secret"),
 		fmt.Sprintf("%s=%s", cmd.EnvStorageGRPCURL, "localhost:3033"),
+		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
 	})
 
 	storageRunner := NewGitPodsRunner("storage", []string{
@@ -104,6 +116,7 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvRoot, rootFlag),
+		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
 	})
 
 	caddy := CaddyRunner{}

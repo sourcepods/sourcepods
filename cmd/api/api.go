@@ -25,6 +25,8 @@ import (
 	"github.com/neelance/graphql-go/relay"
 	"github.com/oklog/oklog/pkg/group"
 	prom "github.com/prometheus/client_golang/prometheus"
+	jaeger "github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc"
 )
@@ -39,6 +41,7 @@ type apiConf struct {
 	LogLevel        string
 	Secret          string
 	StorageGRPCURL  string
+	TracingURL      string
 }
 
 var (
@@ -104,6 +107,12 @@ var (
 			Usage:       "The storage's gprc url to connect with",
 			Destination: &apiConfig.StorageGRPCURL,
 		},
+		cli.StringFlag{
+			Name:        cmd.FlagTracingURL,
+			EnvVar:      cmd.EnvTracingURL,
+			Usage:       "The url to send spans for tracing to",
+			Destination: &apiConfig.TracingURL,
+		},
 	}
 )
 
@@ -116,6 +125,31 @@ func apiAction(c *cli.Context) error {
 	logger = log.WithPrefix(logger, "app", "api")
 
 	apiMetrics := apiMetrics()
+
+	if apiConfig.TracingURL != "" {
+		traceConfig := config.Configuration{
+			Sampler: &config.SamplerConfig{
+				Type:  jaeger.SamplerTypeConst,
+				Param: 1,
+			},
+			Reporter: &config.ReporterConfig{
+				LocalAgentHostPort: apiConfig.TracingURL,
+			},
+		}
+
+		traceCloser, err := traceConfig.InitGlobalTracer("api")
+		if err != nil {
+			return err
+		}
+		defer traceCloser.Close()
+
+		level.Info(logger).Log(
+			"msg", "tracing enabled",
+			"addr", apiConfig.TracingURL,
+		)
+	} else {
+		level.Info(logger).Log("msg", "tracing is disabled, no url given")
+	}
 
 	//
 	// Stores
