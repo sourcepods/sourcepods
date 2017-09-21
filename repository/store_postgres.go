@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"time"
 
@@ -18,7 +19,7 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 }
 
 // List retrieves a list of repositories based on their ownership.
-func (s *Postgres) List(owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
+func (s *Postgres) List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
 	if owner.ID == "" && owner.Username != "" {
 		query := `SELECT id FROM users WHERE username = $1`
 		row := s.db.QueryRow(query, owner.Username)
@@ -113,7 +114,7 @@ ORDER BY updated_at DESC`
 	return repositories, stats, owner, nil
 }
 
-func (s *Postgres) Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
+func (s *Postgres) Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
 	query := `
 SELECT
 	id,
@@ -181,7 +182,7 @@ WHERE
 		nil
 }
 
-func (s *Postgres) Create(owner *Owner, r *Repository) (*Repository, error) {
+func (s *Postgres) Create(ctx context.Context, owner *Owner, r *Repository) (*Repository, error) {
 	query := `
 INSERT INTO repositories (owner_id, name, description, website, default_branch, private, bare)
 VALUES ($1, $2, $3, $4, $5, $6, $7)

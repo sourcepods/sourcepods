@@ -1,6 +1,9 @@
 package session
 
-import "database/sql"
+import (
+	"context"
+	"database/sql"
+)
 
 // NewPostgresStore returns a Postgres implementation of the Store.
 func NewPostgresStore(db *sql.DB) Store {
@@ -13,7 +16,7 @@ type Postgres struct {
 }
 
 // SaveSession in the store.
-func (s *Postgres) SaveSession(session *Session) error {
+func (s *Postgres) SaveSession(ctx context.Context, session *Session) error {
 	return s.db.QueryRow(
 		`INSERT INTO sessions(expires, owner_id) VALUES($1, $2) RETURNING id`,
 		session.Expiry, session.User.ID,
@@ -21,7 +24,7 @@ func (s *Postgres) SaveSession(session *Session) error {
 }
 
 // FindSession that aren't expired
-func (s *Postgres) FindSession(id string) (*Session, error) {
+func (s *Postgres) FindSession(ctx context.Context, id string) (*Session, error) {
 	query := `
 SELECT
 	sessions.id,
@@ -32,7 +35,7 @@ FROM sessions
 	JOIN users ON sessions.owner_id = users.id
 WHERE sessions.id = $1`
 
-	row := s.db.QueryRow(query, id)
+	row := s.db.QueryRowContext(ctx, query, id)
 
 	session := Session{
 		User: User{},
@@ -47,8 +50,8 @@ WHERE sessions.id = $1`
 }
 
 // ClearSessions that are expired.
-func (s *Postgres) ClearSessions() (int64, error) {
-	res, err := s.db.Exec(`DELETE FROM sessions WHERE expires < now()`)
+func (s *Postgres) ClearSessions(ctx context.Context) (int64, error) {
+	res, err := s.db.ExecContext(ctx, `DELETE FROM sessions WHERE expires < now()`)
 	if err != nil {
 		return 0, nil
 	}

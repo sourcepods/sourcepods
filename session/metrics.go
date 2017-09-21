@@ -1,6 +1,10 @@
 package session
 
-import "github.com/go-kit/kit/metrics"
+import (
+	"context"
+
+	"github.com/go-kit/kit/metrics"
+)
 
 type metricsService struct {
 	service         Service
@@ -20,8 +24,8 @@ func NewMetricsService(service Service, sessionsCreated metrics.Counter, session
 	}
 }
 
-func (s *metricsService) CreateSession(userID, userUsername string) (*Session, error) {
-	sess, err := s.service.CreateSession(userID, userUsername)
+func (s *metricsService) CreateSession(ctx context.Context, userID, userUsername string) (*Session, error) {
+	sess, err := s.service.CreateSession(ctx, userID, userUsername)
 
 	if err == nil {
 		s.sessionsCreated.Add(1)
@@ -30,12 +34,12 @@ func (s *metricsService) CreateSession(userID, userUsername string) (*Session, e
 	return sess, err
 }
 
-func (s *metricsService) FindSession(id string) (*Session, error) {
-	return s.service.FindSession(id)
+func (s *metricsService) FindSession(ctx context.Context, id string) (*Session, error) {
+	return s.service.FindSession(ctx, id)
 }
 
-func (s *metricsService) ClearSessions() (int64, error) {
-	num, err := s.service.ClearSessions()
+func (s *metricsService) ClearSessions(ctx context.Context) (int64, error) {
+	num, err := s.service.ClearSessions(ctx)
 
 	if err == nil {
 		s.sessionsCleared.Add(float64(num))

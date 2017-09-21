@@ -94,12 +94,12 @@ type repositoryArgs struct {
 }
 
 // Repository returns a repositoryResolver based on an ID or Owner and Name.
-func (r *RepositoryResolver) Repository(args repositoryArgs) *repositoryResolver {
+func (r *RepositoryResolver) Repository(ctx context.Context, args repositoryArgs) *repositoryResolver {
 	if args.ID != nil { // TODO
 		return nil
 	}
 	if args.Owner != nil && args.Name != nil {
-		repo, stats, _, err := r.repositories.Find(&repository.Owner{Username: *args.Owner}, *args.Name)
+		repo, stats, _, err := r.repositories.Find(ctx, &repository.Owner{Username: *args.Owner}, *args.Name)
 		if err != nil {
 			log.Println(err)
 			return nil
@@ -111,8 +111,8 @@ func (r *RepositoryResolver) Repository(args repositoryArgs) *repositoryResolver
 }
 
 // Repositories returns a slice of repositoryResolver based on their owner.
-func (r *RepositoryResolver) Repositories(args struct{ Owner string }) []*repositoryResolver {
-	repos, stats, _, err := r.repositories.List(&repository.Owner{Username: args.Owner})
+func (r *RepositoryResolver) Repositories(ctx context.Context, args struct{ Owner string }) []*repositoryResolver {
+	repos, stats, _, err := r.repositories.List(ctx, &repository.Owner{Username: args.Owner})
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -156,12 +156,12 @@ func (r *RepositoryResolver) CreateRepository(ctx context.Context, args struct{ 
 		Bare:          true,
 	}
 
-	owner, err := r.users.Find(sessOwner.ID)
+	owner, err := r.users.Find(ctx, sessOwner.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	repo, err = r.repositories.Create(&repository.Owner{ID: owner.ID, Username: owner.Username}, repo)
+	repo, err = r.repositories.Create(ctx, &repository.Owner{ID: owner.ID, Username: owner.Username}, repo)
 	if err != nil {
 		return nil, err
 	}

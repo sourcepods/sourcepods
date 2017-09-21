@@ -20,7 +20,7 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 }
 
 // FindAll users.
-func (s *Postgres) FindAll() ([]*User, error) {
+func (s *Postgres) FindAll(ctx context.Context) ([]*User, error) {
 	rows, err := s.db.Query(`SELECT
 	id,
 	email,
@@ -59,7 +59,7 @@ ORDER BY name ASC`)
 }
 
 // Find a user by its ID.
-func (s *Postgres) Find(id string) (*User, error) {
+func (s *Postgres) Find(ctx context.Context, id string) (*User, error) {
 	query := `SELECT
 	username,
 	email,
@@ -137,7 +137,7 @@ LIMIT 1`
 }
 
 // FindUserByEmail by its email.
-func (s *Postgres) FindUserByEmail(email string) (*User, error) {
+func (s *Postgres) FindUserByEmail(ctx context.Context, email string) (*User, error) {
 	row := s.db.QueryRow(`SELECT
 	id,
 	username,
@@ -171,7 +171,7 @@ LIMIT 1`, email)
 }
 
 // Create a user in postgres and return it with the ID set in the store.
-func (s *Postgres) Create(u *User) (*User, error) {
+func (s *Postgres) Create(ctx context.Context, u *User) (*User, error) {
 	pass, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (s *Postgres) Create(u *User) (*User, error) {
 
 // Update a user by its username.
 // TODO: Update users by their id?
-func (s *Postgres) Update(user *User) (*User, error) {
+func (s *Postgres) Update(ctx context.Context, user *User) (*User, error) {
 	stmt, err := s.db.Prepare(`UPDATE users SET username = $2, email = $3, name = $4, updated_at = now() WHERE id = $1`)
 	if err != nil {
 		return nil, err
@@ -207,10 +207,10 @@ func (s *Postgres) Update(user *User) (*User, error) {
 		return nil, errors.New("no rows updated")
 	}
 
-	return s.Find(user.ID)
+	return s.Find(ctx, user.ID)
 }
 
 // Delete a user by its id.
-func (s *Postgres) Delete(id string) error {
+func (s *Postgres) Delete(ctx context.Context, id string) error {
 	panic("implement me")
 }

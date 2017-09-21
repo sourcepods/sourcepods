@@ -1,6 +1,8 @@
 package authorization
 
 import (
+	"context"
+
 	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/user"
 	"golang.org/x/crypto/bcrypt"
@@ -8,13 +10,13 @@ import (
 
 // Service authenticates users and creates sessions for them.
 type Service interface {
-	AuthenticateUser(email, password string) (*user.User, error)
-	CreateSession(string, string) (*session.Session, error)
+	AuthenticateUser(ctx context.Context, email, password string) (*user.User, error)
+	CreateSession(context.Context, string, string) (*session.Session, error)
 }
 
 // Store finds users by emails.
 type Store interface {
-	FindUserByEmail(string) (*user.User, error)
+	FindUserByEmail(context.Context, string) (*user.User, error)
 }
 
 // NewService takes a store to find users by their email and
@@ -29,8 +31,8 @@ type service struct {
 }
 
 // AuthenticateUser by hashing the given password an comparing it against the one stored.
-func (s *service) AuthenticateUser(email, password string) (*user.User, error) {
-	u, err := s.store.FindUserByEmail(email)
+func (s *service) AuthenticateUser(ctx context.Context, email, password string) (*user.User, error) {
+	u, err := s.store.FindUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +44,6 @@ func (s *service) AuthenticateUser(email, password string) (*user.User, error) {
 	return u, nil
 }
 
-func (s *service) CreateSession(userID, userUsername string) (*session.Session, error) {
-	return s.sessions.CreateSession(userID, userUsername)
+func (s *service) CreateSession(ctx context.Context, userID, userUsername string) (*session.Session, error) {
+	return s.sessions.CreateSession(ctx, userID, userUsername)
 }

@@ -63,7 +63,7 @@ type userArgs struct {
 }
 
 // User returns a userResolver based on an ID and Username.
-func (r *UserResolver) User(args userArgs) *userResolver {
+func (r *UserResolver) User(ctx context.Context, args userArgs) *userResolver {
 	//if args.ID != nil { TODO
 	//	for _, user := range users {
 	//		if user.ID == *args.ID {
@@ -72,7 +72,7 @@ func (r *UserResolver) User(args userArgs) *userResolver {
 	//	}
 	//}
 	if args.Username != nil {
-		u, err := r.users.FindByUsername(context.TODO(), *args.Username)
+		u, err := r.users.FindByUsername(ctx, *args.Username)
 		if err != nil {
 			log.Println(err)
 			return nil
@@ -84,10 +84,10 @@ func (r *UserResolver) User(args userArgs) *userResolver {
 }
 
 // Users returns a slice of userResolver.
-func (r *UserResolver) Users() []*userResolver {
+func (r *UserResolver) Users(ctx context.Context) []*userResolver {
 	var uResolvers []*userResolver
 
-	users, err := r.users.FindAll()
+	users, err := r.users.FindAll(ctx)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -115,14 +115,14 @@ func (r *UserResolver) UpdateUser(ctx context.Context, args updateUserArgs) (*us
 		return nil, fmt.Errorf("not allowed to update other users")
 	}
 
-	u, err := r.users.Find(string(args.ID))
+	u, err := r.users.Find(ctx, string(args.ID))
 	if err != nil {
 		return nil, err
 	}
 
 	u.Name = strings.TrimSpace(args.User.Name)
 
-	u, err = r.users.Update(u)
+	u, err = r.users.Update(ctx, u)
 	if err != nil {
 		log.Println(err)
 		return nil, fmt.Errorf("updating user failed")
@@ -160,8 +160,8 @@ func (r *userResolver) UpdatedAt() int32 {
 	return int32(r.user.Updated.Unix())
 }
 
-func (r *userResolver) Repositories() []*repositoryResolver {
-	repos, stats, _, err := r.rs.List(&repository.Owner{Username: r.user.Username})
+func (r *userResolver) Repositories(ctx context.Context) []*repositoryResolver {
+	repos, stats, _, err := r.rs.List(ctx, &repository.Owner{ID: string(r.user.ID), Username: r.user.Username})
 	if err != nil {
 		log.Println(err)
 		return nil

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -17,10 +18,10 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger: logger, service: s}
 }
 
-func (s *loggingService) List(owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
+func (s *loggingService) List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
 	start := time.Now()
 
-	repositories, stats, owner, err := s.service.List(owner)
+	repositories, stats, owner, err := s.service.List(ctx, owner)
 
 	logger := log.With(s.logger,
 		"method", "List",
@@ -40,10 +41,10 @@ func (s *loggingService) List(owner *Owner) ([]*Repository, []*Stats, *Owner, er
 
 }
 
-func (s *loggingService) Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
+func (s *loggingService) Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
 	start := time.Now()
 
-	repository, stats, owner, err := s.service.Find(owner, name)
+	repository, stats, owner, err := s.service.Find(ctx, owner, name)
 
 	logger := log.With(s.logger,
 		"method", "Find",
@@ -62,10 +63,10 @@ func (s *loggingService) Find(owner *Owner, name string) (*Repository, *Stats, *
 	return repository, stats, owner, err
 }
 
-func (s *loggingService) Create(owner *Owner, repository *Repository) (*Repository, error) {
+func (s *loggingService) Create(ctx context.Context, owner *Owner, repository *Repository) (*Repository, error) {
 	start := time.Now()
 
-	repository, err := s.service.Create(owner, repository)
+	repository, err := s.service.Create(ctx, owner, repository)
 
 	logger := log.With(s.logger,
 		"method", "Create",

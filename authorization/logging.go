@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"context"
 	"time"
 
 	"github.com/gitpods/gitpods/session"
@@ -19,10 +20,10 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger: logger, service: s}
 }
 
-func (s *loggingService) AuthenticateUser(email, password string) (*user.User, error) {
+func (s *loggingService) AuthenticateUser(ctx context.Context, email, password string) (*user.User, error) {
 	start := time.Now()
 
-	user, err := s.service.AuthenticateUser(email, password)
+	user, err := s.service.AuthenticateUser(ctx, email, password)
 
 	logger := log.With(s.logger,
 		"method", "AuthenticateUser",
@@ -38,7 +39,7 @@ func (s *loggingService) AuthenticateUser(email, password string) (*user.User, e
 	return user, err
 }
 
-func (s *loggingService) CreateSession(userID, userUsername string) (*session.Session, error) {
+func (s *loggingService) CreateSession(ctx context.Context, userID, userUsername string) (*session.Session, error) {
 	// Don't log anything here, it's done in the service being called.
-	return s.service.CreateSession(userID, userUsername)
+	return s.service.CreateSession(ctx, userID, userUsername)
 }

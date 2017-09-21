@@ -18,10 +18,10 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger, s}
 }
 
-func (s *loggingService) FindAll() ([]*User, error) {
+func (s *loggingService) FindAll(ctx context.Context) ([]*User, error) {
 	start := time.Now()
 
-	users, err := s.Service.FindAll()
+	users, err := s.Service.FindAll(ctx)
 
 	logger := log.With(s.logger,
 		"method", "FindAll",
@@ -57,10 +57,10 @@ func (s *loggingService) FindByUsername(ctx context.Context, username string) (*
 	return user, err
 }
 
-func (s *loggingService) Create(user *User) (*User, error) {
+func (s *loggingService) Create(ctx context.Context, user *User) (*User, error) {
 	start := time.Now()
 
-	user, err := s.Service.Create(user)
+	user, err := s.Service.Create(ctx, user)
 
 	logger := log.With(s.logger,
 		"method", "Create",
@@ -77,10 +77,10 @@ func (s *loggingService) Create(user *User) (*User, error) {
 	return user, err
 }
 
-func (s *loggingService) Update(user *User) (*User, error) {
+func (s *loggingService) Update(ctx context.Context, user *User) (*User, error) {
 	start := time.Now()
 
-	user, err := s.Service.Update(user)
+	user, err := s.Service.Update(ctx, user)
 
 	logger := log.With(s.logger,
 		"method", "Update",
@@ -97,10 +97,10 @@ func (s *loggingService) Update(user *User) (*User, error) {
 	return user, err
 }
 
-func (s *loggingService) Delete(username string) error {
+func (s *loggingService) Delete(ctx context.Context, username string) error {
 	start := time.Now()
 
-	err := s.Service.Delete(username)
+	err := s.Service.Delete(ctx, username)
 
 	logger := log.With(s.logger,
 		"method", "Delete",

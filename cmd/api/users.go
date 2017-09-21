@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -80,7 +81,7 @@ func usersCreateAction(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	u, err := users.Create(u)
+	u, err := users.Create(context.Background(), u)
 	if err != nil {
 		return err
 	}

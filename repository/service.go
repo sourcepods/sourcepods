@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 )
 
@@ -12,9 +13,9 @@ var (
 type (
 	// Store or retrieve repositories from some database.
 	Store interface {
-		List(owner *Owner) ([]*Repository, []*Stats, *Owner, error)
-		Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error)
-		Create(owner *Owner, repository *Repository) (*Repository, error)
+		List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error)
+		Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error)
+		Create(ctx context.Context, owner *Owner, repository *Repository) (*Repository, error)
 	}
 
 	// Storage manages the git storage
@@ -25,9 +26,9 @@ type (
 
 	// Service to interact with repositories.
 	Service interface {
-		List(owner *Owner) ([]*Repository, []*Stats, *Owner, error)
-		Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error)
-		Create(owner *Owner, repository *Repository) (*Repository, error)
+		List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error)
+		Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error)
+		Create(ctx context.Context, owner *Owner, repository *Repository) (*Repository, error)
 	}
 
 	service struct {
@@ -44,20 +45,20 @@ func NewService(repositories Store, storage Storage) Service {
 	}
 }
 
-func (s *service) List(owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
-	return s.repositories.List(owner)
+func (s *service) List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
+	return s.repositories.List(ctx, owner)
 }
 
-func (s *service) Find(owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
-	return s.repositories.Find(owner, name)
+func (s *service) Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
+	return s.repositories.Find(ctx, owner, name)
 }
 
-func (s *service) Create(owner *Owner, repository *Repository) (*Repository, error) {
+func (s *service) Create(ctx context.Context, owner *Owner, repository *Repository) (*Repository, error) {
 	if err := ValidateCreate(repository); err != nil {
 		return nil, err
 	}
 
-	r, err := s.repositories.Create(owner, repository)
+	r, err := s.repositories.Create(ctx, owner, repository)
 	if err != nil {
 		return r, err
 	}

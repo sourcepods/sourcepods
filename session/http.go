@@ -49,7 +49,7 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 				return
 			}
 
-			session, err := s.FindSession(cookie.Value)
+			session, err := s.FindSession(r.Context(), cookie.Value)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				jsonapi.MarshalErrors(w, errUnauthorized)

@@ -41,14 +41,14 @@ func authorize(s Service) http.HandlerFunc {
 			return
 		}
 
-		user, err := s.AuthenticateUser(form.Email, form.Password)
+		user, err := s.AuthenticateUser(ctx, form.Email, form.Password)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			jsonapi.MarshalErrors(w, badCredentials)
 			return
 		}
 
-		sess, err := s.CreateSession(user.ID, user.Username)
+		sess, err := s.CreateSession(ctx, user.ID, user.Username)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			jsonapi.MarshalErrors(w, badCredentials)
