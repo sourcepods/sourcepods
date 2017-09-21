@@ -178,11 +178,7 @@ func apiAction(c *cli.Context) error {
 		UserResolver:       resolver.NewUser(rs, us),
 		RepositoryResolver: resolver.NewRepository(rs, us),
 	}
-
-	schema, err := graphql.ParseSchema(resolver.Schema, res)
-	if err != nil {
-		panic(err)
-	}
+	schema := graphql.MustParseSchema(resolver.Schema, res)
 
 	//
 	// Router
