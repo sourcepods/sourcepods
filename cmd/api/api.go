@@ -197,13 +197,7 @@ func apiAction(c *cli.Context) error {
 
 		router.Group(func(router chi.Router) {
 			router.Use(session.Authorized(ss))
-
 			router.Mount("/query", &relay.Handler{Schema: schema})
-			router.Mount("/user", user.NewUserHandler(us))
-			router.Mount("/users", user.NewUsersHandler(us))
-			router.Mount("/users/{username}/repositories", repository.NewUsersHandler(rs))
-
-			router.Mount("/repositories/{owner}/{name}", repository.NewHandler(rs))
 		})
 	})
 
