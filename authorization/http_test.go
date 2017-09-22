@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,14 +15,14 @@ import (
 
 type testService struct{}
 
-func (s *testService) AuthenticateUser(email, password string) (*user.User, error) {
+func (s *testService) AuthenticateUser(ctx context.Context, email, password string) (*user.User, error) {
 	if email == "foobar@example.com" && password == "baz" {
 		return &u1, nil
 	}
 	return nil, errors.New("bad credentials")
 }
 
-func (s *testService) CreateSession(id string, username string) (*session.Session, error) {
+func (s *testService) CreateSession(ctx context.Context, id string, username string) (*session.Session, error) {
 	return &session.Session{
 		ID:     "410f59a5-75e6-4332-a0d3-ef06a0bfb2a5",
 		Expiry: expiry,

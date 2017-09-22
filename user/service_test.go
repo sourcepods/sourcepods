@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -29,11 +30,11 @@ var testUsers = []*User{{
 	Updated:  time.Now(),
 }}
 
-func (s *store) FindAll() ([]*User, error) {
+func (s *store) FindAll(ctx context.Context) ([]*User, error) {
 	return s.users, nil
 }
 
-func (s *store) Find(id string) (*User, error) {
+func (s *store) Find(ctx context.Context, id string) (*User, error) {
 	for _, u := range s.users {
 		if u.ID == id {
 			return u, nil
@@ -42,7 +43,7 @@ func (s *store) Find(id string) (*User, error) {
 	return nil, NotFoundError
 }
 
-func (s *store) FindByUsername(username string) (*User, error) {
+func (s *store) FindByUsername(ctx context.Context, username string) (*User, error) {
 	for _, u := range s.users {
 		if u.Username == username {
 			return u, nil
@@ -51,23 +52,23 @@ func (s *store) FindByUsername(username string) (*User, error) {
 	return nil, NotFoundError
 }
 
-func (s *store) Create(*User) (*User, error) {
+func (s *store) Create(context.Context, *User) (*User, error) {
 	panic("implement me")
 }
 
-func (s *store) Update(u *User) (*User, error) {
+func (s *store) Update(ctx context.Context, u *User) (*User, error) {
 	// Normally merge the current user with the new fields here.
 	return s.users[0], nil
 }
 
-func (s *store) Delete(string) error {
+func (s *store) Delete(context.Context, string) error {
 	panic("implement me")
 }
 
 func TestService_FindAll(t *testing.T) {
 	service := NewService(&store{testUsers})
 
-	users, err := service.FindAll()
+	users, err := service.FindAll(context.Background())
 	assert.NoError(t, err)
 	assert.Len(t, users, 2)
 	assert.Equal(t, "user1", users[0].Username)
@@ -76,15 +77,15 @@ func TestService_FindAll(t *testing.T) {
 func TestService_Find(t *testing.T) {
 	service := NewService(&store{testUsers})
 
-	u1, err := service.Find("12b5e0b0-f8c4-4b32-bf4a-8fb77a9ca19e")
+	u1, err := service.Find(context.Background(), "12b5e0b0-f8c4-4b32-bf4a-8fb77a9ca19e")
 	assert.NoError(t, err)
 	assert.Equal(t, "12b5e0b0-f8c4-4b32-bf4a-8fb77a9ca19e", u1.ID)
 
-	u2, err := service.Find("12b5e0b0-f8c4-4b21-bf4a-8fb77a7ca89e")
+	u2, err := service.Find(context.Background(), "12b5e0b0-f8c4-4b21-bf4a-8fb77a7ca89e")
 	assert.NoError(t, err)
 	assert.Equal(t, "12b5e0b0-f8c4-4b21-bf4a-8fb77a7ca89e", u2.ID)
 
-	_, err = service.Find("foobar")
+	_, err = service.Find(context.Background(), "foobar")
 	assert.Error(t, err)
 	assert.Equal(t, NotFoundError, err)
 }
@@ -92,15 +93,15 @@ func TestService_Find(t *testing.T) {
 func TestService_FindByUsername(t *testing.T) {
 	service := NewService(&store{testUsers})
 
-	u1, err := service.FindByUsername("user1")
+	u1, err := service.FindByUsername(context.Background(), "user1")
 	assert.NoError(t, err)
 	assert.Equal(t, "user1", u1.Username)
 
-	u2, err := service.FindByUsername("user2")
+	u2, err := service.FindByUsername(context.Background(), "user2")
 	assert.NoError(t, err)
 	assert.Equal(t, "user2", u2.Username)
 
-	_, err = service.FindByUsername("foobar")
+	_, err = service.FindByUsername(context.Background(), "foobar")
 	assert.Error(t, err)
 	assert.Equal(t, NotFoundError, err)
 }
@@ -108,7 +109,7 @@ func TestService_FindByUsername(t *testing.T) {
 func TestService_Update(t *testing.T) {
 	service := NewService(&store{testUsers})
 
-	user, err := service.Update(testUsers[0])
+	user, err := service.Update(context.Background(), testUsers[0])
 	assert.NoError(t, err)
 	assert.Equal(t, "12b5e0b0-f8c4-4b32-bf4a-8fb77a9ca19e", user.ID)
 	assert.Equal(t, "user1@example.com", user.Email)
@@ -119,31 +120,31 @@ func TestService_Update(t *testing.T) {
 	// Add new fields to this user until it equals testUser[0]
 	newUser := &User{}
 
-	user, err = service.Update(newUser)
+	user, err = service.Update(context.Background(), newUser)
 	assert.Nil(t, user)
 	assert.Error(t, err)
 	assert.Equal(t, "id is not a valid uuid v4", err.Error())
 	newUser.ID = "12b5e0b0-f8c4-4b32-bf4a-8fb77a9ca19e"
 
-	user, err = service.Update(newUser)
+	user, err = service.Update(context.Background(), newUser)
 	assert.Nil(t, user)
 	assert.Error(t, err)
 	assert.Equal(t, "email is not valid", err.Error())
 	newUser.Email = "user1@example.com"
 
-	user, err = service.Update(newUser)
+	user, err = service.Update(context.Background(), newUser)
 	assert.Nil(t, user)
 	assert.Error(t, err)
 	assert.Equal(t, "username is not between 4 and 32 characters long", err.Error())
 	newUser.Username = "user1"
 
-	user, err = service.Update(newUser)
+	user, err = service.Update(context.Background(), newUser)
 	assert.Nil(t, user)
 	assert.Error(t, err)
 	assert.Equal(t, "name is not between 2 and 64 characters long", err.Error())
 	newUser.Name = "User 1"
 
-	user, err = service.Update(newUser)
+	user, err = service.Update(context.Background(), newUser)
 	assert.Equal(t, testUsers[0], user)
 	assert.NoError(t, err)
 }
