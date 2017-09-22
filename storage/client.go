@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 
+	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 )
 
@@ -18,16 +19,27 @@ func NewClient(conn *grpc.ClientConn) *Client {
 	}
 }
 
-func (c *Client) Create(owner string, name string) error {
-	_, err := c.client.Create(context.Background(), &CreateRequest{
+func (c *Client) Create(ctx context.Context, owner string, name string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Create")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	defer span.Finish()
+
+	_, err := c.client.Create(ctx, &CreateRequest{
 		Owner: owner,
 		Name:  name,
 	})
 	return err
 }
 
-func (c *Client) Description(owner string, name string, description string) error {
-	_, err := c.client.Descriptions(context.Background(), &DescriptionRequest{
+func (c *Client) Description(ctx context.Context, owner string, name string, description string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Description")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("description", description)
+	defer span.Finish()
+
+	_, err := c.client.Descriptions(ctx, &DescriptionRequest{
 		Owner:       owner,
 		Name:        name,
 		Description: description,

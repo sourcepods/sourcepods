@@ -1,6 +1,8 @@
 package authorization
 
 import (
+	"context"
+
 	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-kit/kit/metrics"
@@ -19,8 +21,8 @@ func NewMetricsService(loginAttempts metrics.Counter, service Service) Service {
 	return &metricsService{loginAttempts: loginAttempts, service: service}
 }
 
-func (s *metricsService) AuthenticateUser(email, password string) (*user.User, error) {
-	u, err := s.service.AuthenticateUser(email, password)
+func (s *metricsService) AuthenticateUser(ctx context.Context, email, password string) (*user.User, error) {
+	u, err := s.service.AuthenticateUser(ctx, email, password)
 
 	if err != nil {
 		s.loginAttempts.With("status", "failure").Add(1)
@@ -31,7 +33,7 @@ func (s *metricsService) AuthenticateUser(email, password string) (*user.User, e
 	return u, err
 }
 
-func (s *metricsService) CreateSession(userID, userUsername string) (*session.Session, error) {
+func (s *metricsService) CreateSession(ctx context.Context, userID, userUsername string) (*session.Session, error) {
 	// Don't do anything here, it's done in the service being called.
-	return s.service.CreateSession(userID, userUsername)
+	return s.service.CreateSession(ctx, userID, userUsername)
 }

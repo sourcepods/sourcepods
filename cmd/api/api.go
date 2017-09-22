@@ -25,6 +25,8 @@ import (
 	"github.com/neelance/graphql-go/relay"
 	"github.com/oklog/oklog/pkg/group"
 	prom "github.com/prometheus/client_golang/prometheus"
+	jaeger "github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc"
 )
@@ -39,6 +41,7 @@ type apiConf struct {
 	LogLevel        string
 	Secret          string
 	StorageGRPCURL  string
+	TracingURL      string
 }
 
 var (
@@ -104,6 +107,12 @@ var (
 			Usage:       "The storage's gprc url to connect with",
 			Destination: &apiConfig.StorageGRPCURL,
 		},
+		cli.StringFlag{
+			Name:        cmd.FlagTracingURL,
+			EnvVar:      cmd.EnvTracingURL,
+			Usage:       "The url to send spans for tracing to",
+			Destination: &apiConfig.TracingURL,
+		},
 	}
 )
 
@@ -116,6 +125,31 @@ func apiAction(c *cli.Context) error {
 	logger = log.WithPrefix(logger, "app", "api")
 
 	apiMetrics := apiMetrics()
+
+	if apiConfig.TracingURL != "" {
+		traceConfig := config.Configuration{
+			Sampler: &config.SamplerConfig{
+				Type:  jaeger.SamplerTypeConst,
+				Param: 1,
+			},
+			Reporter: &config.ReporterConfig{
+				LocalAgentHostPort: apiConfig.TracingURL,
+			},
+		}
+
+		traceCloser, err := traceConfig.InitGlobalTracer("api")
+		if err != nil {
+			return err
+		}
+		defer traceCloser.Close()
+
+		level.Info(logger).Log(
+			"msg", "tracing enabled",
+			"addr", apiConfig.TracingURL,
+		)
+	} else {
+		level.Info(logger).Log("msg", "tracing is disabled, no url given")
+	}
 
 	//
 	// Stores
@@ -157,19 +191,23 @@ func apiAction(c *cli.Context) error {
 	var ss session.Service
 	ss = session.NewService(sessions)
 	ss = session.NewMetricsService(ss, apiMetrics.SessionsCreated, apiMetrics.SessionsCleared)
+	ss = session.NewTracingService(ss)
 
 	var as authorization.Service
 	as = authorization.NewService(users.(authorization.Store), ss)
 	as = authorization.NewLoggingService(log.WithPrefix(logger, "service", "authorization"), as)
 	as = authorization.NewMetricsService(apiMetrics.LoginAttempts, as)
+	as = authorization.NewTracingService(as)
 
 	var us user.Service
 	us = user.NewService(users)
 	us = user.NewLoggingService(log.WithPrefix(logger, "service", "user"), us)
+	us = user.NewTracingService(us)
 
 	var rs repository.Service
 	rs = repository.NewService(repositories, storageClient)
 	rs = repository.NewLoggingService(log.WithPrefix(logger, "service", "repository"), rs)
+	rs = repository.NewTracingService(rs)
 
 	//
 	// Resolvers
@@ -197,13 +235,7 @@ func apiAction(c *cli.Context) error {
 
 		router.Group(func(router chi.Router) {
 			router.Use(session.Authorized(ss))
-
 			router.Mount("/query", &relay.Handler{Schema: schema})
-			router.Mount("/user", user.NewUserHandler(us))
-			router.Mount("/users", user.NewUsersHandler(us))
-			router.Mount("/users/{username}/repositories", repository.NewUsersHandler(rs))
-
-			router.Mount("/repositories/{owner}/{name}", repository.NewHandler(rs))
 		})
 	})
 
@@ -243,7 +275,7 @@ func apiAction(c *cli.Context) error {
 			dur := time.Minute
 			level.Info(logger).Log("msg", "starting session cleaner", "interval", dur)
 			for {
-				if _, err := ss.ClearSessions(); err != nil {
+				if _, err := ss.ClearSessions(context.TODO()); err != nil {
 					return err
 				}
 				time.Sleep(dur)

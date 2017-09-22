@@ -1,8 +1,8 @@
 package authorization
 
 import (
+	"context"
 	"testing"
-
 	"time"
 
 	"github.com/gitpods/gitpods/session"
@@ -24,13 +24,13 @@ var (
 
 type testStore struct{}
 
-func (*testStore) FindUserByEmail(string) (*user.User, error) {
+func (*testStore) FindUserByEmail(context.Context, string) (*user.User, error) {
 	return &u1, nil
 }
 
 type sessionService struct{}
 
-func (s sessionService) CreateSession(id string, username string) (*session.Session, error) {
+func (s sessionService) CreateSession(ctx context.Context, id string, username string) (*session.Session, error) {
 	return &session.Session{
 		ID:     "410f59a5-75e6-4332-a0d3-ef06a0bfb2a5",
 		Expiry: expiry,
@@ -41,12 +41,12 @@ func (s sessionService) CreateSession(id string, username string) (*session.Sess
 	}, nil
 }
 
-func (s sessionService) FindSession(string) (*session.Session, error) {
+func (s sessionService) FindSession(context.Context, string) (*session.Session, error) {
 	// We don't need this for these tests.
 	panic("implement me")
 }
 
-func (s sessionService) ClearSessions() (int64, error) {
+func (s sessionService) ClearSessions(context.Context) (int64, error) {
 	// We don't need this for these tests.
 	panic("implement me")
 }
@@ -56,11 +56,11 @@ func TestService_AuthenticateUser(t *testing.T) {
 	ss := &sessionService{}
 	s := NewService(store, ss)
 
-	u, err := s.AuthenticateUser("foobar@example.com", "bar")
+	u, err := s.AuthenticateUser(context.Background(), "foobar@example.com", "bar")
 	assert.Equal(t, bcrypt.ErrMismatchedHashAndPassword, err)
 	assert.Nil(t, u)
 
-	u, err = s.AuthenticateUser("foobar@example.com", "baz")
+	u, err = s.AuthenticateUser(context.Background(), "foobar@example.com", "baz")
 	assert.NoError(t, err)
 	assert.Equal(t, &u1, u)
 }
@@ -79,7 +79,7 @@ func TestService_CreateSession(t *testing.T) {
 		},
 	}
 
-	sess, err := s.CreateSession(u1.ID, u1.Username)
+	sess, err := s.CreateSession(context.Background(), u1.ID, u1.Username)
 	assert.NoError(t, err)
 	assert.Equal(t, &expected, sess)
 }

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/jsonapi"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 type ctxKey int
@@ -30,6 +31,9 @@ var (
 func Authorized(s Service) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			span, ctx := opentracing.StartSpanFromContext(r.Context(), "session.Service.Authorized")
+			defer span.Finish()
+
 			cookie, err := r.Cookie(CookieName)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
@@ -49,14 +53,14 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 				return
 			}
 
-			session, err := s.FindSession(cookie.Value)
+			session, err := s.FindSession(r.Context(), cookie.Value)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				jsonapi.MarshalErrors(w, errUnauthorized)
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), CookieUserID, session.User.ID)
+			ctx = context.WithValue(ctx, CookieUserID, session.User.ID)
 			ctx = context.WithValue(ctx, CookieUserUsername, session.User.Username)
 			r = r.WithContext(ctx)
 

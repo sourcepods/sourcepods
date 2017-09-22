@@ -26,6 +26,7 @@ const (
 	FlagSecret          = "secret"
 	FlagStorageGRPCURL  = "storage-grpc-url"
 	FlagStorageHTTPURL  = "storage-http-url"
+	FlagTracingURL      = "tracing-url"
 
 	EnvAPIPrefix       = "GITPODS_API_PREFIX"
 	EnvAPIURL          = "GITPODS_API_URL"
@@ -41,6 +42,7 @@ const (
 	EnvSecret          = "GITPODS_SECRET"
 	EnvStorageGRPCURL  = "GITPODS_STORAGE_GRPC_URL"
 	EnvStorageHTTPURL  = "GITPODS_STORAGE_HTTP_URL"
+	EnvTracingURL      = "GITPODS_TRACING_URL"
 )
 
 func NewLogger(json bool, loglevel string) log.Logger {
