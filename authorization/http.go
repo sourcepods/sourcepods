@@ -25,6 +25,9 @@ func NewHandler(s Service) *chi.Mux {
 
 func authorize(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		span, ctx := opentracing.StartSpanFromContext(r.Context(), "authorization.Handler.authorize")
+		defer span.Finish()
+
 		var form struct {
 			Email    string `json:"email"`
 			Password string `json:"password"`
@@ -42,9 +45,7 @@ func authorize(s Service) http.HandlerFunc {
 			return
 		}
 
-		span, ctx := opentracing.StartSpanFromContext(r.Context(), "authorization.Handler.authorize")
 		span.SetTag("email", form.Email)
-		defer span.Finish()
 
 		user, err := s.AuthenticateUser(ctx, form.Email, form.Password)
 		if err != nil {
