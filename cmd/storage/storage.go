@@ -15,16 +15,19 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/oklog/oklog/pkg/group"
+	jaeger "github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc"
 )
 
 type storageConf struct {
-	GRPCAddr string
-	HTTPAddr string
-	LogJSON  bool
-	LogLevel string
-	Root     string
+	GRPCAddr   string
+	HTTPAddr   string
+	LogJSON    bool
+	LogLevel   string
+	Root       string
+	TracingURL string
 }
 
 var (
@@ -62,12 +65,43 @@ var (
 			Usage:       "The root folder to store all git repositories in",
 			Destination: &storageConfig.Root,
 		},
+		cli.StringFlag{
+			Name:        cmd.FlagTracingURL,
+			EnvVar:      cmd.EnvTracingURL,
+			Usage:       "The url to send spans for tracing to",
+			Destination: &storageConfig.TracingURL,
+		},
 	}
 )
 
 func storageAction(c *cli.Context) error {
 	logger := cmd.NewLogger(storageConfig.LogJSON, storageConfig.LogLevel)
 	logger = log.WithPrefix(logger, "app", c.App.Name)
+
+	if storageConfig.TracingURL != "" {
+		traceConfig := config.Configuration{
+			Sampler: &config.SamplerConfig{
+				Type:  jaeger.SamplerTypeConst,
+				Param: 1,
+			},
+			Reporter: &config.ReporterConfig{
+				LocalAgentHostPort: storageConfig.TracingURL,
+			},
+		}
+
+		traceCloser, err := traceConfig.InitGlobalTracer(c.App.Name)
+		if err != nil {
+			return err
+		}
+		defer traceCloser.Close()
+
+		level.Info(logger).Log(
+			"msg", "tracing enabled",
+			"addr", storageConfig.TracingURL,
+		)
+	} else {
+		level.Info(logger).Log("msg", "tracing is disabled, no url given")
+	}
 
 	if storageConfig.Root == "" {
 		return errors.New("the root has to be a valid path")
