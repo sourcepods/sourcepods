@@ -18,7 +18,6 @@ import (
 	jaeger "github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
 	"github.com/urfave/cli"
-	"google.golang.org/grpc"
 )
 
 type storageConf struct {
@@ -156,7 +155,7 @@ func storageAction(c *cli.Context) error {
 		})
 	}
 	{
-		gs := storage.NewStorageServer(grpc.NewServer(), gitStorage)
+		gs := storage.NewStorageServer(gitStorage)
 		gr.Add(func() error {
 			level.Info(logger).Log(
 				"msg", "starting gitpods storage grpc server",

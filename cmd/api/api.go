@@ -28,7 +28,6 @@ import (
 	jaeger "github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
 	"github.com/urfave/cli"
-	"google.golang.org/grpc"
 )
 
 type apiConf struct {
@@ -176,14 +175,10 @@ func apiAction(c *cli.Context) error {
 	//
 	// Storage
 	//
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
-
-	storageConn, err := grpc.DialContext(context.Background(), apiConfig.StorageGRPCURL, opts...)
+	storageClient, err := storage.NewClient(apiConfig.StorageGRPCURL)
 	if err != nil {
 		return err
 	}
-	storageClient := storage.NewClient(storageConn)
 
 	//
 	// Services

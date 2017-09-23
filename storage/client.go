@@ -3,7 +3,8 @@ package storage
 import (
 	"context"
 
-	"github.com/opentracing/opentracing-go"
+	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	opentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 )
 
@@ -13,10 +14,19 @@ type Client struct {
 	client StorageClient
 }
 
-func NewClient(conn *grpc.ClientConn) *Client {
+func NewClient(storageAddr string) (*Client, error) {
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithUnaryInterceptor(grpcopentracing.UnaryClientInterceptor()))
+
+	conn, err := grpc.DialContext(context.Background(), storageAddr, opts...)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		client: NewStorageClient(conn),
-	}
+	}, nil
 }
 
 func (c *Client) Create(ctx context.Context, owner string, name string) error {
