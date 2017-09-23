@@ -21,6 +21,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 type GitHTTP struct {
@@ -83,23 +84,33 @@ func cacheForever(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (gh *GitHTTP) headHandler(w http.ResponseWriter, r *http.Request) {
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.headHandler")
+	defer span.Finish()
+
 	owner, name := ownerName(r)
 	path := filepath.Join(gh.root, owner, name, "HEAD")
 
 	h := gh.textFileHandler(path, "text/plain")
-	h.ServeHTTP(w, r)
+	h.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func (gh *GitHTTP) infoRefsHandler(w http.ResponseWriter, r *http.Request) {
 	owner, name := ownerName(r)
 	service := serviceQuery(r)
+
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.infoRefsHandler")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("service", service)
+	defer span.Finish()
+
 	logger := log.With(gh.Logger,
 		"owner", owner,
 		"name", name,
 		"service", service,
 	)
 
-	ctx, cancel := context.WithTimeout(r.Context(), time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
 	args := []string{service, "--stateless-rpc", "--advertise-refs", "."}
@@ -125,7 +136,13 @@ func (gh *GitHTTP) looseObjectHandler(w http.ResponseWriter, r *http.Request) {
 	file := chi.URLParam(r, "file")
 	path := filepath.Join(gh.root, owner, name, folder, file)
 
-	gh.textFileHandler(path, "application/x-git-loose-object")
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.looseObjectHandler")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("path", path)
+
+	h := gh.textFileHandler(path, "application/x-git-loose-object")
+	h.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func (gh *GitHTTP) infoHandler(w http.ResponseWriter, r *http.Request) {
@@ -133,33 +150,56 @@ func (gh *GitHTTP) infoHandler(w http.ResponseWriter, r *http.Request) {
 	file := chi.URLParam(r, "file")
 	path := filepath.Join(gh.root, owner, name, "objects", "info", file)
 
-	fmt.Println(r.URL.String())
-	gh.textFileHandler(path, "text/plain")
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.infoHandler")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("path", path)
+	defer span.Finish()
 
+	h := gh.textFileHandler(path, "text/plain")
+	h.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func (gh *GitHTTP) alternatesHandler(w http.ResponseWriter, r *http.Request) {
 	owner, name := ownerName(r)
 	path := filepath.Join(gh.root, owner, name, "/objects/info/alternates")
 
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.alternatesHandler")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("path", path)
+	defer span.Finish()
+
 	h := gh.textFileHandler(path, "text/plain")
-	h.ServeHTTP(w, r)
+	h.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func (gh *GitHTTP) httpAlternatesHandler(w http.ResponseWriter, r *http.Request) {
 	owner, name := ownerName(r)
 	path := filepath.Join(gh.root, owner, name, "/objects/info/http-alternates")
 
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.httpAlternatesHandler")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("path", path)
+	defer span.Finish()
+
 	h := gh.textFileHandler(path, "text/plain")
-	h.ServeHTTP(w, r)
+	h.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func (gh *GitHTTP) infoPacksHandler(w http.ResponseWriter, r *http.Request) {
 	owner, name := ownerName(r)
 	path := filepath.Join(gh.root, owner, name, "/objects/info/packs")
 
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.infoPacksHandler")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("path", path)
+	defer span.Finish()
+
 	h := gh.textFileHandler(path, "text/plain; charset=utf-8")
-	h.ServeHTTP(w, r)
+	h.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func (gh *GitHTTP) idxHandler(w http.ResponseWriter, r *http.Request) {
@@ -167,8 +207,14 @@ func (gh *GitHTTP) idxHandler(w http.ResponseWriter, r *http.Request) {
 	hash := chi.URLParam(r, "hash")
 	path := filepath.Join(gh.root, owner, name, fmt.Sprintf("objects/pack/pack-%s.idx", hash))
 
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.idxHandler")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("path", path)
+	defer span.Finish()
+
 	h := gh.textFileHandler(path, "application/x-git-packed-objects-toc")
-	h.ServeHTTP(w, r)
+	h.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func (gh *GitHTTP) packHandler(w http.ResponseWriter, r *http.Request) {
@@ -176,12 +222,22 @@ func (gh *GitHTTP) packHandler(w http.ResponseWriter, r *http.Request) {
 	hash := chi.URLParam(r, "hash")
 	path := filepath.Join(gh.root, owner, name, fmt.Sprintf("objects/pack/pack-%s.pack", hash))
 
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.packHandler")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("path", path)
+	defer span.Finish()
+
 	h := gh.textFileHandler(path, "application/x-git-packed-objects")
-	h.ServeHTTP(w, r)
+	h.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func (gh *GitHTTP) textFileHandler(path string, contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.textFileHandler")
+		span.SetTag("path", path)
+		defer span.Finish()
+
 		f, err := os.Stat(path)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -191,13 +247,20 @@ func (gh *GitHTTP) textFileHandler(path string, contentType string) http.Handler
 		w.Header().Set("Content-Type", contentType)
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", f.Size()))
 		w.Header().Set("Last-Modified", f.ModTime().Format(http.TimeFormat))
-		http.ServeFile(w, r, path)
+		http.ServeFile(w, r.WithContext(ctx), path)
 	}
 }
 
 func (gh *GitHTTP) serviceHandler(w http.ResponseWriter, r *http.Request) {
 	owner, name := ownerName(r)
 	service := chi.URLParam(r, "service")
+
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "githttp.serviceHandler")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("service", service)
+	defer span.Finish()
+
 	logger := log.With(gh.Logger,
 		"owner", owner,
 		"name", name,
@@ -223,8 +286,11 @@ func (gh *GitHTTP) serviceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rpcSpan, rpcCtx := opentracing.StartSpanFromContext(ctx, "githttp.serviceHandler.rpc")
+	defer rpcSpan.Finish()
+
 	args := []string{service, "--stateless-rpc", "."}
-	cmd := exec.CommandContext(context.Background(), gh.git, args...)
+	cmd := exec.CommandContext(rpcCtx, gh.git, args...)
 	cmd.Dir = filepath.Join(gh.root, owner, name)
 
 	stdin, err := cmd.StdinPipe()
@@ -271,7 +337,6 @@ func (gh *GitHTTP) serviceHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: Fire events to channel
 
 	w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", service))
-
 }
 
 func ownerName(r *http.Request) (string, string) {
