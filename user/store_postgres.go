@@ -25,15 +25,7 @@ func (s *Postgres) FindAll(ctx context.Context) ([]*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.FinAll")
 	defer span.Finish()
 
-	rows, err := s.db.QueryContext(ctx, `SELECT
-	id,
-	email,
-	username,
-	name,
-	created_at,
-	updated_at
-FROM users
-ORDER BY name ASC`)
+	rows, err := s.db.QueryContext(ctx, findAll)
 	if err != nil {
 		return nil, err
 	}
@@ -68,18 +60,7 @@ func (s *Postgres) Find(ctx context.Context, id string) (*User, error) {
 	span.SetTag("id", id)
 	defer span.Finish()
 
-	query := `SELECT
-	username,
-	email,
-	name,
-	password,
-	created_at,
-	updated_at
-FROM users
-WHERE id = $1
-LIMIT 1`
-
-	row := s.db.QueryRowContext(ctx, query, id)
+	row := s.db.QueryRowContext(ctx, findById, id)
 
 	var username string
 	var email string
@@ -111,18 +92,7 @@ func (s *Postgres) FindByUsername(ctx context.Context, username string) (*User, 
 	span.SetTag("username", username)
 	defer span.Finish()
 
-	query := `SELECT
-	id,
-	email,
-	name,
-	password,
-	created_at,
-	updated_at
-FROM users
-WHERE username = $1
-LIMIT 1`
-
-	row := s.db.QueryRowContext(ctx, query, username)
+	row := s.db.QueryRowContext(ctx, findByUsername, username)
 
 	var id string
 	var email string
@@ -154,16 +124,7 @@ func (s *Postgres) FindUserByEmail(ctx context.Context, email string) (*User, er
 	span.SetTag("email", email)
 	defer span.Finish()
 
-	row := s.db.QueryRowContext(ctx, `SELECT
-	id,
-	username,
-	name,
-	password,
-	created_at,
-	updated_at
-FROM users
-WHERE email = $1
-LIMIT 1`, email)
+	row := s.db.QueryRowContext(ctx, findByEmail, email)
 
 	var id string
 	var username string
@@ -200,7 +161,7 @@ func (s *Postgres) Create(ctx context.Context, u *User) (*User, error) {
 
 	err = s.db.QueryRowContext(
 		ctx,
-		`INSERT INTO users (email, username, name, password) VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at`,
+		create,
 		u.Email, u.Username, u.Name, pass,
 	).Scan(&u.ID, &u.Created, &u.Updated)
 
@@ -215,7 +176,7 @@ func (s *Postgres) Update(ctx context.Context, user *User) (*User, error) {
 	span.SetTag("username", user.Username)
 	defer span.Finish()
 
-	stmt, err := s.db.PrepareContext(ctx, `UPDATE users SET username = $2, email = $3, name = $4, updated_at = now() WHERE id = $1`)
+	stmt, err := s.db.PrepareContext(ctx, update)
 	if err != nil {
 		return nil, err
 	}
