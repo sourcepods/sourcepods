@@ -55,7 +55,7 @@ var (
 
 func ActionUI(c *cli.Context) error {
 	logger := cmd.NewLogger(uiConfig.LogJson, uiConfig.LogLevel)
-	logger = log.WithPrefix(logger, "app", "ui")
+	logger = log.WithPrefix(logger, "app", c.App.Name)
 
 	// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
 	// The path is relative to this file.

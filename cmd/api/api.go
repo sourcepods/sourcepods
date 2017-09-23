@@ -122,7 +122,7 @@ func apiAction(c *cli.Context) error {
 	}
 
 	logger := cmd.NewLogger(apiConfig.LogJSON, apiConfig.LogLevel)
-	logger = log.WithPrefix(logger, "app", "api")
+	logger = log.WithPrefix(logger, "app", c.App.Name)
 
 	apiMetrics := apiMetrics()
 
@@ -137,7 +137,7 @@ func apiAction(c *cli.Context) error {
 			},
 		}
 
-		traceCloser, err := traceConfig.InitGlobalTracer("api")
+		traceCloser, err := traceConfig.InitGlobalTracer(c.App.Name)
 		if err != nil {
 			return err
 		}

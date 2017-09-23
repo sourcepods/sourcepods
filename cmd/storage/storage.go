@@ -67,7 +67,7 @@ var (
 
 func storageAction(c *cli.Context) error {
 	logger := cmd.NewLogger(storageConfig.LogJSON, storageConfig.LogLevel)
-	logger = log.WithPrefix(logger, "app", "storage")
+	logger = log.WithPrefix(logger, "app", c.App.Name)
 
 	if storageConfig.Root == "" {
 		return errors.New("the root has to be a valid path")
