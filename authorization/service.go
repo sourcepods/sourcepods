@@ -5,6 +5,7 @@ import (
 
 	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/user"
+	"github.com/opentracing/opentracing-go"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -36,6 +37,9 @@ func (s *service) AuthenticateUser(ctx context.Context, email, password string) 
 	if err != nil {
 		return nil, err
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "authorization.Service.CompareHashAndPassword")
+	defer span.Finish()
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return nil, err
