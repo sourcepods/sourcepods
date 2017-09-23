@@ -25,8 +25,7 @@ func (s *Postgres) List(ctx context.Context, owner *Owner) ([]*Repository, []*St
 	defer span.Finish()
 
 	if owner.ID == "" && owner.Username != "" {
-		query := `SELECT id FROM users WHERE username = $1`
-		row := s.db.QueryRowContext(ctx, query, owner.Username)
+		row := s.db.QueryRowContext(ctx, userIdByUsername, owner.Username)
 
 		var id string
 		row.Scan(&id)
@@ -41,24 +40,7 @@ func (s *Postgres) List(ctx context.Context, owner *Owner) ([]*Repository, []*St
 	span.SetTag("owner_id", owner.ID)
 	span.SetTag("owner_username", owner.Username)
 
-	query := `
-SELECT
-	id,
-	name,
-	description,
-	website,
-	default_branch,
-	private,
-	bare,
-	created_at,
-	updated_at,
-	(SELECT 42) AS stars,
-	(SELECT 23) AS forks
-FROM repositories
-WHERE owner_id = $1
-ORDER BY updated_at DESC`
-
-	rows, err := s.db.QueryContext(ctx, query, owner.ID)
+	rows, err := s.db.QueryContext(ctx, listByOwnerId, owner.ID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -126,23 +108,7 @@ func (s *Postgres) Find(ctx context.Context, owner *Owner, name string) (*Reposi
 	span.SetTag("owner_username", owner.Username)
 	defer span.Finish()
 
-	query := `
-SELECT
-	id,
-	description,
-	website,
-	default_branch,
-	private,
-	bare,
-	created_at,
-	updated_at,
-	owner_id
-FROM repositories
-WHERE
-	name = $2 AND
-	owner_id = (SELECT id FROM users WHERE username = $1) `
-
-	row := s.db.QueryRowContext(ctx, query, owner.Username, name)
+	row := s.db.QueryRowContext(ctx, findByOwnerAndName, owner.Username, name)
 
 	var id string
 	var description sql.NullString
@@ -194,11 +160,6 @@ WHERE
 }
 
 func (s *Postgres) Create(ctx context.Context, owner *Owner, r *Repository) (*Repository, error) {
-	query := `
-INSERT INTO repositories (owner_id, name, description, website, default_branch, private, bare)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, created_at, updated_at`
-
 	var description *string
 	if r.Description != "" {
 		description = &r.Description
@@ -209,7 +170,7 @@ RETURNING id, created_at, updated_at`
 		website = &r.Website
 	}
 
-	row := s.db.QueryRow(query,
+	row := s.db.QueryRowContext(ctx, create,
 		owner.ID,
 		r.Name,
 		description,
