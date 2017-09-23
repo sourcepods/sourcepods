@@ -31,7 +31,7 @@ var (
 func Authorized(s Service) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			span, ctx := opentracing.StartSpanFromContext(r.Context(), "session.Service.Authorized")
+			span, ctx := opentracing.StartSpanFromContext(r.Context(), "session.Handler.Authorized")
 			defer span.Finish()
 
 			cookie, err := r.Cookie(CookieName)
@@ -53,7 +53,7 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 				return
 			}
 
-			session, err := s.FindSession(r.Context(), cookie.Value)
+			session, err := s.FindSession(ctx, cookie.Value)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				jsonapi.MarshalErrors(w, errUnauthorized)
