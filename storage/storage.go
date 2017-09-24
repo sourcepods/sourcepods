@@ -13,6 +13,7 @@ type (
 	Storage interface {
 		Create(ctx context.Context, owner, name string) error
 		Description(ctx context.Context, owner, name, description string) error
+		Repository(ctx context.Context, owner, name, branch string) error
 	}
 
 	storage struct {
@@ -46,4 +47,14 @@ func (s *storage) Create(ctx context.Context, owner, name string) error {
 func (s *storage) Description(ctx context.Context, owner, name, description string) error {
 	file := filepath.Join(s.root, owner, name, "description")
 	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
+}
+
+func (s *storage) Repository(ctx context.Context, owner, name, branch string) error {
+	cmd := exec.CommandContext(ctx, s.git, "ls-tree", branch)
+	cmd.Dir = filepath.Join(s.root, owner, name)
+	out, err := cmd.Output()
+
+	fmt.Println(string(out))
+
+	return err
 }

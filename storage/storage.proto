@@ -7,6 +7,8 @@ service Storage {
     }
     rpc Descriptions (DescriptionRequest) returns (EmptyResponse) {
     }
+    rpc Repository (RepositoryRequest) returns (EmptyResponse) {
+    }
 }
 
 message EmptyResponse {
@@ -21,4 +23,10 @@ message DescriptionRequest {
     string owner = 1;
     string name = 2;
     string description = 3;
+}
+
+message RepositoryRequest {
+    string owner = 1;
+    string name = 2;
+    string branch = 3;
 }

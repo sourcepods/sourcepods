@@ -22,6 +22,7 @@ type (
 	Storage interface {
 		Create(ctx context.Context, owner string, name string) error
 		Description(ctx context.Context, owner, name, description string) error
+		Repository(ctx context.Context, owner, name, branch string) error
 	}
 
 	// Service to interact with repositories.
@@ -50,6 +51,7 @@ func (s *service) List(ctx context.Context, owner *Owner) ([]*Repository, []*Sta
 }
 
 func (s *service) Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
+	s.storage.Repository(ctx, owner.Username, name, "master")
 	return s.repositories.Find(ctx, owner, name)
 }
 

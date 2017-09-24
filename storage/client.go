@@ -56,3 +56,12 @@ func (c *Client) Description(ctx context.Context, owner string, name string, des
 	})
 	return err
 }
+
+func (c *Client) Repository(ctx context.Context, owner, name, branch string) error {
+	_, err := c.client.Repository(ctx, &RepositoryRequest{
+		Owner:  owner,
+		Name:   name,
+		Branch: branch,
+	})
+	return err
+}
