@@ -2,7 +2,7 @@ package repository
 
 import "time"
 
-// Repository is a git repository with some meta information for gitpods.
+// Tree is a git repository with some meta information for gitpods.
 type Repository struct {
 	ID            string
 	Name          string

@@ -42,14 +42,14 @@ func (c *Client) Create(ctx context.Context, owner string, name string) error {
 	return err
 }
 
-func (c *Client) Description(ctx context.Context, owner string, name string, description string) error {
+func (c *Client) SetDescription(ctx context.Context, owner string, name string, description string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Description")
 	span.SetTag("owner", owner)
 	span.SetTag("name", name)
 	span.SetTag("description", description)
 	defer span.Finish()
 
-	_, err := c.client.Descriptions(ctx, &DescriptionRequest{
+	_, err := c.client.SetDescriptions(ctx, &SetDescriptionRequest{
 		Owner:       owner,
 		Name:        name,
 		Description: description,
@@ -57,11 +57,27 @@ func (c *Client) Description(ctx context.Context, owner string, name string, des
 	return err
 }
 
-func (c *Client) Repository(ctx context.Context, owner, name, branch string) error {
-	_, err := c.client.Repository(ctx, &RepositoryRequest{
+func (c *Client) Tree(ctx context.Context, owner, name, branch string) ([]TreeObject, error) {
+	req := &TreeRequest{
 		Owner:  owner,
 		Name:   name,
 		Branch: branch,
-	})
-	return err
+	}
+
+	res, err := c.client.Tree(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	var objects []TreeObject
+	for _, object := range res.Objects {
+		objects = append(objects, TreeObject{
+			Mode:   object.GetMode(),
+			Type:   object.GetType(),
+			Object: object.GetObject(),
+			File:   object.GetFile(),
+		})
+	}
+
+	return objects, nil
 }

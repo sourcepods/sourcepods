@@ -3,12 +3,9 @@ syntax = "proto3";
 package storage;
 
 service Storage {
-    rpc Create (CreateRequest) returns (EmptyResponse) {
-    }
-    rpc Descriptions (DescriptionRequest) returns (EmptyResponse) {
-    }
-    rpc Repository (RepositoryRequest) returns (EmptyResponse) {
-    }
+    rpc Create (CreateRequest) returns (EmptyResponse);
+    rpc SetDescriptions (SetDescriptionRequest) returns (EmptyResponse);
+    rpc Tree (TreeRequest) returns (TreeRespone);
 }
 
 message EmptyResponse {
@@ -19,14 +16,25 @@ message CreateRequest {
     string name = 2;
 }
 
-message DescriptionRequest {
+message SetDescriptionRequest {
     string owner = 1;
     string name = 2;
     string description = 3;
 }
 
-message RepositoryRequest {
+message TreeRequest {
     string owner = 1;
     string name = 2;
     string branch = 3;
+}
+
+message TreeRespone {
+    repeated TreeObjectResponse objects = 1;
+}
+
+message TreeObjectResponse {
+    string Mode = 1;
+    string Type = 2;
+    string Object = 3;
+    string File = 4;
 }

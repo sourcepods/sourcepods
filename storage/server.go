@@ -25,10 +25,25 @@ func (s *storageServer) Create(ctx context.Context, req *CreateRequest) (*EmptyR
 	return &EmptyResponse{}, s.storage.Create(ctx, req.GetOwner(), req.GetName())
 }
 
-func (s *storageServer) Descriptions(ctx context.Context, req *DescriptionRequest) (*EmptyResponse, error) {
-	return &EmptyResponse{}, s.storage.Description(ctx, req.GetOwner(), req.GetName(), req.GetDescription())
+func (s *storageServer) SetDescriptions(ctx context.Context, req *SetDescriptionRequest) (*EmptyResponse, error) {
+	return &EmptyResponse{}, s.storage.SetDescription(ctx, req.GetOwner(), req.GetName(), req.GetDescription())
 }
 
-func (s *storageServer) Repository(ctx context.Context, req *RepositoryRequest) (*EmptyResponse, error) {
-	return &EmptyResponse{}, s.storage.Repository(ctx, req.GetOwner(), req.GetName(), req.GetBranch())
+func (s *storageServer) Tree(ctx context.Context, req *TreeRequest) (*TreeRespone, error) {
+	objects, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetBranch())
+	if err != nil {
+		return nil, err
+	}
+
+	res := &TreeRespone{}
+	for _, object := range objects {
+		res.Objects = append(res.Objects, &TreeObjectResponse{
+			Mode:   object.Mode,
+			Type:   object.Type,
+			Object: object.Object,
+			File:   object.File,
+		})
+	}
+
+	return res, nil
 }

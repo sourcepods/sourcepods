@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"errors"
+
+	"github.com/gitpods/gitpods/storage"
 )
 
 var (
@@ -21,8 +23,8 @@ type (
 	// Storage manages the git storage
 	Storage interface {
 		Create(ctx context.Context, owner string, name string) error
-		Description(ctx context.Context, owner, name, description string) error
-		Repository(ctx context.Context, owner, name, branch string) error
+		SetDescription(ctx context.Context, owner, name, description string) error
+		Tree(ctx context.Context, owner, name, branch string) ([]storage.TreeObject, error)
 	}
 
 	// Service to interact with repositories.
@@ -51,7 +53,11 @@ func (s *service) List(ctx context.Context, owner *Owner) ([]*Repository, []*Sta
 }
 
 func (s *service) Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
-	s.storage.Repository(ctx, owner.Username, name, "master")
+	_, err := s.storage.Tree(ctx, owner.Username, name, "master")
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	return s.repositories.Find(ctx, owner, name)
 }
 
@@ -69,7 +75,7 @@ func (s *service) Create(ctx context.Context, owner *Owner, repository *Reposito
 		return r, err
 	}
 
-	if err := s.storage.Description(ctx, owner.Username, r.Name, r.Description); err != nil {
+	if err := s.storage.SetDescription(ctx, owner.Username, r.Name, r.Description); err != nil {
 		return r, err
 	}
 

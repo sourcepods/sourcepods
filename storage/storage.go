@@ -1,19 +1,22 @@
 package storage
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 type (
 	Storage interface {
 		Create(ctx context.Context, owner, name string) error
-		Description(ctx context.Context, owner, name, description string) error
-		Repository(ctx context.Context, owner, name, branch string) error
+		SetDescription(ctx context.Context, owner, name, description string) error
+		Tree(ctx context.Context, owner, name, branch string) ([]TreeObject, error)
 	}
 
 	storage struct {
@@ -44,17 +47,44 @@ func (s *storage) Create(ctx context.Context, owner, name string) error {
 	return cmd.Run()
 }
 
-func (s *storage) Description(ctx context.Context, owner, name, description string) error {
+func (s *storage) SetDescription(ctx context.Context, owner, name, description string) error {
 	file := filepath.Join(s.root, owner, name, "description")
 	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
 }
 
-func (s *storage) Repository(ctx context.Context, owner, name, branch string) error {
+type TreeObject struct {
+	Mode   string
+	Type   string
+	Object string
+	File   string
+}
+
+func (s *storage) Tree(ctx context.Context, owner, name, branch string) ([]TreeObject, error) {
+	var objects []TreeObject
+
+	path := filepath.Join(s.root, owner, name)
 	cmd := exec.CommandContext(ctx, s.git, "ls-tree", branch)
-	cmd.Dir = filepath.Join(s.root, owner, name)
+	cmd.Dir = path
 	out, err := cmd.Output()
+	if err != nil {
+		return objects, err
+	}
 
-	fmt.Println(string(out))
+	scanner := bufio.NewScanner(bytes.NewBuffer(out))
+	for scanner.Scan() {
+		tabs := strings.Split(scanner.Text(), "\t")
+		metas, file := tabs[0], tabs[1]
+		meta := strings.Split(metas, " ")
 
-	return err
+		mode, typ, object := meta[0], meta[1], meta[2]
+
+		objects = append(objects, TreeObject{
+			Mode:   mode,
+			Type:   typ,
+			Object: object,
+			File:   file,
+		})
+	}
+
+	return objects, nil
 }
