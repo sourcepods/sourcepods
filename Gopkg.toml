@@ -21,6 +21,10 @@
 
 
 [[constraint]]
+  name = "github.com/asaskevich/govalidator"
+  version = "7.0.0"
+
+[[constraint]]
   name = "github.com/fsnotify/fsnotify"
   version = "1.4.2"
 
@@ -43,6 +47,10 @@
 [[constraint]]
   name = "github.com/google/jsonapi"
   version = "1.0.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/grpc-ecosystem/go-grpc-middleware"
 
 [[constraint]]
   branch = "master"
@@ -73,6 +81,10 @@
   name = "github.com/stretchr/testify"
 
 [[constraint]]
+  name = "github.com/uber/jaeger-client-go"
+  version = "2.9.0"
+
+[[constraint]]
   name = "github.com/urfave/cli"
   version = "1.20.0"
 
@@ -87,11 +99,3 @@
 [[constraint]]
   name = "google.golang.org/grpc"
   version = "1.6.0"
-
-[[constraint]]
-  name = "github.com/asaskevich/govalidator"
-  version = "7.0.0"
-
-[[constraint]]
-  name = "github.com/uber/jaeger-client-go"
-  version = "2.9.0"

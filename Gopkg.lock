@@ -81,6 +81,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/grpc-ecosystem/go-grpc-middleware"
+  packages = [".","tags","tracing/opentracing","util/metautils"]
+  revision = "6d3547c644afb325c16df96e3c7177ea6e2fdebd"
+
+[[projects]]
+  branch = "master"
   name = "github.com/kr/logfmt"
   packages = ["."]
   revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
@@ -220,6 +226,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "54f412671508e34a7c1ba470fd0b465498f680a72646dac5f0ce6a920fdff9a2"
+  inputs-digest = "1ae559516dba133cd32d177e803e883baefd09054d0f626887da4a5c923ac550"
   solver-name = "gps-cdcl"
   solver-version = 1
