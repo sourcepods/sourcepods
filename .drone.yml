@@ -12,7 +12,7 @@ pipeline:
     image: google/dart
     commands:
       - cd ui
-      - pub get
+      - pub get --no-precompile
       - pub build
       - rm -rf build/web/packages
 
