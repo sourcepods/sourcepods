@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"time"
 
 	"github.com/gitpods/gitpods/cmd"
@@ -102,8 +103,19 @@ func storageAction(c *cli.Context) error {
 		level.Info(logger).Log("msg", "tracing is disabled, no url given")
 	}
 
-	if storageConfig.Root == "" {
+	root := storageConfig.Root
+	if root == "" {
 		return errors.New("the root has to be a valid path")
+	}
+
+	if filepath.IsAbs(root) {
+		root = filepath.Clean(root)
+	} else {
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		root = filepath.Join(wd, root)
 	}
 
 	gitStorage, err := storage.NewStorage(storageConfig.Root)
