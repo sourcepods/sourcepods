@@ -5,11 +5,23 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
+
+	"github.com/opentracing/opentracing-go"
+)
+
+var (
+	authorLine    = regexp.MustCompile(`(.*)\s\<(.*)\>\s(\d*)`)
+	committerLine = authorLine
 )
 
 type (
@@ -86,5 +98,132 @@ func (s *storage) Tree(ctx context.Context, owner, name, branch string) ([]TreeO
 		})
 	}
 
+	for _, object := range objects {
+		commitHash, err := s.commitHash(ctx, owner, name, branch, object.File)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		commit, err := s.commit(ctx, owner, name, commitHash)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		fmt.Println(commit.Subject)
+	}
+
 	return objects, nil
+}
+
+type Commit struct {
+	Hash   string
+	Tree   string
+	Parent string
+
+	Author      string
+	AuthorEmail string
+	AuthorDate  time.Time
+
+	Committer      string
+	CommitterEmail string
+	CommitterDate  time.Time
+
+	Subject string
+}
+
+func (s *storage) commitHash(ctx context.Context, owner, name, rev, file string) (string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Storage.commitHash")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("rev", rev)
+	span.SetTag("file", file)
+	defer span.Finish()
+
+	args := []string{"log", "-1", "--pretty=%H", rev, "--", file}
+	cmd := exec.CommandContext(ctx, s.git, args...)
+	cmd.Dir = filepath.Join(s.root, owner, name)
+	out, err := cmd.Output()
+
+	return strings.TrimSpace(string(out)), err
+}
+
+func (s *storage) commit(ctx context.Context, owner, name, hash string) (Commit, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Storage.commit")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("hash", hash)
+	defer span.Finish()
+
+	args := []string{"cat-file", "-p", hash}
+	cmd := exec.CommandContext(ctx, s.git, args...)
+	cmd.Dir = filepath.Join(s.root, owner, name)
+	out, err := cmd.Output()
+	if err != nil {
+		return Commit{}, err
+	}
+
+	commit, err := parseCommit(bytes.NewBuffer(out), hash)
+	if err != nil {
+		return commit, err
+	}
+
+	return commit, nil
+}
+
+func parseCommit(r io.Reader, hash string) (Commit, error) {
+	scanner := bufio.NewScanner(r)
+
+	c := Commit{
+		Hash: hash,
+	}
+
+	// if true then the following lines are the subject
+	subject := false
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if line == "" {
+			subject = true
+			continue
+		}
+
+		if subject {
+			c.Subject = line
+		}
+
+		if strings.HasPrefix(line, "tree ") {
+			c.Tree = strings.TrimPrefix(line, "tree ")
+		} else if strings.HasPrefix(line, "parent ") {
+			c.Parent = strings.TrimPrefix(line, "parent ")
+		} else if strings.HasPrefix(line, "author ") {
+			line := strings.TrimPrefix(line, "author ")
+			author := authorLine.FindStringSubmatch(line)
+
+			t, err := strconv.ParseInt(author[3], 10, 64)
+			if err != nil {
+				return c, err
+			}
+
+			c.Author = author[1]
+			c.AuthorEmail = author[2]
+			c.AuthorDate = time.Unix(t, 0)
+		} else if strings.HasPrefix(line, "committer ") {
+			line := strings.TrimPrefix(line, "committer ")
+			committer := committerLine.FindStringSubmatch(line)
+
+			t, err := strconv.ParseInt(committer[3], 10, 64)
+			if err != nil {
+				return c, err
+			}
+
+			c.Committer = committer[1]
+			c.CommitterEmail = committer[2]
+			c.CommitterDate = time.Unix(t, 0)
+		}
+	}
+
+	return c, nil
 }
