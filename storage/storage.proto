@@ -37,4 +37,18 @@ message TreeObjectResponse {
     string Type = 2;
     string Object = 3;
     string File = 4;
+    CommitResponse Commit = 5;
+}
+
+message CommitResponse {
+    string Hash = 1;
+    string Tree = 2;
+    string Parent = 3;
+    string Subject = 4;
+    string Author = 5;
+    string AuthorEmail = 6;
+    int64 AuthorDate = 7;
+    string Committer = 8;
+    string CommitterEmail = 9;
+    int64 CommitterDate = 10;
 }

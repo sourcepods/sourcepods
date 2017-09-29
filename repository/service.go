@@ -32,6 +32,7 @@ type (
 		List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error)
 		Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error)
 		Create(ctx context.Context, owner *Owner, repository *Repository) (*Repository, error)
+		Tree(ctx context.Context, owner *Owner, name string) ([]storage.TreeObject, error)
 	}
 
 	service struct {
@@ -53,11 +54,6 @@ func (s *service) List(ctx context.Context, owner *Owner) ([]*Repository, []*Sta
 }
 
 func (s *service) Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
-	_, err := s.storage.Tree(ctx, owner.Username, name, "master")
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
 	return s.repositories.Find(ctx, owner, name)
 }
 
@@ -80,4 +76,8 @@ func (s *service) Create(ctx context.Context, owner *Owner, repository *Reposito
 	}
 
 	return r, nil
+}
+
+func (s *service) Tree(ctx context.Context, owner *Owner, name string) ([]storage.TreeObject, error) {
+	return s.storage.Tree(ctx, owner.Username, name, "master")
 }

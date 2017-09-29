@@ -42,6 +42,18 @@ func (s *storageServer) Tree(ctx context.Context, req *TreeRequest) (*TreeRespon
 			Type:   object.Type,
 			Object: object.Object,
 			File:   object.File,
+			Commit: &CommitResponse{
+				Hash:           object.Commit.Hash,
+				Tree:           object.Commit.Tree,
+				Parent:         object.Commit.Parent,
+				Subject:        object.Commit.Subject,
+				Author:         object.Commit.Author,
+				AuthorEmail:    object.Commit.AuthorEmail,
+				AuthorDate:     object.Commit.AuthorDate.Unix(),
+				Committer:      object.Commit.Committer,
+				CommitterEmail: object.Commit.CommitterEmail,
+				CommitterDate:  object.Commit.CommitterDate.Unix(),
+			},
 		})
 	}
 

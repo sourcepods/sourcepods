@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/gitpods/gitpods/storage"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -42,4 +43,13 @@ func (s *tracingService) Create(ctx context.Context, owner *Owner, repository *R
 	defer span.Finish()
 
 	return s.service.Create(ctx, owner, repository)
+}
+func (s *tracingService) Tree(ctx context.Context, owner *Owner, name string) ([]storage.TreeObject, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Service.Tree")
+	span.SetTag("owner_id", owner.ID)
+	span.SetTag("owner_username", owner.Username)
+	span.SetTag("name", name)
+	defer span.Finish()
+
+	return s.service.Tree(ctx, owner, name)
 }

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	opentracing "github.com/opentracing/opentracing-go"
@@ -76,6 +77,18 @@ func (c *Client) Tree(ctx context.Context, owner, name, branch string) ([]TreeOb
 			Type:   object.GetType(),
 			Object: object.GetObject(),
 			File:   object.GetFile(),
+			Commit: Commit{
+				Hash:           object.GetCommit().GetHash(),
+				Tree:           object.GetCommit().GetTree(),
+				Parent:         object.GetCommit().GetParent(),
+				Subject:        object.GetCommit().GetSubject(),
+				Author:         object.GetCommit().GetAuthor(),
+				AuthorEmail:    object.GetCommit().GetAuthorEmail(),
+				AuthorDate:     time.Unix(object.GetCommit().GetAuthorDate(), 0),
+				Committer:      object.GetCommit().GetCommitter(),
+				CommitterEmail: object.GetCommit().GetCommitterEmail(),
+				CommitterDate:  time.Unix(object.GetCommit().GetCommitterDate(), 0),
+			},
 		})
 	}
 

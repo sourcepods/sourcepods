@@ -4,6 +4,7 @@ package resolver
 type Resolver struct {
 	*UserResolver
 	*RepositoryResolver
+	*TreeResolver
 }
 
 var (
@@ -22,6 +23,7 @@ var (
 		users: [User]!
 		repositories(owner: String!): [Repository]!
 		repository(owner: String!, name: String!): Repository
+		tree(owner: String!, name: String!): [TreeObject]!
 	}
 	type User {
 		id: ID!
@@ -63,6 +65,31 @@ var (
 		total: Int!
 		open: Int!
 		closed: Int!
+	}
+	type TreeObject {
+		mode: String!
+		type: String!
+		object: String!
+		file: String!
+		commit: Commit!
+	}
+	type Commit {
+		hash: String!
+		tree: String!
+		parent: String!
+		subject: String!
+		author: CommitAuthor!
+		committer: CommitCommitter!
+	}
+	type CommitAuthor {
+		name: String!
+		email: String!
+		date: Int!
+	}
+	type CommitCommitter {
+		name: String!
+		email: String!
+		date: Int!
 	}`
 	Mutation = `
 	# The mutation type, represents all updates we can make to our data

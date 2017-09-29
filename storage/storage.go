@@ -14,9 +14,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
-
-	"github.com/opentracing/opentracing-go"
 )
 
 var (
@@ -69,6 +68,23 @@ type TreeObject struct {
 	Type   string
 	Object string
 	File   string
+
+	Commit Commit
+}
+
+type Commit struct {
+	Hash    string
+	Tree    string
+	Parent  string
+	Subject string
+
+	Author      string
+	AuthorEmail string
+	AuthorDate  time.Time
+
+	Committer      string
+	CommitterEmail string
+	CommitterDate  time.Time
 }
 
 func (s *storage) Tree(ctx context.Context, owner, name, branch string) ([]TreeObject, error) {
@@ -98,48 +114,40 @@ func (s *storage) Tree(ctx context.Context, owner, name, branch string) ([]TreeO
 		})
 	}
 
-	for _, object := range objects {
-		commitHash, err := s.commitHash(ctx, owner, name, branch, object.File)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
+	wg := sync.WaitGroup{}
+	for i := range objects {
+		wg.Add(1)
 
-		commit, err := s.commit(ctx, owner, name, commitHash)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
+		go func(i int) {
+			defer wg.Done()
 
-		fmt.Println(commit.Subject)
+			commitHash, err := s.commitHash(ctx, owner, name, branch, objects[i].File)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			commit, err := s.commit(ctx, owner, name, commitHash)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			objects[i].Commit = commit
+		}(i)
 	}
+	wg.Wait()
 
 	return objects, nil
 }
 
-type Commit struct {
-	Hash   string
-	Tree   string
-	Parent string
-
-	Author      string
-	AuthorEmail string
-	AuthorDate  time.Time
-
-	Committer      string
-	CommitterEmail string
-	CommitterDate  time.Time
-
-	Subject string
-}
-
 func (s *storage) commitHash(ctx context.Context, owner, name, rev, file string) (string, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Storage.commitHash")
-	span.SetTag("owner", owner)
-	span.SetTag("name", name)
-	span.SetTag("rev", rev)
-	span.SetTag("file", file)
-	defer span.Finish()
+	//span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Storage.commitHash")
+	//span.SetTag("owner", owner)
+	//span.SetTag("name", name)
+	//span.SetTag("rev", rev)
+	//span.SetTag("file", file)
+	//defer span.Finish()
 
 	args := []string{"log", "-1", "--pretty=%H", rev, "--", file}
 	cmd := exec.CommandContext(ctx, s.git, args...)
@@ -150,11 +158,11 @@ func (s *storage) commitHash(ctx context.Context, owner, name, rev, file string)
 }
 
 func (s *storage) commit(ctx context.Context, owner, name, hash string) (Commit, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Storage.commit")
-	span.SetTag("owner", owner)
-	span.SetTag("name", name)
-	span.SetTag("hash", hash)
-	defer span.Finish()
+	//span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Storage.commit")
+	//span.SetTag("owner", owner)
+	//span.SetTag("name", name)
+	//span.SetTag("hash", hash)
+	//defer span.Finish()
 
 	args := []string{"cat-file", "-p", hash}
 	cmd := exec.CommandContext(ctx, s.git, args...)

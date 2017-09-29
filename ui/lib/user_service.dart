@@ -33,7 +33,7 @@ query UsersQuery {
 ''';
 
 const userProfile = '''
-query userProfile(\$username: String) {
+query userProfile(\$username: String!) {
   user(username: \$username) {
     id
     username

@@ -208,8 +208,9 @@ func apiAction(c *cli.Context) error {
 	// Resolvers
 	//
 	res := &resolver.Resolver{
-		UserResolver:       resolver.NewUser(rs, us),
 		RepositoryResolver: resolver.NewRepository(rs, us),
+		TreeResolver:       resolver.NewTree(rs),
+		UserResolver:       resolver.NewUser(rs, us),
 	}
 	schema := graphql.MustParseSchema(resolver.Schema, res)
 

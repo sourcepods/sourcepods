@@ -31,6 +31,24 @@ query (\$owner: String!, \$name: String!) {
       closed
     }
   }
+  tree(owner: \$owner, name: \$name) {
+    type
+    file
+    commit {
+      hash
+      subject
+      author {
+        name
+        email
+        date
+      }
+      committer {
+        name
+        email
+        date
+      }
+    }
+  }
 }
 ''';
 
