@@ -63,35 +63,15 @@ func (r *UserResolver) Me(ctx context.Context) *userResolver {
 	return &userResolver{rs: r.repositories, user: newGraphqlUser(u)}
 }
 
-type userArgs struct {
-	ID       *graphql.ID
-	Username *string
-}
-
 // User returns a userResolver based on an ID and Username.
-func (r *UserResolver) User(ctx context.Context, args userArgs) *userResolver {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "resolver.UserResolver.User")
-	defer span.Finish()
-
-	//if args.ID != nil { TODO
-	//	for _, user := range users {
-	//		if user.ID == *args.ID {
-	//			return &userResolver{rs: r.repositories, user}
-	//		}
-	//	}
-	//}
-	if args.Username != nil {
-		span.SetTag("username", *args.Username)
-
-		u, err := r.users.FindByUsername(ctx, *args.Username)
-		if err != nil {
-			log.Println(err)
-			return nil
-		}
-
-		return &userResolver{rs: r.repositories, user: newGraphqlUser(u)}
+func (r *UserResolver) User(ctx context.Context, args struct{ Username string }) *userResolver {
+	u, err := r.users.FindByUsername(ctx, args.Username)
+	if err != nil {
+		log.Println(err)
+		return nil
 	}
-	return nil
+
+	return &userResolver{rs: r.repositories, user: newGraphqlUser(u)}
 }
 
 // Users returns a slice of userResolver.

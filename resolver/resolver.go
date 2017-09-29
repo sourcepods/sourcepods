@@ -18,10 +18,10 @@ var (
 	# The query type, represents all of the entry points into our object graph
 	type Query {
 		me: User
-		user(id: ID, username: String): User
+		user(username: String!): User
 		users: [User]!
-		repository(id: ID, owner: String, name: String): Repository
 		repositories(owner: String!): [Repository]!
+		repository(owner: String!, name: String!): Repository
 	}
 	type User {
 		id: ID!

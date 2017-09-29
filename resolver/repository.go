@@ -88,26 +88,19 @@ func NewRepository(rs repository.Service, us user.Service) *RepositoryResolver {
 }
 
 type repositoryArgs struct {
-	ID    *graphql.ID
-	Owner *string
-	Name  *string
+	Owner string
+	Name  string
 }
 
 // Repository returns a repositoryResolver based on an ID or Owner and Name.
-func (r *RepositoryResolver) Repository(ctx context.Context, args repositoryArgs) *repositoryResolver {
-	if args.ID != nil { // TODO
-		return nil
+func (r *RepositoryResolver) Repository(ctx context.Context, args repositoryArgs) (*repositoryResolver, error) {
+	repo, stats, _, err := r.repositories.Find(ctx, &repository.Owner{Username: args.Owner}, args.Name)
+	if err != nil {
+		log.Println(err)
+		return nil, err
 	}
-	if args.Owner != nil && args.Name != nil {
-		repo, stats, _, err := r.repositories.Find(ctx, &repository.Owner{Username: *args.Owner}, *args.Name)
-		if err != nil {
-			log.Println(err)
-			return nil
-		}
 
-		return &repositoryResolver{repository: newGraphqlRepository(repo, stats)}
-	}
-	return nil
+	return &repositoryResolver{repository: newGraphqlRepository(repo, stats)}, nil
 }
 
 // Repositories returns a slice of repositoryResolver based on their owner.
