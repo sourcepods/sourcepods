@@ -218,33 +218,35 @@ func apiAction(c *cli.Context) error {
 	// Router
 	//
 	router := chi.NewRouter()
-	router.Use(cmd.NewRequestLogger(logger))
+	{
+		router.Use(cmd.NewRequestLogger(logger))
 
-	// Wrap the router inside a Router handler to make it possible to listen on / or on /api.
-	// Change via APIPrefix.
-	router.Route(apiConfig.APIPrefix, func(router chi.Router) {
-		router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write(page)
+		// Wrap the router inside a Router handler to make it possible to listen on / or on /api.
+		// Change via APIPrefix.
+		router.Route(apiConfig.APIPrefix, func(router chi.Router) {
+			router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+				w.Write(page)
+			})
+
+			router.Mount("/authorize", authorization.NewHandler(as))
+
+			router.Group(func(router chi.Router) {
+				router.Use(session.Authorized(ss))
+				router.Mount("/query", &relay.Handler{Schema: schema})
+			})
 		})
 
-		router.Mount("/authorize", authorization.NewHandler(as))
+		if apiConfig.APIPrefix != "/" {
+			router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprintln(w, "API is available at ", apiConfig.APIPrefix)
+			})
+		}
 
-		router.Group(func(router chi.Router) {
-			router.Use(session.Authorized(ss))
-			router.Mount("/query", &relay.Handler{Schema: schema})
-		})
-	})
-
-	if apiConfig.APIPrefix != "/" {
-		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "API is available at ", apiConfig.APIPrefix)
+		router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`{"error":"Not Found"}`))
 		})
 	}
-
-	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"error":"Not Found"}`))
-	})
 
 	server := &http.Server{
 		Addr:    apiConfig.HTTPAddr,
