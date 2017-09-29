@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // GitPodsRunner builds, runs, stops and restarts GitPods.
@@ -65,6 +67,9 @@ func (r *GitPodsRunner) Build() error {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
+	fmt.Println(strings.Join(cmd.Args, " "))
+
 	return cmd.Run()
 }
 
