@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gitpods/gitpods/authorization"
@@ -181,6 +184,11 @@ func apiAction(c *cli.Context) error {
 		return err
 	}
 
+	githttp, err := NewGitHTTPProxy()
+	if err != nil {
+		return err
+	}
+
 	//
 	// Services
 	//
@@ -235,6 +243,8 @@ func apiAction(c *cli.Context) error {
 				router.Use(session.Authorized(ss))
 				router.Mount("/query", middleware.NoCache(&relay.Handler{Schema: schema}))
 			})
+
+			router.Mount("/{owner}/{name}.git", githttp)
 		})
 
 		if apiConfig.APIPrefix != "/" {
@@ -397,3 +407,54 @@ var page = []byte(`
 	</body>
 </html>
 `)
+
+func NewGitHTTPProxy() (*httputil.ReverseProxy, error) {
+	backend, err := url.Parse("http://localhost:3030")
+	if err != nil {
+		return nil, err
+	}
+
+	return NewSingleHostReverseProxy(backend), nil
+}
+
+// NewSingleHostReverseProxy returns a new ReverseProxy that routes
+// URLs to the scheme, host, and base path provided in target. If the
+// target's path is "/base" and the incoming request was for "/dir",
+// the target request will be for /base/dir.
+// NewSingleHostReverseProxy does not rewrite the Host header.
+// To rewrite Host headers, use ReverseProxy directly with a custom
+// Director policy.
+func NewSingleHostReverseProxy(target *url.URL) *httputil.ReverseProxy {
+	targetQuery := target.RawQuery
+	director := func(req *http.Request) {
+		req.URL.Scheme = target.Scheme
+		req.URL.Host = target.Host
+
+		// Remove .git from the path before proxying
+		req.URL.Path = strings.Replace(req.URL.Path, ".git", "", -1)
+
+		req.URL.Path = singleJoiningSlash(target.Path, req.URL.Path)
+		if targetQuery == "" || req.URL.RawQuery == "" {
+			req.URL.RawQuery = targetQuery + req.URL.RawQuery
+		} else {
+			req.URL.RawQuery = targetQuery + "&" + req.URL.RawQuery
+		}
+		if _, ok := req.Header["User-Agent"]; !ok {
+			// explicitly disable User-Agent so it's not set to default value
+			req.Header.Set("User-Agent", "")
+		}
+	}
+	return &httputil.ReverseProxy{Director: director}
+}
+
+func singleJoiningSlash(a, b string) string {
+	aslash := strings.HasSuffix(a, "/")
+	bslash := strings.HasPrefix(b, "/")
+	switch {
+	case aslash && bslash:
+		return a + b[1:]
+	case !aslash && !bslash:
+		return a + "/" + b
+	}
+	return a + b
+}
