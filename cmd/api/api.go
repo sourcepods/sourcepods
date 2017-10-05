@@ -16,6 +16,7 @@ import (
 	"github.com/gitpods/gitpods/storage"
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/metrics"
@@ -232,7 +233,7 @@ func apiAction(c *cli.Context) error {
 
 			router.Group(func(router chi.Router) {
 				router.Use(session.Authorized(ss))
-				router.Mount("/query", &relay.Handler{Schema: schema})
+				router.Mount("/query", middleware.NoCache(&relay.Handler{Schema: schema}))
 			})
 		})
 
