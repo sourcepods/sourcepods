@@ -44,6 +44,7 @@ type apiConf struct {
 	LogLevel        string
 	Secret          string
 	StorageGRPCURL  string
+	StorageHTTPURL  string
 	TracingURL      string
 }
 
@@ -109,6 +110,12 @@ var (
 			EnvVar:      cmd.EnvStorageGRPCURL,
 			Usage:       "The storage's gprc url to connect with",
 			Destination: &apiConfig.StorageGRPCURL,
+		},
+		cli.StringFlag{
+			Name:        cmd.FlagStorageHTTPURL,
+			EnvVar:      cmd.EnvStorageHTTPURL,
+			Usage:       "The storage's http url to proxy to",
+			Destination: &apiConfig.StorageHTTPURL,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagTracingURL,
@@ -184,7 +191,7 @@ func apiAction(c *cli.Context) error {
 		return err
 	}
 
-	githttp, err := NewGitHTTPProxy()
+	githttp, err := NewGitHTTPProxy(apiConfig.StorageHTTPURL)
 	if err != nil {
 		return err
 	}
@@ -408,8 +415,8 @@ var page = []byte(`
 </html>
 `)
 
-func NewGitHTTPProxy() (*httputil.ReverseProxy, error) {
-	backend, err := url.Parse("http://localhost:3030")
+func NewGitHTTPProxy(storageURL string) (*httputil.ReverseProxy, error) {
+	backend, err := url.Parse(storageURL)
 	if err != nil {
 		return nil, err
 	}

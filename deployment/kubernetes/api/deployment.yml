@@ -42,6 +42,8 @@ spec:
               key: secret
         - name: GITPODS_STORAGE_GRPC_URL
           value: 'storage:3033'
+        - name: GITPODS_STORAGE_HTTP_URL
+          value: 'storage:3030'
         # This hash is not needed and only used to track which version is deployed when using :latest
         - name: HASH
           value: {{ build.commit }}
