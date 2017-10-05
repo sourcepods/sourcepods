@@ -108,6 +108,7 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvSecret, "secret"),
 		fmt.Sprintf("%s=%s", cmd.EnvStorageGRPCURL, "localhost:3033"),
+		fmt.Sprintf("%s=%s", cmd.EnvStorageHTTPURL, "http://localhost:3030"),
 		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
 	})
 
