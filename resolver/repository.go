@@ -94,7 +94,7 @@ type repositoryArgs struct {
 
 // Repository returns a repositoryResolver based on an ID or Owner and Name.
 func (r *RepositoryResolver) Repository(ctx context.Context, args repositoryArgs) (*repositoryResolver, error) {
-	repo, stats, _, err := r.repositories.Find(ctx, &repository.Owner{Username: args.Owner}, args.Name)
+	repo, stats, _, err := r.repositories.Find(ctx, args.Owner, args.Name)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -105,7 +105,7 @@ func (r *RepositoryResolver) Repository(ctx context.Context, args repositoryArgs
 
 // Repositories returns a slice of repositoryResolver based on their owner.
 func (r *RepositoryResolver) Repositories(ctx context.Context, args struct{ Owner string }) []*repositoryResolver {
-	repos, stats, _, err := r.repositories.List(ctx, &repository.Owner{Username: args.Owner})
+	repos, stats, _, err := r.repositories.List(ctx, args.Owner)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -154,7 +154,7 @@ func (r *RepositoryResolver) CreateRepository(ctx context.Context, args struct{ 
 		return nil, err
 	}
 
-	repo, err = r.repositories.Create(ctx, &repository.Owner{ID: owner.ID, Username: owner.Username}, repo)
+	repo, err = r.repositories.Create(ctx, owner.Username, repo)
 	if err != nil {
 		return nil, err
 	}

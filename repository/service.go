@@ -15,9 +15,9 @@ var (
 type (
 	// Store or retrieve repositories from some database.
 	Store interface {
-		List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error)
-		Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error)
-		Create(ctx context.Context, owner *Owner, repository *Repository) (*Repository, error)
+		List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error)
+		Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error)
+		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
 	}
 
 	// Storage manages the git storage
@@ -29,10 +29,10 @@ type (
 
 	// Service to interact with repositories.
 	Service interface {
-		List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error)
-		Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error)
-		Create(ctx context.Context, owner *Owner, repository *Repository) (*Repository, error)
-		Tree(ctx context.Context, owner *Owner, name string) ([]storage.TreeObject, error)
+		List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error)
+		Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error)
+		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
+		Tree(ctx context.Context, owner string, name string) ([]storage.TreeObject, error)
 	}
 
 	service struct {
@@ -49,15 +49,15 @@ func NewService(repositories Store, storage Storage) Service {
 	}
 }
 
-func (s *service) List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
+func (s *service) List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error) {
 	return s.repositories.List(ctx, owner)
 }
 
-func (s *service) Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
+func (s *service) Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error) {
 	return s.repositories.Find(ctx, owner, name)
 }
 
-func (s *service) Create(ctx context.Context, owner *Owner, repository *Repository) (*Repository, error) {
+func (s *service) Create(ctx context.Context, owner string, repository *Repository) (*Repository, error) {
 	if err := ValidateCreate(repository); err != nil {
 		return nil, err
 	}
@@ -67,17 +67,17 @@ func (s *service) Create(ctx context.Context, owner *Owner, repository *Reposito
 		return r, err
 	}
 
-	if err := s.storage.Create(ctx, owner.Username, r.Name); err != nil {
+	if err := s.storage.Create(ctx, owner, r.Name); err != nil {
 		return r, err
 	}
 
-	if err := s.storage.SetDescription(ctx, owner.Username, r.Name, r.Description); err != nil {
+	if err := s.storage.SetDescription(ctx, owner, r.Name, r.Description); err != nil {
 		return r, err
 	}
 
 	return r, nil
 }
 
-func (s *service) Tree(ctx context.Context, owner *Owner, name string) ([]storage.TreeObject, error) {
-	return s.storage.Tree(ctx, owner.Username, name, "master")
+func (s *service) Tree(ctx context.Context, owner string, name string) ([]storage.TreeObject, error) {
+	return s.storage.Tree(ctx, owner, name, "master")
 }

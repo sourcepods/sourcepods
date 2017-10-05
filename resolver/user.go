@@ -168,7 +168,7 @@ func (r *userResolver) Repositories(ctx context.Context) []*repositoryResolver {
 	span.SetTag("username", r.user.Username)
 	defer span.Finish()
 
-	repos, stats, _, err := r.rs.List(ctx, &repository.Owner{ID: string(r.user.ID), Username: r.user.Username})
+	repos, stats, _, err := r.rs.List(ctx, r.user.Username)
 	if err != nil {
 		log.Println(err)
 		return nil

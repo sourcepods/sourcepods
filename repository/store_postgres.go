@@ -20,29 +20,26 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 }
 
 // List retrieves a list of repositories based on their ownership.
-func (s *Postgres) List(ctx context.Context, owner *Owner) ([]*Repository, []*Stats, *Owner, error) {
+func (s *Postgres) List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.List")
+	span.SetTag("owner", owner)
 	defer span.Finish()
 
-	if owner.ID == "" && owner.Username != "" {
-		row := s.db.QueryRowContext(ctx, userIdByUsername, owner.Username)
+	row := s.db.QueryRowContext(ctx, userIdByUsername, owner)
 
-		var id string
-		row.Scan(&id)
+	var owner_id string
+	row.Scan(&owner_id)
 
-		if id == "" {
-			return nil, nil, nil, OwnerNotFoundError
-		}
-
-		owner.ID = id
+	if owner_id == "" {
+		return nil, nil, "", OwnerNotFoundError
 	}
 
-	span.SetTag("owner_id", owner.ID)
-	span.SetTag("owner_username", owner.Username)
+	span.SetTag("owner_id", owner_id)
+	span.SetTag("owner_username", owner)
 
-	rows, err := s.db.QueryContext(ctx, listByOwnerId, owner.ID)
+	rows, err := s.db.QueryContext(ctx, listByOwnerId, owner_id)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, "", err
 	}
 	defer rows.Close()
 
@@ -103,12 +100,12 @@ func (s *Postgres) List(ctx context.Context, owner *Owner) ([]*Repository, []*St
 	return repositories, stats, owner, nil
 }
 
-func (s *Postgres) Find(ctx context.Context, owner *Owner, name string) (*Repository, *Stats, *Owner, error) {
+func (s *Postgres) Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.Find")
-	span.SetTag("owner_username", owner.Username)
+	span.SetTag("owner_username", owner)
 	defer span.Finish()
 
-	row := s.db.QueryRowContext(ctx, findByOwnerAndName, owner.Username, name)
+	row := s.db.QueryRowContext(ctx, findByOwnerAndName, owner, name)
 
 	var id string
 	var description sql.NullString
@@ -131,7 +128,7 @@ func (s *Postgres) Find(ctx context.Context, owner *Owner, name string) (*Reposi
 		&updated,
 		&ownerID,
 	); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, "", err
 	}
 
 	return &Repository{
@@ -159,7 +156,16 @@ func (s *Postgres) Find(ctx context.Context, owner *Owner, name string) (*Reposi
 		nil
 }
 
-func (s *Postgres) Create(ctx context.Context, owner *Owner, r *Repository) (*Repository, error) {
+func (s *Postgres) Create(ctx context.Context, owner string, r *Repository) (*Repository, error) {
+	row := s.db.QueryRowContext(ctx, userIdByUsername, owner)
+
+	var owner_id string
+	row.Scan(&owner_id)
+
+	if owner_id == "" {
+		return nil, OwnerNotFoundError
+	}
+
 	var description *string
 	if r.Description != "" {
 		description = &r.Description
@@ -170,8 +176,8 @@ func (s *Postgres) Create(ctx context.Context, owner *Owner, r *Repository) (*Re
 		website = &r.Website
 	}
 
-	row := s.db.QueryRowContext(ctx, create,
-		owner.ID,
+	row = s.db.QueryRowContext(ctx, create,
+		owner_id,
 		r.Name,
 		description,
 		website,

@@ -26,8 +26,3 @@ type Stats struct {
 	PullRequestOpenCount   int
 	PullRequestClosedCount int
 }
-
-type Owner struct {
-	ID       string
-	Username string
-}

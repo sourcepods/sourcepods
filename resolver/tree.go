@@ -30,7 +30,7 @@ type treeObjectResolver struct {
 }
 
 func (r *TreeResolver) Tree(ctx context.Context, args treeArgs) ([]*treeObjectResolver, error) {
-	objects, err := r.repositories.Tree(ctx, &repository.Owner{Username: args.Owner}, args.Name)
+	objects, err := r.repositories.Tree(ctx, args.Owner, args.Name)
 	if err != nil {
 		return nil, err
 	}
