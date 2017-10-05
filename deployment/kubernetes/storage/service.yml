@@ -12,7 +12,7 @@ spec:
   ports:
     - name: http
       protocol: TCP
-      port: 80
+      port: 3030
       targetPort: 3030
     - name: grpc
       protocol: TCP
