@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:angular/angular.dart';
 import 'package:gitpods/repository.dart';
+import 'package:gitpods/repository_component.dart';
+import 'package:gitpods/repository_tree.dart';
 import 'package:gitpods/validation_exception.dart';
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
@@ -77,7 +79,7 @@ class RepositoryService {
 
   RepositoryService(this._http);
 
-  Future<Repository> get(String owner, String name) async {
+  Future<RepositoryPage> get(String owner, String name) async {
     var payload = JSON.encode({
       'query': repositoryGet,
       'variables': {
@@ -93,7 +95,13 @@ class RepositoryService {
       throw new Exception(body['errors'][0]['message']);
     }
 
-    return new Repository.fromJSON(body['data']['repository']);
+    Repository repository = new Repository.fromJSON(body['data']['repository']);
+
+    List<RepositoryTree> tree = body['data']['tree']
+        .map((json) => new RepositoryTree.fromJSON(json))
+        .toList();
+
+    return new RepositoryPage(repository, tree);
   }
 
   Future<Repository> create(Repository repository) async {
