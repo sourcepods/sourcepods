@@ -22,6 +22,8 @@ func (s *Postgres) SaveSession(ctx context.Context, session *Session) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Postgres.SaveSession")
 	defer span.Finish()
 
+	save := `INSERT INTO sessions (expires, owner_id) VALUES ($1, $2) RETURNING id;`
+
 	return s.db.QueryRowContext(
 		ctx,
 		save,
@@ -35,7 +37,18 @@ func (s *Postgres) FindSession(ctx context.Context, id string) (*Session, error)
 	span.SetTag("id", id)
 	defer span.Finish()
 
-	row := s.db.QueryRowContext(ctx, findById, id)
+	findByID := `
+SELECT
+	sessions.id,
+	sessions.expires,
+	users.id       AS user_id,
+	users.username AS user_username
+FROM sessions
+	JOIN users ON sessions.owner_id = users.id
+WHERE sessions.id = $1;
+`
+
+	row := s.db.QueryRowContext(ctx, findByID, id)
 
 	session := Session{
 		User: User{},
@@ -53,6 +66,8 @@ func (s *Postgres) FindSession(ctx context.Context, id string) (*Session, error)
 func (s *Postgres) ClearSessions(ctx context.Context) (int64, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Postgres.ClearSessions")
 	defer span.Finish()
+
+	clearExpired := `DELETE FROM sessions WHERE expires < now();`
 
 	res, err := s.db.ExecContext(ctx, clearExpired)
 	if err != nil {

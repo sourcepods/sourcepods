@@ -25,19 +25,25 @@ func (s *Postgres) List(ctx context.Context, owner string) ([]*Repository, []*St
 	span.SetTag("owner", owner)
 	defer span.Finish()
 
-	row := s.db.QueryRowContext(ctx, userIdByUsername, owner)
+	listByOwnerID := `
+SELECT
+	id,
+	name,
+	description,
+	website,
+	default_branch,
+	private,
+	bare,
+	created_at,
+	updated_at,
+	(SELECT 42) AS stars,
+	(SELECT 23) AS forks
+FROM repositories
+WHERE owner_id = (SELECT id FROM users WHERE username = $1 LIMIT 1)
+ORDER BY updated_at DESC;
+`
 
-	var owner_id string
-	row.Scan(&owner_id)
-
-	if owner_id == "" {
-		return nil, nil, "", OwnerNotFoundError
-	}
-
-	span.SetTag("owner_id", owner_id)
-	span.SetTag("owner_username", owner)
-
-	rows, err := s.db.QueryContext(ctx, listByOwnerId, owner_id)
+	rows, err := s.db.QueryContext(ctx, listByOwnerID, owner)
 	if err != nil {
 		return nil, nil, "", err
 	}
@@ -102,8 +108,24 @@ func (s *Postgres) List(ctx context.Context, owner string) ([]*Repository, []*St
 
 func (s *Postgres) Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.Find")
-	span.SetTag("owner_username", owner)
+	span.SetTag("owner", owner)
 	defer span.Finish()
+
+	findByOwnerAndName := `
+SELECT
+	id,
+	description,
+	website,
+	default_branch,
+	private,
+	bare,
+	created_at,
+	updated_at,
+	owner_id
+FROM repositories
+WHERE
+	name = $2 AND
+	owner_id = (SELECT id FROM users WHERE username = $1);`
 
 	row := s.db.QueryRowContext(ctx, findByOwnerAndName, owner, name)
 
@@ -157,14 +179,10 @@ func (s *Postgres) Find(ctx context.Context, owner string, name string) (*Reposi
 }
 
 func (s *Postgres) Create(ctx context.Context, owner string, r *Repository) (*Repository, error) {
-	row := s.db.QueryRowContext(ctx, userIdByUsername, owner)
-
-	var owner_id string
-	row.Scan(&owner_id)
-
-	if owner_id == "" {
-		return nil, OwnerNotFoundError
-	}
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.Create")
+	span.SetTag("owner", owner)
+	span.SetTag("name", r.Name)
+	defer span.Finish()
 
 	var description *string
 	if r.Description != "" {
@@ -176,8 +194,14 @@ func (s *Postgres) Create(ctx context.Context, owner string, r *Repository) (*Re
 		website = &r.Website
 	}
 
-	row = s.db.QueryRowContext(ctx, create,
-		owner_id,
+	create := `
+INSERT INTO repositories (owner_id, name, description, website, default_branch, private, bare)
+VALUES ((SELECT id FROM users WHERE username = $1 LIMIT 1), $2, $3, $4, $5, $6, $7)
+RETURNING id, created_at, updated_at;
+`
+
+	row := s.db.QueryRowContext(ctx, create,
+		owner,
 		r.Name,
 		description,
 		website,
