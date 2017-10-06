@@ -14,7 +14,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -119,41 +118,44 @@ func (s *storage) Tree(ctx context.Context, owner, name, branch string, recursiv
 		})
 	}
 
-	wg := sync.WaitGroup{}
-	for i := range objects {
-		wg.Add(1)
+	indexes := make(chan int, 64)
+	done := make(chan int, 64)
 
-		go func(i int) {
-			defer wg.Done()
+	for w := 0; w < 4; w++ {
+		go func() {
+			for index := range indexes {
+				commitHash, err := s.commitHash(ctx, owner, name, branch, objects[index].File)
+				if err != nil {
+					log.Println(err)
+					return
+				}
 
-			commitHash, err := s.commitHash(ctx, owner, name, branch, objects[i].File)
-			if err != nil {
-				log.Println(err)
-				return
+				commit, err := s.commit(ctx, owner, name, commitHash)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+
+				objects[index].Commit = commit
+				done <- index
 			}
-
-			commit, err := s.commit(ctx, owner, name, commitHash)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			objects[i].Commit = commit
-		}(i)
+		}()
 	}
-	wg.Wait()
+
+	for i := 0; i < len(objects); i++ {
+		indexes <- i
+	}
+	close(indexes)
+
+	for i := 0; i < len(objects); i++ {
+		<-done
+	}
+	close(done)
 
 	return objects, nil
 }
 
 func (s *storage) commitHash(ctx context.Context, owner, name, rev, file string) (string, error) {
-	//span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Storage.commitHash")
-	//span.SetTag("owner", owner)
-	//span.SetTag("name", name)
-	//span.SetTag("rev", rev)
-	//span.SetTag("file", file)
-	//defer span.Finish()
-
 	args := []string{"log", "-1", "--pretty=%H", rev, "--", file}
 	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = filepath.Join(s.root, owner, name)
@@ -163,12 +165,6 @@ func (s *storage) commitHash(ctx context.Context, owner, name, rev, file string)
 }
 
 func (s *storage) commit(ctx context.Context, owner, name, hash string) (Commit, error) {
-	//span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Storage.commit")
-	//span.SetTag("owner", owner)
-	//span.SetTag("name", name)
-	//span.SetTag("hash", hash)
-	//defer span.Finish()
-
 	args := []string{"cat-file", "-p", hash}
 	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = filepath.Join(s.root, owner, name)
