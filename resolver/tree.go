@@ -17,8 +17,9 @@ func NewTree(rs repository.Service) *TreeResolver {
 }
 
 type treeArgs struct {
-	Owner string
-	Name  string
+	Owner     string
+	Name      string
+	Recursive *bool
 }
 
 type treeObjectResolver struct {
@@ -30,7 +31,12 @@ type treeObjectResolver struct {
 }
 
 func (r *TreeResolver) Tree(ctx context.Context, args treeArgs) ([]*treeObjectResolver, error) {
-	objects, err := r.repositories.Tree(ctx, args.Owner, args.Name)
+	recursive := false
+	if args.Recursive != nil {
+		recursive = *args.Recursive
+	}
+
+	objects, err := r.repositories.Tree(ctx, args.Owner, args.Name, recursive)
 	if err != nil {
 		return nil, err
 	}

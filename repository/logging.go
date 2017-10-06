@@ -91,10 +91,10 @@ func (s *loggingService) Create(ctx context.Context, owner string, repository *R
 	return repository, err
 }
 
-func (s *loggingService) Tree(ctx context.Context, owner string, name string) ([]storage.TreeObject, error) {
+func (s *loggingService) Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error) {
 	start := time.Now()
 
-	objects, err := s.service.Tree(ctx, owner, name)
+	objects, err := s.service.Tree(ctx, owner, name, recursive)
 
 	logger := log.With(s.logger,
 		"method", "Tree",

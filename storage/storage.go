@@ -27,7 +27,7 @@ type (
 	Storage interface {
 		Create(ctx context.Context, owner, name string) error
 		SetDescription(ctx context.Context, owner, name, description string) error
-		Tree(ctx context.Context, owner, name, branch string) ([]TreeObject, error)
+		Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]TreeObject, error)
 	}
 
 	storage struct {
@@ -87,11 +87,16 @@ type Commit struct {
 	CommitterDate  time.Time
 }
 
-func (s *storage) Tree(ctx context.Context, owner, name, branch string) ([]TreeObject, error) {
+func (s *storage) Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]TreeObject, error) {
 	var objects []TreeObject
 
+	args := []string{"ls-tree", branch}
+	if recursive {
+		args = []string{"ls-tree", "-r", branch}
+	}
+
 	path := filepath.Join(s.root, owner, name)
-	cmd := exec.CommandContext(ctx, s.git, "ls-tree", branch)
+	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = path
 	out, err := cmd.Output()
 	if err != nil {

@@ -23,7 +23,7 @@ var (
 		users: [User]!
 		repositories(owner: String!): [Repository]!
 		repository(owner: String!, name: String!): Repository
-		tree(owner: String!, name: String!): [TreeObject]!
+		tree(owner: String!, name: String!, recursive: Boolean): [TreeObject]!
 	}
 	type User {
 		id: ID!

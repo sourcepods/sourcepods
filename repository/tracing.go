@@ -41,11 +41,11 @@ func (s *tracingService) Create(ctx context.Context, owner string, repository *R
 
 	return s.service.Create(ctx, owner, repository)
 }
-func (s *tracingService) Tree(ctx context.Context, owner string, name string) ([]storage.TreeObject, error) {
+func (s *tracingService) Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Service.Tree")
 	span.SetTag("owner_username", owner)
 	span.SetTag("name", name)
 	defer span.Finish()
 
-	return s.service.Tree(ctx, owner, name)
+	return s.service.Tree(ctx, owner, name, recursive)
 }

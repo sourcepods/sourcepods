@@ -30,7 +30,7 @@ func (s *storageServer) SetDescriptions(ctx context.Context, req *SetDescription
 }
 
 func (s *storageServer) Tree(ctx context.Context, req *TreeRequest) (*TreeRespone, error) {
-	objects, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetBranch())
+	objects, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetBranch(), req.GetRecursive())
 	if err != nil {
 		return nil, err
 	}

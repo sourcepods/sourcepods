@@ -24,7 +24,7 @@ type (
 	Storage interface {
 		Create(ctx context.Context, owner string, name string) error
 		SetDescription(ctx context.Context, owner, name, description string) error
-		Tree(ctx context.Context, owner, name, branch string) ([]storage.TreeObject, error)
+		Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]storage.TreeObject, error)
 	}
 
 	// Service to interact with repositories.
@@ -32,7 +32,7 @@ type (
 		List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error)
 		Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error)
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
-		Tree(ctx context.Context, owner string, name string) ([]storage.TreeObject, error)
+		Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error)
 	}
 
 	service struct {
@@ -78,6 +78,6 @@ func (s *service) Create(ctx context.Context, owner string, repository *Reposito
 	return r, nil
 }
 
-func (s *service) Tree(ctx context.Context, owner string, name string) ([]storage.TreeObject, error) {
-	return s.storage.Tree(ctx, owner, name, "master")
+func (s *service) Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error) {
+	return s.storage.Tree(ctx, owner, name, "master", recursive)
 }

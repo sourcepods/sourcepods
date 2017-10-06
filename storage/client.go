@@ -58,11 +58,12 @@ func (c *Client) SetDescription(ctx context.Context, owner string, name string, 
 	return err
 }
 
-func (c *Client) Tree(ctx context.Context, owner, name, branch string) ([]TreeObject, error) {
+func (c *Client) Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]TreeObject, error) {
 	req := &TreeRequest{
-		Owner:  owner,
-		Name:   name,
-		Branch: branch,
+		Owner:     owner,
+		Name:      name,
+		Branch:    branch,
+		Recursive: recursive,
 	}
 
 	res, err := c.client.Tree(ctx, req)
