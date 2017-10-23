@@ -130,12 +130,14 @@ func storageAction(c *cli.Context) error {
 
 	var gr group.Group
 	{
+		sig := make(chan os.Signal)
 		gr.Add(func() error {
-			sig := make(chan os.Signal)
 			signal.Notify(sig, os.Interrupt)
 			<-sig
 			return nil
-		}, func(err error) {})
+		}, func(err error) {
+			close(sig)
+		})
 	}
 	{
 		gh := NewGitHTTP(storageConfig.Root)

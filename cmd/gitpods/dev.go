@@ -131,13 +131,14 @@ func devAction(c *cli.Context) error {
 
 	var g group.Group
 	{
+		stop := make(chan os.Signal, 1)
 		g.Add(func() error {
 			log.Println("waiting for interrupt")
-			stop := make(chan os.Signal, 1)
 			signal.Notify(stop, os.Interrupt)
 			<-stop
 			return nil
 		}, func(err error) {
+			close(stop)
 		})
 	}
 	{
