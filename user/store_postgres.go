@@ -198,6 +198,47 @@ LIMIT 1;
 	}, nil
 }
 
+func (s *Postgres) FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.FindRepositoryOwner")
+	span.SetTag("repository", repositoryID)
+	defer span.Finish()
+
+	findRepositoryOwner := `
+SELECT
+  id,
+  email,
+  username,
+  name,
+  created_at,
+  updated_at
+FROM users
+WHERE id = (SELECT owner_id
+            FROM repositories
+            WHERE repositories.id = $1)
+`
+
+	row := s.db.QueryRowContext(ctx, findRepositoryOwner, repositoryID)
+
+	var id string
+	var email string
+	var username string
+	var name string
+	var created time.Time
+	var updated time.Time
+	if err := row.Scan(&id, &email, &username, &name, &created, &updated); err != nil {
+		return nil, err
+	}
+
+	return &User{
+		ID:       id,
+		Email:    email,
+		Username: username,
+		Name:     name,
+		Created:  created,
+		Updated:  updated,
+	}, nil
+}
+
 // Create a user in postgres and return it with the ID set in the store.
 func (s *Postgres) Create(ctx context.Context, u *User) (*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.Create")

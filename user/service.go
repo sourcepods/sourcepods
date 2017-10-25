@@ -14,6 +14,7 @@ type Service interface {
 	FindAll(context.Context) ([]*User, error)
 	Find(context.Context, string) (*User, error)
 	FindByUsername(context.Context, string) (*User, error)
+	FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error)
 	Create(context.Context, *User) (*User, error)
 	Update(context.Context, *User) (*User, error)
 	Delete(context.Context, string) error
@@ -24,6 +25,7 @@ type Store interface {
 	FindAll(context.Context) ([]*User, error)
 	Find(context.Context, string) (*User, error)
 	FindByUsername(context.Context, string) (*User, error)
+	FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error)
 	Create(context.Context, *User) (*User, error)
 	Update(context.Context, *User) (*User, error)
 	Delete(context.Context, string) error
@@ -48,6 +50,10 @@ func (s *service) Find(ctx context.Context, id string) (*User, error) {
 
 func (s *service) FindByUsername(ctx context.Context, username string) (*User, error) {
 	return s.users.FindByUsername(ctx, username)
+}
+
+func (s *service) FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error) {
+	return s.users.FindRepositoryOwner(ctx, repositoryID)
 }
 
 func (s *service) Create(ctx context.Context, user *User) (*User, error) {

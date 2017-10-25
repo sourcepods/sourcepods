@@ -38,6 +38,14 @@ func (s *tracingService) FindByUsername(ctx context.Context, username string) (*
 	return s.service.FindByUsername(ctx, username)
 }
 
+func (s *tracingService) FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Service.FindRepositoryOwner")
+	span.SetTag("repository", repositoryID)
+	defer span.Finish()
+
+	return s.service.FindRepositoryOwner(ctx, repositoryID)
+}
+
 func (s *tracingService) Create(ctx context.Context, user *User) (*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Service.Create")
 	span.SetTag("username", user.Username)
