@@ -25,8 +25,6 @@ import (
 	"github.com/go-kit/kit/metrics"
 	"github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
-	graphql "github.com/neelance/graphql-go"
-	"github.com/neelance/graphql-go/relay"
 	"github.com/oklog/oklog/pkg/group"
 	prom "github.com/prometheus/client_golang/prometheus"
 	jaeger "github.com/uber/jaeger-client-go"
@@ -223,12 +221,7 @@ func apiAction(c *cli.Context) error {
 	//
 	// Resolvers
 	//
-	res := &resolver.Resolver{
-		RepositoryResolver: resolver.NewRepository(rs, us),
-		TreeResolver:       resolver.NewTree(rs),
-		UserResolver:       resolver.NewUser(rs, us),
-	}
-	schema := graphql.MustParseSchema(resolver.Schema, res)
+	res := resolver.Handler(rs, us)
 
 	//
 	// Router
@@ -248,7 +241,7 @@ func apiAction(c *cli.Context) error {
 
 			router.Group(func(router chi.Router) {
 				router.Use(session.Authorized(ss))
-				router.Mount("/query", middleware.NoCache(&relay.Handler{Schema: schema}))
+				router.Mount("/query", middleware.NoCache(res))
 			})
 
 			router.Mount("/{owner}/{name}.git", githttp)
