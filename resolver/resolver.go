@@ -45,11 +45,11 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 				Type:        graphql.NewNonNull(graphql.String),
 				Description: "The user's name",
 			},
-			"created_at": &graphql.Field{
+			"createdAt": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.DateTime),
 				Description: "The time the user was first created",
 			},
-			"updated_at": &graphql.Field{
+			"updatedAt": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.DateTime),
 				Description: "The time the user was updated last",
 			},
@@ -76,7 +76,7 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 				Type:        graphql.NewNonNull(graphql.String),
 				Description: "The repository's website",
 			},
-			"default_branch": &graphql.Field{
+			"defaultBranch": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.String),
 				Description: "The user's name",
 			},
@@ -88,11 +88,11 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 				Type:        graphql.NewNonNull(graphql.Boolean),
 				Description: "True when the repository is bare",
 			},
-			"created_at": &graphql.Field{
+			"createdAt": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.DateTime),
 				Description: "The time the repository was first created",
 			},
-			"updated_at": &graphql.Field{
+			"updatedAt": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.DateTime),
 				Description: "The time the repository was updated last",
 			},
@@ -224,8 +224,8 @@ type userResponse struct {
 	Email    string    `json:"email"`
 	Username string    `json:"username"`
 	Name     string    `json:"name"`
-	Created  time.Time `json:"created_at"`
-	Updated  time.Time `json:"updated_at"`
+	Created  time.Time `json:"createdAt"`
+	Updated  time.Time `json:"updatedAt"`
 }
 
 func (h *handler) ResolveMe() graphql.FieldResolveFn {
@@ -298,11 +298,11 @@ type repositoryResponse struct {
 	Name          string    `json:"name"`
 	Description   string    `json:"description"`
 	Website       string    `json:"website"`
-	DefaultBranch string    `json:"default_branch"`
+	DefaultBranch string    `json:"defaultBranch"`
 	Private       bool      `json:"private"`
 	Bare          bool      `json:"bare"`
-	Created       time.Time `json:"created_at"`
-	Updated       time.Time `json:"updated_at"`
+	Created       time.Time `json:"createdAt"`
+	Updated       time.Time `json:"updatedAt"`
 }
 
 func (h *handler) ResolveRepository() graphql.FieldResolveFn {
