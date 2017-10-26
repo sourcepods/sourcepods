@@ -104,6 +104,24 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 		},
 	})
 
+	gTreeObject := graphql.NewObject(graphql.ObjectConfig{
+		Name: "TreeObject",
+		Fields: graphql.Fields{
+			"mode": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"type": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"object": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"file": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+		},
+	})
+
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
 		Query: graphql.NewObject(graphql.ObjectConfig{
 			Name: "Query",
@@ -147,6 +165,20 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 						"owner": &graphql.ArgumentConfig{
 							Type:        graphql.NewNonNull(graphql.String),
 							Description: "The username of the repository's owner",
+						},
+					},
+				},
+				"tree": &graphql.Field{
+					Type:    graphql.NewNonNull(graphql.NewList(gTreeObject)),
+					Resolve: h.ResolveTree(),
+					Args: graphql.FieldConfigArgument{
+						"owner": &graphql.ArgumentConfig{
+							Type:        graphql.NewNonNull(graphql.String),
+							Description: "The username of the repository's owner",
+						},
+						"name": &graphql.ArgumentConfig{
+							Type:        graphql.NewNonNull(graphql.String),
+							Description: "The name of the repository",
 						},
 					},
 				},
@@ -353,5 +385,42 @@ func (h *handler) ResolveRepositoryOwner() graphql.FieldResolveFn {
 			Created:  owner.Created,
 			Updated:  owner.Updated,
 		}, err
+	}
+}
+
+type treeObjectResponse struct {
+	Mode   string `json:"mode"`
+	Type   string `json:"type"`
+	Object string `json:"object"`
+	File   string `json:"file"`
+}
+
+func (h *handler) ResolveTree() graphql.FieldResolveFn {
+	return func(p graphql.ResolveParams) (interface{}, error) {
+		owner, ok := p.Args["owner"].(string)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive owner's username from arguments")
+		}
+		name, ok := p.Args["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive name from arguments")
+		}
+
+		tos, err := h.repositories.Tree(p.Context, owner, name, false)
+		if err != nil {
+			return nil, err // TODO
+		}
+
+		var res []treeObjectResponse
+		for _, to := range tos {
+			res = append(res, treeObjectResponse{
+				Mode:   to.Mode,
+				Type:   to.Type,
+				Object: to.Object,
+				File:   to.File,
+			})
+		}
+
+		return res, nil
 	}
 }
