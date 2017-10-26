@@ -126,6 +126,20 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 					Type:    graphql.NewNonNull(graphql.NewList(gUser)),
 					Resolve: h.ResolveUsers(),
 				},
+				"repository": &graphql.Field{
+					Type:    graphql.NewNonNull(gRepository),
+					Resolve: h.ResolveRepository(),
+					Args: graphql.FieldConfigArgument{
+						"owner": &graphql.ArgumentConfig{
+							Type:        graphql.NewNonNull(graphql.String),
+							Description: "The username of the repository's owner",
+						},
+						"name": &graphql.ArgumentConfig{
+							Type:        graphql.NewNonNull(graphql.String),
+							Description: "The name of the repository",
+						},
+					},
+				},
 				"repositories": &graphql.Field{
 					Type:    graphql.NewNonNull(graphql.NewList(gRepository)),
 					Resolve: h.ResolveRepositories(),
@@ -257,6 +271,36 @@ type repositoryResponse struct {
 	Bare          bool      `json:"bare"`
 	Created       time.Time `json:"created_at"`
 	Updated       time.Time `json:"updated_at"`
+}
+
+func (h *handler) ResolveRepository() graphql.FieldResolveFn {
+	return func(p graphql.ResolveParams) (interface{}, error) {
+		name, ok := p.Args["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive name from arguments")
+		}
+		owner, ok := p.Args["owner"].(string)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive owner's username from arguments")
+		}
+
+		r, _, _, err := h.repositories.Find(p.Context, owner, name)
+		if err != nil {
+			return nil, err // TODO
+		}
+
+		return repositoryResponse{
+			ID:            r.ID,
+			Name:          r.Name,
+			Description:   r.Description,
+			Website:       r.Website,
+			DefaultBranch: r.DefaultBranch,
+			Private:       r.Private,
+			Bare:          r.Bare,
+			Created:       r.Created,
+			Updated:       r.Updated,
+		}, nil
+	}
 }
 
 func (h *handler) ResolveRepositories() graphql.FieldResolveFn {
