@@ -12,7 +12,6 @@ import (
 	"github.com/gitpods/gitpods/user"
 	"github.com/graphql-go/graphql"
 	"github.com/opentracing/opentracing-go"
-	"go.googlesource.com/go/test/fixedbugs/issue20682.dir"
 )
 
 type handler struct {
@@ -46,11 +45,11 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 				Type:        graphql.NewNonNull(graphql.String),
 				Description: "The user's name",
 			},
-			"created": &graphql.Field{
+			"created_at": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.DateTime),
 				Description: "The time the user was first created",
 			},
-			"updated": &graphql.Field{
+			"updated_at": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.DateTime),
 				Description: "The time the user was updated last",
 			},
@@ -89,11 +88,11 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 				Type:        graphql.NewNonNull(graphql.Boolean),
 				Description: "True when the repository is bare",
 			},
-			"created": &graphql.Field{
+			"created_at": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.DateTime),
 				Description: "The time the repository was first created",
 			},
-			"updated": &graphql.Field{
+			"updated_at": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.DateTime),
 				Description: "The time the repository was updated last",
 			},
@@ -179,8 +178,8 @@ type userResponse struct {
 	Email    string    `json:"email"`
 	Username string    `json:"username"`
 	Name     string    `json:"name"`
-	Created  time.Time `json:"created"`
-	Updated  time.Time `json:"updated"`
+	Created  time.Time `json:"created_at"`
+	Updated  time.Time `json:"updated_at"`
 }
 
 func (h *handler) ResolveMe() graphql.FieldResolveFn {
@@ -256,8 +255,8 @@ type repositoryResponse struct {
 	DefaultBranch string    `json:"default_branch"`
 	Private       bool      `json:"private"`
 	Bare          bool      `json:"bare"`
-	Created       time.Time `json:"created"`
-	Updated       time.Time `json:"updated"`
+	Created       time.Time `json:"created_at"`
+	Updated       time.Time `json:"updated_at"`
 }
 
 func (h *handler) ResolveRepositories() graphql.FieldResolveFn {
@@ -292,7 +291,10 @@ func (h *handler) ResolveRepositories() graphql.FieldResolveFn {
 
 func (h *handler) ResolveRepositoryOwner() graphql.FieldResolveFn {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		r ,ok:= p.Source.(repositoryResponse)
+		r, ok := p.Source.(repositoryResponse)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive repository from source")
+		}
 
 		owner, err := h.users.FindRepositoryOwner(p.Context, r.ID)
 		if err != nil {
