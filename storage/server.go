@@ -29,6 +29,24 @@ func (s *storageServer) SetDescriptions(ctx context.Context, req *SetDescription
 	return &EmptyResponse{}, s.storage.SetDescription(ctx, req.GetOwner(), req.GetName(), req.GetDescription())
 }
 
+func (s *storageServer) Branches(ctx context.Context, req *BranchesRequest) (*BranchesResponse, error) {
+	branches, err := s.storage.Branches(ctx, req.GetOwner(), req.GetName())
+	if err != nil {
+		return nil, err
+	}
+
+	res := &BranchesResponse{}
+	for _, b := range branches {
+		res.Branch = append(res.Branch, &BranchObject{
+			Name: b.Name,
+			Sha1: b.Sha1,
+			Type: b.Type,
+		})
+	}
+
+	return res, nil
+}
+
 func (s *storageServer) Tree(ctx context.Context, req *TreeRequest) (*TreeRespone, error) {
 	objects, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetBranch(), req.GetRecursive())
 	if err != nil {

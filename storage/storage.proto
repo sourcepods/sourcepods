@@ -5,6 +5,7 @@ package storage;
 service Storage {
     rpc Create (CreateRequest) returns (EmptyResponse);
     rpc SetDescriptions (SetDescriptionRequest) returns (EmptyResponse);
+    rpc Branches (BranchesRequest) returns (BranchesResponse);
     rpc Tree (TreeRequest) returns (TreeRespone);
 }
 
@@ -20,6 +21,21 @@ message SetDescriptionRequest {
     string owner = 1;
     string name = 2;
     string description = 3;
+}
+
+message BranchesRequest {
+    string owner = 1;
+    string name = 2;
+}
+
+message BranchObject {
+    string name = 1;
+    string sha1 = 2;
+    string type = 3;
+}
+
+message BranchesResponse {
+    repeated BranchObject branch = 1;
 }
 
 message TreeRequest {

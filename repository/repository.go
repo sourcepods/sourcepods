@@ -26,3 +26,10 @@ type Stats struct {
 	PullRequestOpenCount   int
 	PullRequestClosedCount int
 }
+
+type Branch struct {
+	Name      string
+	Sha1      string
+	Type      string
+	Protected bool
+}

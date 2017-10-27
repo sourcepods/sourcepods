@@ -56,6 +56,24 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 		},
 	})
 
+
+	gBranch := graphql.NewObject(graphql.ObjectConfig{
+		Name: "Branch",
+		Fields: graphql.Fields{
+			"name": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"sha1": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"type": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"protected": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.Boolean),
+			},
+		},
+	})
 	gRepository := graphql.NewObject(graphql.ObjectConfig{
 		Name:        "Repository",
 		Description: "Repository of code and more information, think of it like a software project",
@@ -100,6 +118,11 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 				Type:        graphql.NewNonNull(gUser),
 				Description: "The owner of this repository",
 				Resolve:     h.ResolveRepositoryOwner(),
+			},
+			"branches": &graphql.Field{
+				Type:        graphql.NewList(gBranch),
+				Description: "", // TODO
+				Resolve:     h.ResolveRepositoryBranches(),
 			},
 			},
 		},
@@ -272,6 +295,8 @@ type repositoryResponse struct {
 	Bare          bool      `json:"bare"`
 	Created       time.Time `json:"createdAt"`
 	Updated       time.Time `json:"updatedAt"`
+
+	Owner string
 }
 
 func (h *handler) ResolveRepository() graphql.FieldResolveFn {
@@ -300,6 +325,8 @@ func (h *handler) ResolveRepository() graphql.FieldResolveFn {
 			Bare:          r.Bare,
 			Created:       r.Created,
 			Updated:       r.Updated,
+
+			Owner: owner,
 		}, nil
 	}
 }
@@ -328,6 +355,7 @@ func (h *handler) ResolveRepositories() graphql.FieldResolveFn {
 				Bare:          r.Bare,
 				Created:       r.Created,
 				Updated:       r.Updated,
+				Owner: owner,
 			})
 		}
 		return res, nil
@@ -354,5 +382,38 @@ func (h *handler) ResolveRepositoryOwner() graphql.FieldResolveFn {
 			Created:  owner.Created,
 			Updated:  owner.Updated,
 		}, err
+	}
+}
+
+type branchResponse struct {
+	Name      string `json:"name"`
+	Sha1      string `json:"sha1"`
+	Type      string `json:"type"`
+	Protected bool   `json:"protected"`
+}
+
+func (h *handler) ResolveRepositoryBranches() graphql.FieldResolveFn {
+	return func(p graphql.ResolveParams) (interface{}, error) {
+		r, ok := p.Source.(repositoryResponse)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive repository from source") // TODO
+		}
+
+		bs, err := h.repositories.Branches(p.Context, r.Owner, r.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		var res []branchResponse
+		for _, b := range bs {
+			res = append(res, branchResponse{
+				Name:      b.Name,
+				Sha1:      b.Sha1,
+				Type:      b.Type,
+				Protected: b.Protected,
+			})
+		}
+
+		return res, nil
 	}
 }

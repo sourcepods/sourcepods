@@ -26,6 +26,7 @@ type (
 	Storage interface {
 		Create(ctx context.Context, owner, name string) error
 		SetDescription(ctx context.Context, owner, name, description string) error
+		Branches(ctx context.Context, owner string, name string) ([]Branch, error)
 		Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]TreeObject, error)
 	}
 
@@ -60,6 +61,37 @@ func (s *storage) Create(ctx context.Context, owner, name string) error {
 func (s *storage) SetDescription(ctx context.Context, owner, name, description string) error {
 	file := filepath.Join(s.root, owner, name, "description")
 	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
+}
+
+// Branches
+type Branch struct {
+	Name string
+	Sha1 string
+	Type string
+}
+
+func (s *storage) Branches(ctx context.Context, owner string, name string) ([]Branch, error) {
+	args := []string{"for-each-ref", "--format=%(objectname) %(objecttype) %(refname)", "refs/heads"}
+	cmd := exec.CommandContext(ctx, s.git, args...)
+	cmd.Dir = filepath.Join(s.root, owner, name)
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	var bs []Branch
+	scanner := bufio.NewScanner(bytes.NewBuffer(out))
+	for scanner.Scan() {
+		s := strings.Split(scanner.Text(), " ")
+
+		bs = append(bs, Branch{
+			Name: strings.TrimPrefix(s[2], "refs/heads/"),
+			Sha1: s[0],
+			Type: s[1],
+		})
+	}
+
+	return bs, nil
 }
 
 type TreeObject struct {

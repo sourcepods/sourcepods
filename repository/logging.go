@@ -90,6 +90,32 @@ func (s *loggingService) Create(ctx context.Context, owner string, repository *R
 
 	return repository, err
 }
+func (s *loggingService) Branches(ctx context.Context, owner string, name string) ([]*Branch, error) {
+	start := time.Now()
+
+	branches, err := s.service.Branches(ctx, owner, name)
+
+	logger := log.With(s.logger,
+		"method", "Branches",
+		"duration", time.Since(start),
+	)
+
+	if err != nil {
+		if err != AlreadyExistsError {
+			level.Warn(logger).Log(
+				"msg", "failed to list branches",
+				"err", err,
+			)
+		}
+	} else {
+		level.Debug(logger).Log(
+			"owner", owner,
+			"name", name,
+		)
+	}
+
+	return branches, err
+}
 
 func (s *loggingService) Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error) {
 	start := time.Now()

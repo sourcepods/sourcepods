@@ -24,6 +24,7 @@ type (
 	Storage interface {
 		Create(ctx context.Context, owner string, name string) error
 		SetDescription(ctx context.Context, owner, name, description string) error
+		Branches(ctx context.Context, owner string, name string) ([]storage.Branch, error)
 		Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]storage.TreeObject, error)
 	}
 
@@ -32,6 +33,7 @@ type (
 		List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error)
 		Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error)
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
+		Branches(ctx context.Context, owner string, name string) ([]*Branch, error)
 		Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error)
 	}
 
@@ -76,6 +78,24 @@ func (s *service) Create(ctx context.Context, owner string, repository *Reposito
 	}
 
 	return r, nil
+}
+
+func (s *service) Branches(ctx context.Context, owner string, name string) ([]*Branch, error) {
+	bs, err := s.storage.Branches(ctx, owner, name)
+	if err != nil {
+		return nil, err
+	}
+
+	var branches []*Branch
+	for _, b := range bs {
+		branches = append(branches, &Branch{
+			Name: b.Name,
+			Sha1: b.Sha1,
+			Type: b.Type,
+		})
+	}
+
+	return branches, nil
 }
 
 func (s *service) Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error) {

@@ -58,6 +58,29 @@ func (c *Client) SetDescription(ctx context.Context, owner string, name string, 
 	return err
 }
 
+func (c *Client) Branches(ctx context.Context, owner string, name string) ([]Branch, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Branches")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	defer span.Finish()
+
+	res, err := c.client.Branches(ctx, &BranchesRequest{
+		Owner: owner,
+		Name:  name,
+	})
+
+	var branches []Branch
+	for _, b := range res.Branch {
+		branches = append(branches, Branch{
+			Name: b.Name,
+			Sha1: b.Sha1,
+			Type: b.Type,
+		})
+	}
+
+	return branches, err
+}
+
 func (c *Client) Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]TreeObject, error) {
 	req := &TreeRequest{
 		Owner:     owner,
