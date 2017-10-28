@@ -23,5 +23,5 @@ do something very useful to conquer the world`
 	assert.Equal(t, "First Lastname", commit.Author)
 	assert.Equal(t, "first.lastname@example.com", commit.AuthorEmail)
 	assert.Equal(t, int64(1505935797), commit.AuthorDate.Unix())
-	assert.Equal(t, "do something very useful to conquer the world", commit.Subject)
+	assert.Equal(t, "do something very useful to conquer the world", commit.Message)
 }

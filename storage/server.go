@@ -46,3 +46,23 @@ func (s *storageServer) Branches(ctx context.Context, req *BranchesRequest) (*Br
 
 	return res, nil
 }
+
+func (s *storageServer) Commit(ctx context.Context, req *CommitRequest) (*CommitResponse, error) {
+	c, err := s.storage.Commit(ctx, req.GetOwner(), req.GetName(), req.GetRev())
+	if err != nil {
+		return nil, err
+	}
+
+	return &CommitResponse{
+		Hash:           c.Hash,
+		Tree:           c.Tree,
+		Parent:         c.Parent,
+		Message:        c.Message,
+		Author:         c.Author,
+		AuthorEmail:    c.AuthorEmail,
+		AuthorDate:     c.AuthorDate.Unix(),
+		Committer:      c.Committer,
+		CommitterEmail: c.CommitterEmail,
+		CommitterDate:  c.CommitterDate.Unix(),
+	}, nil
+}

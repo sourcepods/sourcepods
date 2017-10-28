@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/gitpods/gitpods/storage"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 )
@@ -114,4 +115,29 @@ func (s *loggingService) Branches(ctx context.Context, owner string, name string
 	}
 
 	return branches, err
+}
+
+func (s *loggingService) Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error) {
+	start := time.Now()
+
+	commit, err := s.service.Commit(ctx, owner, name, rev)
+
+	logger := log.With(s.logger,
+		"method", "Commit",
+		"owner", owner,
+		"name", name,
+		"rev", rev,
+		"duration", time.Since(start),
+	)
+
+	if err != nil {
+		level.Warn(logger).Log(
+			"msg", "failed to get the commit for repository",
+			"err", err,
+		)
+	} else {
+		level.Debug(logger).Log()
+	}
+
+	return commit, err
 }

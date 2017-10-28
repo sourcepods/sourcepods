@@ -6,6 +6,7 @@ service Storage {
     rpc Create (CreateRequest) returns (EmptyResponse);
     rpc SetDescriptions (SetDescriptionRequest) returns (EmptyResponse);
     rpc Branches (BranchesRequest) returns (BranchesResponse);
+    rpc Commit (CommitRequest) returns (CommitResponse);
 }
 
 message EmptyResponse {
@@ -27,11 +28,31 @@ message BranchesRequest {
     string name = 2;
 }
 
-message BranchObject {
+message BranchResponse {
     string name = 1;
     string sha1 = 2;
     string type = 3;
 }
 
 message BranchesResponse {
+    repeated BranchResponse branch = 1;
+}
+
+message CommitRequest {
+    string owner = 1;
+    string name = 2;
+    string rev = 3;
+}
+
+message CommitResponse {
+    string Hash = 1;
+    string Tree = 2;
+    string Parent = 3;
+    string Message = 4;
+    string Author = 5;
+    string AuthorEmail = 6;
+    int64 AuthorDate = 7;
+    string Committer = 8;
+    string CommitterEmail = 9;
+    int64 CommitterDate = 10;
 }

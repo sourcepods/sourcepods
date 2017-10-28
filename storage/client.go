@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	opentracing "github.com/opentracing/opentracing-go"
@@ -78,4 +79,30 @@ func (c *Client) Branches(ctx context.Context, owner string, name string) ([]Bra
 	}
 
 	return branches, err
+}
+
+func (c *Client) Commit(ctx context.Context, owner string, name string, rev string) (Commit, error) {
+	req := &CommitRequest{
+		Owner: owner,
+		Name:  name,
+		Rev:   rev,
+	}
+
+	res, err := c.client.Commit(ctx, req)
+	if err != nil {
+		return Commit{}, err
+	}
+
+	return Commit{
+		Hash:           res.GetHash(),
+		Tree:           res.GetTree(),
+		Parent:         res.GetParent(),
+		Message:        res.GetMessage(),
+		Author:         res.GetAuthor(),
+		AuthorEmail:    res.GetAuthorEmail(),
+		AuthorDate:     time.Unix(res.GetAuthorDate(), 0),
+		Committer:      res.GetCommitter(),
+		CommitterEmail: res.GetCommitterEmail(),
+		CommitterDate:  time.Unix(res.GetCommitterDate(), 0),
+	}, nil
 }

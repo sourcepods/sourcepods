@@ -26,6 +26,7 @@ type (
 		Create(ctx context.Context, owner, name string) error
 		SetDescription(ctx context.Context, owner, name, description string) error
 		Branches(ctx context.Context, owner string, name string) ([]Branch, error)
+		Commit(ctx context.Context, owner string, name string, rev string) (Commit, error)
 	}
 
 	storage struct {

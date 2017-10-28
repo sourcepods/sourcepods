@@ -56,6 +56,52 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 		},
 	})
 
+	gCommit := graphql.NewObject(graphql.ObjectConfig{
+		Name: "Commit",
+		Fields: graphql.Fields{
+			"sha1": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"parent": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"message": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"author": &graphql.Field{
+				Type: graphql.NewObject(graphql.ObjectConfig{
+					Name: "Author",
+					Fields: graphql.Fields{
+						"name": &graphql.Field{
+							Type: graphql.NewNonNull(graphql.String),
+						},
+						"email": &graphql.Field{
+							Type: graphql.NewNonNull(graphql.String),
+						},
+						"date": &graphql.Field{
+							Type: graphql.NewNonNull(graphql.DateTime),
+						},
+					},
+				}),
+			},
+			"committer": &graphql.Field{
+				Type: graphql.NewObject(graphql.ObjectConfig{
+					Name: "Committer",
+					Fields: graphql.Fields{
+						"name": &graphql.Field{
+							Type: graphql.NewNonNull(graphql.String),
+						},
+						"email": &graphql.Field{
+							Type: graphql.NewNonNull(graphql.String),
+						},
+						"date": &graphql.Field{
+							Type: graphql.NewNonNull(graphql.DateTime),
+						},
+					},
+				}),
+			},
+		},
+	})
 
 	gBranch := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Branch",
@@ -74,6 +120,7 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 			},
 		},
 	})
+
 	gRepository := graphql.NewObject(graphql.ObjectConfig{
 		Name:        "Repository",
 		Description: "Repository of code and more information, think of it like a software project",
@@ -124,6 +171,16 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 				Description: "", // TODO
 				Resolve:     h.ResolveRepositoryBranches(),
 			},
+			"commit": &graphql.Field{
+				Type:        graphql.NewNonNull(gCommit),
+				Description: "", // TODO
+				Resolve:     h.ResolveRepositoryCommit(),
+				Args: graphql.FieldConfigArgument{
+					"rev": &graphql.ArgumentConfig{
+						Type:        graphql.String,
+						Description: "", // TODO
+					},
+				},
 			},
 		},
 	})
@@ -355,6 +412,7 @@ func (h *handler) ResolveRepositories() graphql.FieldResolveFn {
 				Bare:          r.Bare,
 				Created:       r.Created,
 				Updated:       r.Updated,
+
 				Owner: owner,
 			})
 		}
@@ -415,5 +473,68 @@ func (h *handler) ResolveRepositoryBranches() graphql.FieldResolveFn {
 		}
 
 		return res, nil
+	}
+}
+
+type (
+	commitResponse struct {
+		Sha1      string                  `json:"sha1"`
+		Message   string                  `json:"message"`
+		Parent    string                  `json:"parent"`
+		Author    commitAuthorResponse    `json:"author"`
+		Committer commitCommitterResponse `json:"committer"`
+	}
+
+	commitAuthorResponse struct {
+		Name  string    `json:"name"`
+		Email string    `json:"email"`
+		Date  time.Time `json:"date"`
+	}
+
+	commitCommitterResponse struct {
+		Name  string    `json:"name"`
+		Email string    `json:"email"`
+		Date  time.Time `json:"date"`
+	}
+)
+
+func (h *handler) ResolveRepositoryCommit() graphql.FieldResolveFn {
+	return func(p graphql.ResolveParams) (interface{}, error) {
+		r, ok := p.Source.(repositoryResponse)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive repository from source") // TODO
+		}
+
+		var rev string
+		if p.Args["rev"] != nil {
+			rev, ok = p.Args["rev"].(string)
+			if !ok {
+				return nil, fmt.Errorf("can't retreive rev from arguments")
+			}
+		} else {
+			// If no rev was given use the default branch
+			rev = r.DefaultBranch
+		}
+
+		commit, err := h.repositories.Commit(p.Context, r.Owner, r.Name, rev)
+		if err != nil {
+			return nil, err // TODO
+		}
+
+		return commitResponse{
+			Sha1:    commit.Hash,
+			Parent:  commit.Parent,
+			Message: commit.Message,
+			Author: commitAuthorResponse{
+				Name:  commit.Author,
+				Email: commit.AuthorEmail,
+				Date:  commit.AuthorDate,
+			},
+			Committer: commitCommitterResponse{
+				Name:  commit.Committer,
+				Email: commit.CommitterEmail,
+				Date:  commit.CommitterDate,
+			},
+		}, nil
 	}
 }

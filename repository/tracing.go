@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/gitpods/gitpods/storage"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -48,4 +49,14 @@ func (s *tracingService) Branches(ctx context.Context, owner string, name string
 	defer span.Finish()
 
 	return s.service.Branches(ctx, owner, name)
+}
+
+func (s *tracingService) Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Service.Commit")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("rev", rev)
+	defer span.Finish()
+
+	return s.service.Commit(ctx, owner, name, rev)
 }

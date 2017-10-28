@@ -25,6 +25,7 @@ type (
 		Create(ctx context.Context, owner string, name string) error
 		SetDescription(ctx context.Context, owner, name, description string) error
 		Branches(ctx context.Context, owner string, name string) ([]storage.Branch, error)
+		Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error)
 	}
 
 	// Service to interact with repositories.
@@ -33,6 +34,7 @@ type (
 		Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error)
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
 		Branches(ctx context.Context, owner string, name string) ([]*Branch, error)
+		Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error)
 	}
 
 	service struct {
@@ -94,4 +96,8 @@ func (s *service) Branches(ctx context.Context, owner string, name string) ([]*B
 	}
 
 	return branches, nil
+}
+
+func (s *service) Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error) {
+	return s.storage.Commit(ctx, owner, name, rev)
 }
