@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/gitpods/gitpods/storage"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 )
@@ -115,28 +114,4 @@ func (s *loggingService) Branches(ctx context.Context, owner string, name string
 	}
 
 	return branches, err
-}
-
-func (s *loggingService) Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error) {
-	start := time.Now()
-
-	objects, err := s.service.Tree(ctx, owner, name, recursive)
-
-	logger := log.With(s.logger,
-		"method", "Tree",
-		"owner", owner,
-		"name", name,
-		"duration", time.Since(start),
-	)
-
-	if err != nil {
-		level.Warn(logger).Log(
-			"msg", "failed to get tree for repository",
-			"err", err,
-		)
-	} else {
-		level.Debug(logger).Log()
-	}
-
-	return objects, err
 }

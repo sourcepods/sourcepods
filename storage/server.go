@@ -37,41 +37,10 @@ func (s *storageServer) Branches(ctx context.Context, req *BranchesRequest) (*Br
 
 	res := &BranchesResponse{}
 	for _, b := range branches {
-		res.Branch = append(res.Branch, &BranchObject{
+		res.Branch = append(res.Branch, &BranchResponse{
 			Name: b.Name,
 			Sha1: b.Sha1,
 			Type: b.Type,
-		})
-	}
-
-	return res, nil
-}
-
-func (s *storageServer) Tree(ctx context.Context, req *TreeRequest) (*TreeRespone, error) {
-	objects, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetBranch(), req.GetRecursive())
-	if err != nil {
-		return nil, err
-	}
-
-	res := &TreeRespone{}
-	for _, object := range objects {
-		res.Objects = append(res.Objects, &TreeObjectResponse{
-			Mode:   object.Mode,
-			Type:   object.Type,
-			Object: object.Object,
-			File:   object.File,
-			Commit: &CommitResponse{
-				Hash:           object.Commit.Hash,
-				Tree:           object.Commit.Tree,
-				Parent:         object.Commit.Parent,
-				Subject:        object.Commit.Subject,
-				Author:         object.Commit.Author,
-				AuthorEmail:    object.Commit.AuthorEmail,
-				AuthorDate:     object.Commit.AuthorDate.Unix(),
-				Committer:      object.Commit.Committer,
-				CommitterEmail: object.Commit.CommitterEmail,
-				CommitterDate:  object.Commit.CommitterDate.Unix(),
-			},
 		})
 	}
 

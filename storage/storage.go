@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -27,7 +26,6 @@ type (
 		Create(ctx context.Context, owner, name string) error
 		SetDescription(ctx context.Context, owner, name, description string) error
 		Branches(ctx context.Context, owner string, name string) ([]Branch, error)
-		Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]TreeObject, error)
 	}
 
 	storage struct {
@@ -94,20 +92,11 @@ func (s *storage) Branches(ctx context.Context, owner string, name string) ([]Br
 	return bs, nil
 }
 
-type TreeObject struct {
-	Mode   string
-	Type   string
-	Object string
-	File   string
-
-	Commit Commit
-}
-
 type Commit struct {
 	Hash    string
 	Tree    string
 	Parent  string
-	Subject string
+	Message string
 
 	Author      string
 	AuthorEmail string
@@ -118,86 +107,8 @@ type Commit struct {
 	CommitterDate  time.Time
 }
 
-func (s *storage) Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]TreeObject, error) {
-	var objects []TreeObject
-
-	args := []string{"ls-tree", branch}
-	if recursive {
-		args = []string{"ls-tree", "-r", branch}
-	}
-
-	path := filepath.Join(s.root, owner, name)
-	cmd := exec.CommandContext(ctx, s.git, args...)
-	cmd.Dir = path
-	out, err := cmd.Output()
-	if err != nil {
-		return objects, err
-	}
-
-	scanner := bufio.NewScanner(bytes.NewBuffer(out))
-	for scanner.Scan() {
-		tabs := strings.Split(scanner.Text(), "\t")
-		metas, file := tabs[0], tabs[1]
-		meta := strings.Split(metas, " ")
-
-		mode, typ, object := meta[0], meta[1], meta[2]
-
-		objects = append(objects, TreeObject{
-			Mode:   mode,
-			Type:   typ,
-			Object: object,
-			File:   file,
-		})
-	}
-
-	indexes := make(chan int, 64)
-	done := make(chan int, 64)
-
-	for w := 0; w < 4; w++ {
-		go func() {
-			for index := range indexes {
-				commitHash, err := s.commitHash(ctx, owner, name, branch, objects[index].File)
-				if err != nil {
-					log.Println(err)
-					return
-				}
-
-				commit, err := s.commit(ctx, owner, name, commitHash)
-				if err != nil {
-					log.Println(err)
-					return
-				}
-
-				objects[index].Commit = commit
-				done <- index
-			}
-		}()
-	}
-
-	for i := 0; i < len(objects); i++ {
-		indexes <- i
-	}
-	close(indexes)
-
-	for i := 0; i < len(objects); i++ {
-		<-done
-	}
-	close(done)
-
-	return objects, nil
-}
-
-func (s *storage) commitHash(ctx context.Context, owner, name, rev, file string) (string, error) {
-	args := []string{"log", "-1", "--pretty=%H", rev, "--", file}
-	cmd := exec.CommandContext(ctx, s.git, args...)
-	cmd.Dir = filepath.Join(s.root, owner, name)
-	out, err := cmd.Output()
-
-	return strings.TrimSpace(string(out)), err
-}
-
-func (s *storage) commit(ctx context.Context, owner, name, hash string) (Commit, error) {
-	args := []string{"cat-file", "-p", hash}
+func (s *storage) Commit(ctx context.Context, owner string, name string, rev string) (Commit, error) {
+	args := []string{"cat-file", "-p", rev}
 	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = filepath.Join(s.root, owner, name)
 	out, err := cmd.Output()
@@ -205,7 +116,7 @@ func (s *storage) commit(ctx context.Context, owner, name, hash string) (Commit,
 		return Commit{}, err
 	}
 
-	commit, err := parseCommit(bytes.NewBuffer(out), hash)
+	commit, err := parseCommit(bytes.NewBuffer(out), rev)
 	if err != nil {
 		return commit, err
 	}
@@ -232,7 +143,7 @@ func parseCommit(r io.Reader, hash string) (Commit, error) {
 		}
 
 		if subject {
-			c.Subject = line
+			c.Message = line
 		}
 
 		if strings.HasPrefix(line, "tree ") {

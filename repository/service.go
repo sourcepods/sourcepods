@@ -25,7 +25,6 @@ type (
 		Create(ctx context.Context, owner string, name string) error
 		SetDescription(ctx context.Context, owner, name, description string) error
 		Branches(ctx context.Context, owner string, name string) ([]storage.Branch, error)
-		Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]storage.TreeObject, error)
 	}
 
 	// Service to interact with repositories.
@@ -34,7 +33,6 @@ type (
 		Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error)
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
 		Branches(ctx context.Context, owner string, name string) ([]*Branch, error)
-		Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error)
 	}
 
 	service struct {
@@ -96,8 +94,4 @@ func (s *service) Branches(ctx context.Context, owner string, name string) ([]*B
 	}
 
 	return branches, nil
-}
-
-func (s *service) Tree(ctx context.Context, owner string, name string, recursive bool) ([]storage.TreeObject, error) {
-	return s.storage.Tree(ctx, owner, name, "master", recursive)
 }

@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"time"
 
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	opentracing "github.com/opentracing/opentracing-go"
@@ -79,42 +78,4 @@ func (c *Client) Branches(ctx context.Context, owner string, name string) ([]Bra
 	}
 
 	return branches, err
-}
-
-func (c *Client) Tree(ctx context.Context, owner, name, branch string, recursive bool) ([]TreeObject, error) {
-	req := &TreeRequest{
-		Owner:     owner,
-		Name:      name,
-		Branch:    branch,
-		Recursive: recursive,
-	}
-
-	res, err := c.client.Tree(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	var objects []TreeObject
-	for _, object := range res.Objects {
-		objects = append(objects, TreeObject{
-			Mode:   object.GetMode(),
-			Type:   object.GetType(),
-			Object: object.GetObject(),
-			File:   object.GetFile(),
-			Commit: Commit{
-				Hash:           object.GetCommit().GetHash(),
-				Tree:           object.GetCommit().GetTree(),
-				Parent:         object.GetCommit().GetParent(),
-				Subject:        object.GetCommit().GetSubject(),
-				Author:         object.GetCommit().GetAuthor(),
-				AuthorEmail:    object.GetCommit().GetAuthorEmail(),
-				AuthorDate:     time.Unix(object.GetCommit().GetAuthorDate(), 0),
-				Committer:      object.GetCommit().GetCommitter(),
-				CommitterEmail: object.GetCommit().GetCommitterEmail(),
-				CommitterDate:  time.Unix(object.GetCommit().GetCommitterDate(), 0),
-			},
-		})
-	}
-
-	return objects, nil
 }
