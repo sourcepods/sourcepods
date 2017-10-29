@@ -66,14 +66,12 @@ class Repository {
       repository.owner = new User.fromJSON(data['owner']);
     }
 
-    if (data['created_at'] != null) {
-      repository.created =
-      new DateTime.fromMillisecondsSinceEpoch(data['created_at'] * 1000);
+    if (data['createdAt'] != null) {
+      repository.created = DateTime.parse(data['createdAt']);
     }
 
-    if (data['updated_at'] != null) {
-      repository.updated =
-      new DateTime.fromMillisecondsSinceEpoch(data['updated_at'] * 1000);
+    if (data['updatedAt'] != null) {
+      repository.updated = DateTime.parse(data['updatedAt']);
     }
 
     return repository;

@@ -13,8 +13,8 @@ query me {
     email
     username
     name
-    created_at
-    updated_at
+    createdAt
+    updatedAt
   }
 }
 ''';
@@ -26,8 +26,8 @@ query UsersQuery {
     email
     username
     name
-    created_at
-    updated_at
+    createdAt
+    updatedAt
   }
 }
 ''';
@@ -59,8 +59,8 @@ mutation updateUser(\$id: ID!, \$user: updatedUser!) {
     email
     username
     name
-    created_at
-    updated_at
+    createdAt
+    updatedAt
   }
 }
 ''';

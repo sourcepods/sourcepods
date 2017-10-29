@@ -34,14 +34,12 @@ class User {
           .toList();
     }
 
-    if (data['created_at'] != null) {
-      user.created =
-      new DateTime.fromMillisecondsSinceEpoch(data['created_at'] * 1000);
+    if (data['createdAt'] != null) {
+      user.created = DateTime.parse(data['createdAt']);
     }
 
-    if (data['updated_at'] != null) {
-      user.updated =
-      new DateTime.fromMillisecondsSinceEpoch(data['updated_at'] * 1000);
+    if (data['updatedAt'] != null) {
+      user.updated = DateTime.parse(data['updatedAt']);
     }
 
     return user;
