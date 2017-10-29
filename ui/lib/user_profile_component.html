@@ -27,7 +27,6 @@
             <div uk-sticky>
                 <ul class="uk-child-width-expand profile-tab" uk-tab>
                     <li class="uk-active"><a href="#">Repositories</a></li>
-                    <li><a href="#">Activity</a></li>
                     <li><a href="#">Stars</a></li>
                 </ul>
             </div>
@@ -51,7 +50,7 @@
                             </div>
                         </div>
                     </li>
-                    <li *ngFor="let repository of (user.repositories | filteredRepos:repoQuery)">
+                    <li *ngFor="let repository of (repositories | filteredRepos:repoQuery)">
                         <div class="uk-flex">
                             <div class="uk-flex-auto">
                                 <h4 class="repository-name">
@@ -63,9 +62,7 @@
                             </div>
                             <div class="uk-text-right">
                                 <span uk-icon="icon: star"></span>
-                                <span>{{repository.stars}}</span>
-                                <span uk-icon="icon: git-fork"></span>
-                                <span>{{repository.forks}}</span>
+                                <span>5</span>
                             </div>
                         </div>
                     </li>

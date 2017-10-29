@@ -5,31 +5,21 @@ class Repository {
   String name;
   String description;
   String website;
-  String default_branch;
-  bool private;
-  bool bare;
+  String defaultBranch;
   DateTime created;
   DateTime updated;
 
-  int stars;
-  int forks;
-  Map<String, int> issueStats;
-  Map<String, int> pullRequestStats;
-
   User owner;
+  List<RepositoryBranch> branches;
 
   Repository({
     this.id,
     this.name,
     this.description,
     this.website,
-    this.default_branch,
-    this.private,
-    this.bare,
+    this.defaultBranch,
     this.created,
     this.updated,
-    this.stars,
-    this.forks,
   });
 
   factory Repository.fromJSON(Map<String, dynamic> data) {
@@ -40,27 +30,7 @@ class Repository {
 
     data['description'] != null ? repository.description = data['description'] : '';
     data['website'] != null ? repository.website = data['website'] : '';
-    data['default_branch'] != null ? repository.default_branch = data['default_branch'] : '';
-    data['private'] != null ? repository.private = data['private'] : '';
-    data['bare'] != null ? repository.bare = data['bare'] : '';
-    data['stars'] != null ? repository.stars = data['stars'] : '';
-    data['forks'] != null ? repository.forks = data['forks'] : '';
-
-    if (data['issue_stats'] != null) {
-      repository.issueStats = {
-        'total': data['issue_stats']['total'],
-        'open': data['issue_stats']['open'],
-        'closed': data['issue_stats']['closed'],
-      };
-    }
-
-    if (data['pull_request_stats'] != null) {
-      repository.pullRequestStats = {
-        'total': data['pull_request_stats']['total'],
-        'open': data['pull_request_stats']['open'],
-        'closed': data['pull_request_stats']['closed'],
-      };
-    }
+    data['defaultBranch'] != null ? repository.defaultBranch = data['defaultBranch'] : '';
 
     if (data['owner'] != null) {
       repository.owner = new User.fromJSON(data['owner']);
@@ -74,6 +44,35 @@ class Repository {
       repository.updated = DateTime.parse(data['updatedAt']);
     }
 
+    if (data['branches'] != null) {
+      repository.branches = data['branches']
+          .map((json) => new RepositoryBranch.fromJSON(json))
+          .toList();
+    }
+
     return repository;
+  }
+}
+
+class RepositoryBranch {
+  String name;
+  String sha1;
+  String type;
+  bool protected;
+
+  RepositoryBranch({
+    this.name,
+    this.sha1,
+    this.type,
+    this.protected,
+  });
+
+  factory RepositoryBranch.fromJSON(Map<String, dynamic> data) {
+    return new RepositoryBranch(
+      name: data['name'],
+      sha1: data['sha1'],
+      type: data['type'],
+      protected: data['protected'],
+    );
   }
 }

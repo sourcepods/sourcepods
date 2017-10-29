@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:angular/angular.dart';
+import 'package:gitpods/repository.dart';
 import 'package:gitpods/user.dart';
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
@@ -39,15 +40,13 @@ query userProfile(\$username: String!) {
     username
     name
     email
-    created_at
-    updated_at
-    repositories {
-      id
-      name
-      description
-      forks
-      stars
-    }
+    createdAt
+    updatedAt
+  }
+  repositories(owner: \$username) {
+    id
+    name
+    description
   }
 }
 ''';
@@ -100,7 +99,7 @@ class UserService {
         .toList();
   }
 
-  Future<User> profile(String username) async {
+  Future<UserProfile> profile(String username) async {
     var payload = JSON.encode({
       'query': userProfile,
       'variables': {
@@ -111,7 +110,16 @@ class UserService {
     Response resp = await this._http.post('/api/query', body: payload);
 
     var body = JSON.decode(resp.body);
-    return new User.fromJSON(body['data']['user']);
+
+    User user = new User.fromJSON(body['data']['user']);
+    List<Repository> repositories = body['data']['repositories']
+        .map((json) => new Repository.fromJSON(json))
+        .toList();
+
+    return new UserProfile(
+      user: user,
+      repositories: repositories,
+    );
   }
 
   Future<User> update(User user) async {
@@ -130,6 +138,13 @@ class UserService {
     var body = JSON.decode(resp.body);
     return new User.fromJSON(body['data']['updateUser']);
   }
+}
+
+class UserProfile {
+  List<Repository> repositories;
+  User user;
+
+  UserProfile({this.repositories, this.user});
 }
 
 class UnauthorizedError extends Error {

@@ -19,7 +19,7 @@ class RepositoryCreateComponent {
 
   RepositoryCreateComponent(this._router, this._repositoryService);
 
-  Repository repository = new Repository(private: true);
+  Repository repository = new Repository();
   bool loading;
   String error = '';
 

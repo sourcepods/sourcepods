@@ -24,13 +24,16 @@ class UserProfileComponent implements OnInit {
   UserProfileComponent(this._routeParams, this._userService);
 
   User user;
+  List<Repository> repositories;
   String repoQuery = '';
 
   @override
   void ngOnInit() {
     String username = this._routeParams.get('username');
-    this._userService.profile(username)
-        .then((user) => this.user = user);
+    this._userService.profile(username).then((UserProfile profile) {
+      this.user = profile.user;
+      this.repositories = profile.repositories;
+    });
   }
 }
 

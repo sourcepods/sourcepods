@@ -29,23 +29,12 @@ class RepositoryComponent implements OnInit {
 
     this._repositoryService.get(ownerName, name).then((RepositoryPage page) {
       this.repository = page.repository;
-
-      var tree = page.tree;
-      tree.sort((a, b) {
-        if (a.type == b.type) {
-          return a.file.compareTo(b.file);
-        } else {
-          return b.type.compareTo(a.type);
-        }
-      });
-      this.tree = tree;
     });
   }
 }
 
 class RepositoryPage {
   Repository repository;
-  List<RepositoryTree> tree;
 
-  RepositoryPage(this.repository, this.tree);
+  RepositoryPage(this.repository);
 }
