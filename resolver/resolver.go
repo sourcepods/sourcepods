@@ -247,7 +247,8 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer span.Finish()
 
 	var payload = struct {
-		Query string `json:"query"`
+		Query     string                 `json:"query"`
+		Variables map[string]interface{} `json:"variables"`
 	}{}
 
 	const megabyte = 1048576
@@ -258,9 +259,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	res := graphql.Do(graphql.Params{
-		Schema:        h.schema,
-		RequestString: payload.Query,
-		Context:       ctx,
+		Schema:         h.schema,
+		RequestString:  payload.Query,
+		VariableValues: payload.Variables,
+		Context:        ctx,
 	})
 
 	if err := json.NewEncoder(w).Encode(res); err != nil {
