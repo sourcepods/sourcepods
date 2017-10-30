@@ -185,54 +185,57 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 		},
 	})
 
-	schema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query: graphql.NewObject(graphql.ObjectConfig{
-			Name: "Query",
-			Fields: graphql.Fields{
-				"me": &graphql.Field{
-					Type:    gUser,
-					Resolve: h.ResolveMe(),
-				},
-				"user": &graphql.Field{
-					Type:    gUser,
-					Resolve: h.ResolveUser(),
-					Args: graphql.FieldConfigArgument{
-						"username": &graphql.ArgumentConfig{
-							Type:        graphql.NewNonNull(graphql.String),
-							Description: "The username used to search for the user",
-						},
-					},
-				},
-				"users": &graphql.Field{
-					Type:    graphql.NewNonNull(graphql.NewList(gUser)),
-					Resolve: h.ResolveUsers(),
-				},
-				"repository": &graphql.Field{
-					Type:    graphql.NewNonNull(gRepository),
-					Resolve: h.ResolveRepository(),
-					Args: graphql.FieldConfigArgument{
-						"owner": &graphql.ArgumentConfig{
-							Type:        graphql.NewNonNull(graphql.String),
-							Description: "The username of the repository's owner",
-						},
-						"name": &graphql.ArgumentConfig{
-							Type:        graphql.NewNonNull(graphql.String),
-							Description: "The name of the repository",
-						},
-					},
-				},
-				"repositories": &graphql.Field{
-					Type:    graphql.NewNonNull(graphql.NewList(gRepository)),
-					Resolve: h.ResolveRepositories(),
-					Args: graphql.FieldConfigArgument{
-						"owner": &graphql.ArgumentConfig{
-							Type:        graphql.NewNonNull(graphql.String),
-							Description: "The username of the repository's owner",
-						},
+	query := graphql.NewObject(graphql.ObjectConfig{
+		Name: "Query",
+		Fields: graphql.Fields{
+			"me": &graphql.Field{
+				Type:    gUser,
+				Resolve: h.ResolveMe(),
+			},
+			"user": &graphql.Field{
+				Type:    gUser,
+				Resolve: h.ResolveUser(),
+				Args: graphql.FieldConfigArgument{
+					"username": &graphql.ArgumentConfig{
+						Type:        graphql.NewNonNull(graphql.String),
+						Description: "The username used to search for the user",
 					},
 				},
 			},
-		}),
+			"users": &graphql.Field{
+				Type:    graphql.NewNonNull(graphql.NewList(gUser)),
+				Resolve: h.ResolveUsers(),
+			},
+			"repository": &graphql.Field{
+				Type:    gRepository,
+				Resolve: h.ResolveRepository(),
+				Args: graphql.FieldConfigArgument{
+					"owner": &graphql.ArgumentConfig{
+						Type:        graphql.NewNonNull(graphql.String),
+						Description: "The username of the repository's owner",
+					},
+					"name": &graphql.ArgumentConfig{
+						Type:        graphql.NewNonNull(graphql.String),
+						Description: "The name of the repository",
+					},
+				},
+			},
+			"repositories": &graphql.Field{
+				Type:    graphql.NewNonNull(graphql.NewList(gRepository)),
+				Resolve: h.ResolveRepositories(),
+				Args: graphql.FieldConfigArgument{
+					"owner": &graphql.ArgumentConfig{
+						Type:        graphql.NewNonNull(graphql.String),
+						Description: "The username of the repository's owner",
+					},
+				},
+			},
+		},
+	})
+
+
+	schema, err := graphql.NewSchema(graphql.SchemaConfig{
+		Query: query,
 	})
 	if err != nil {
 		panic(err) // TODO
