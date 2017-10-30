@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gitpods/gitpods/repository"
@@ -233,9 +234,36 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 		},
 	})
 
+	updatedUser := graphql.NewInputObject(graphql.InputObjectConfig{
+		Name: "UpdatedUser",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"name": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+		},
+	})
+
+	mutation := graphql.NewObject(graphql.ObjectConfig{
+		Name: "Mutation",
+		Fields: graphql.Fields{
+			"updateUser": &graphql.Field{
+				Type: gUser,
+				Args: graphql.FieldConfigArgument{
+					"id": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.ID),
+					},
+					"user": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(updatedUser),
+					},
+				},
+				Resolve: h.MutateUpdateUser(),
+			},
+		},
+	})
 
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query: query,
+		Query:    query,
+		Mutation: mutation,
 	})
 	if err != nil {
 		panic(err) // TODO
@@ -324,6 +352,50 @@ func (h *handler) ResolveUser() graphql.FieldResolveFn {
 		}, err
 	}
 }
+
+func (h *handler) MutateUpdateUser() graphql.FieldResolveFn {
+	return func(p graphql.ResolveParams) (interface{}, error) {
+		id, ok := p.Args["id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive id from arguments")
+		}
+		uu, ok := p.Args["user"].(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("can't retreive user from arguments")
+		}
+		uuName, ok := uu["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive user's name from arguments")
+		}
+
+		sessUser := session.GetSessionUser(p.Context)
+		if sessUser.ID != id {
+			return nil, fmt.Errorf("not allowed to update other users")
+		}
+
+		u, err := h.users.Find(p.Context, id)
+		if err != nil {
+			return nil, err
+		}
+
+		u.Name = strings.TrimSpace(uuName)
+
+		updated, err := h.users.Update(p.Context, u)
+		if err != nil {
+			return nil, err // TODO
+		}
+
+		return userResponse{
+			ID:       updated.ID,
+			Email:    updated.Email,
+			Username: updated.Username,
+			Name:     updated.Name,
+			Created:  updated.Created,
+			Updated:  updated.Updated,
+		}, nil
+	}
+}
+
 func (h *handler) ResolveUsers() graphql.FieldResolveFn {
 	return func(p graphql.ResolveParams) (interface{}, error) {
 		us, err := h.users.FindAll(p.Context)

@@ -52,8 +52,8 @@ query userProfile(\$username: String!) {
 ''';
 
 const userUpdate = '''
-mutation updateUser(\$id: ID!, \$user: updatedUser!) {
-  updateUser(id: \$id, user: \$user) {
+mutation updateUser(\$id: ID!, \$user: UpdatedUser!) {
+  user: updateUser(id: \$id, user: \$user) {
     id
     email
     username
@@ -136,7 +136,7 @@ class UserService {
     Response resp = await this._http.post('/api/query', body: payload);
 
     var body = JSON.decode(resp.body);
-    return new User.fromJSON(body['data']['updateUser']);
+    return new User.fromJSON(body['data']['user']);
   }
 }
 
