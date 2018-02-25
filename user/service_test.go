@@ -52,6 +52,10 @@ func (s *store) FindByUsername(ctx context.Context, username string) (*User, err
 	return nil, NotFoundError
 }
 
+func (s *store) FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error) {
+	panic("implement me")
+}
+
 func (s *store) Create(context.Context, *User) (*User, error) {
 	panic("implement me")
 }
