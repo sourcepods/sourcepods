@@ -5,6 +5,11 @@ metadata:
   namespace: gitpods-try
 spec:
   replicas: 3
+  revisionHistoryLimit: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: 1
   template:
     metadata:
       labels:
