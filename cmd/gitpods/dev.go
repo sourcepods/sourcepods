@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/gitpods/gitpods/cmd"
-	"github.com/oklog/oklog/pkg/group"
+	"github.com/oklog/run"
 	"github.com/urfave/cli"
 )
 
@@ -129,7 +129,7 @@ func devAction(c *cli.Context) error {
 		go watcher.Watch()
 	}
 
-	var g group.Group
+	var g run.Group
 	{
 		stop := make(chan os.Signal, 1)
 		g.Add(func() error {

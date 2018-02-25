@@ -15,7 +15,7 @@ import (
 	"github.com/gitpods/gitpods/storage"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/oklog/oklog/pkg/group"
+	"github.com/oklog/run"
 	jaeger "github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
 	"github.com/urfave/cli"
@@ -128,7 +128,7 @@ func storageAction(c *cli.Context) error {
 		return fmt.Errorf("failed to create grpc listener: %v", err)
 	}
 
-	var gr group.Group
+	var gr run.Group
 	{
 		sig := make(chan os.Signal)
 		gr.Add(func() error {

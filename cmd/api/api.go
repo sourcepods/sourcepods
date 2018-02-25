@@ -25,7 +25,7 @@ import (
 	"github.com/go-kit/kit/metrics"
 	"github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
-	"github.com/oklog/oklog/pkg/group"
+	"github.com/oklog/run"
 	prom "github.com/prometheus/client_golang/prometheus"
 	jaeger "github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
@@ -278,7 +278,7 @@ func apiAction(c *cli.Context) error {
 		Handler: privateRouter,
 	}
 
-	var gr group.Group
+	var gr run.Group
 	{
 		gr.Add(func() error {
 			dur := time.Minute
