@@ -19,6 +19,10 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
+[prune]
+  go-tests = true
+  non-go = true
+  unused-packages = true
 
 [[constraint]]
   name = "github.com/asaskevich/govalidator"
@@ -49,6 +53,10 @@
   version = "1.0.0"
 
 [[constraint]]
+  name = "github.com/graphql-go/graphql"
+  version = "0.7.4"
+
+[[constraint]]
   branch = "master"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
 
@@ -59,10 +67,6 @@
 [[constraint]]
   name = "github.com/mattes/migrate"
   version = "3.0.1"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/neelance/graphql-go"
 
 [[constraint]]
   name = "github.com/oklog/oklog"
