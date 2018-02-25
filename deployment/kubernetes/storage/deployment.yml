@@ -26,7 +26,7 @@ spec:
           value: '/data'
         # This hash is not needed and only used to track which version is deployed when using :latest
         - name: HASH
-          value: {{ build.commit }}
+          value: {{ .DroneCommit }}
         ports:
         - containerPort: 3030
         resources:

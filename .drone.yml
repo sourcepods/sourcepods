@@ -78,25 +78,34 @@ pipeline:
       event: push
 
   kubernetes-api:
-    group: deployment
-    image: vallard/drone-kube
+    image: kubeciio/kubectl:0.2
+    kubectl: apply
     namespace: gitpods-try
-    template: deployment/kubernetes/api/deployment.yml
-    secrets: [ KUBE_SERVER, KUBE_CA, KUBE_TOKEN ]
+    templates:
+      - deployment/kubernetes/api/deployment.yml
+    secrets: [ kubeconfig ]
     when:
       branch: master
       event: push
 
-  kubernetes-ui:
-    group: deployment
-    image: vallard/drone-kube
+  kubernetes-storage:
+    image: kubeciio/kubectl:0.2
+    kubectl: apply
     namespace: gitpods-try
-    template: deployment/kubernetes/ui/deployment.yml
-    secrets: [ KUBE_SERVER, KUBE_CA, KUBE_TOKEN ]
+    templates:
+      - deployment/kubernetes/storage/deployment.yml
+    secrets: [ kubeconfig ]
     when:
       branch: master
       event: push
 
-  gitter:
-    image: plugins/gitter
-    secrets: [ gitter_webhook ]
+  kubernetes-api:
+    image: kubeciio/kubectl:0.2
+    kubectl: apply
+    namespace: gitpods-try
+    templates:
+      - deployment/kubernetes/ui/deployment.yml
+    secrets: [ kubeconfig ]
+    when:
+      branch: master
+      event: push
