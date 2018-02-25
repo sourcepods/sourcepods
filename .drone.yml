@@ -4,7 +4,7 @@ workspace:
 
 pipeline:
   test:
-    image: golang:1.9
+    image: golang:1.10
     commands:
       - go test -v ./...
 
@@ -18,25 +18,25 @@ pipeline:
 
   api:
     group: build
-    image: golang:1.9
+    image: golang:1.10
     commands:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api/api ./cmd/api
 
   gitpods:
     group: build
-    image: golang:1.9
+    image: golang:1.10
     commands:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/gitpods/gitpods ./cmd/gitpods
 
   storage:
     group: build
-    image: golang:1.9
+    image: golang:1.10
     commands:
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/storage/storage ./cmd/storage
 
   ui:
     group: build
-    image: golang:1.9
+    image: golang:1.10
     commands:
       - go get -u github.com/gobuffalo/packr/...
       - packr
