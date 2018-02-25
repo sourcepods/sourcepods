@@ -38,8 +38,8 @@ pipeline:
     group: build
     image: golang:1.10
     commands:
-      - go get -u github.com/gobuffalo/packr/...
-      - packr
+      - curl -s -L https://github.com/gobuffalo/packr/releases/download/v1.10.4/packr_1.10.4_linux_amd64.tar.gz | tar -xz
+      - ./packr
       - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
 
   docker-api:
