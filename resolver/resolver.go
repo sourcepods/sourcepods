@@ -243,6 +243,21 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 		},
 	})
 
+	createRepository := graphql.NewInputObject(graphql.InputObjectConfig{
+		Name: "newRepository",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"name": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"website": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+		},
+	})
+
 	mutation := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Mutation",
 		Fields: graphql.Fields{
@@ -257,6 +272,15 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 					},
 				},
 				Resolve: h.MutateUpdateUser(),
+			},
+			"createRepository": &graphql.Field{
+				Type: gRepository,
+				Args: graphql.FieldConfigArgument{
+					"repository": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(createRepository),
+					},
+				},
+				Resolve: h.MutateCreateRepository(),
 			},
 		},
 	})
@@ -461,6 +485,55 @@ func (h *handler) ResolveRepository() graphql.FieldResolveFn {
 			Updated:       r.Updated,
 
 			Owner: owner,
+		}, nil
+	}
+}
+
+func (h *handler) MutateCreateRepository() graphql.FieldResolveFn {
+	return func(p graphql.ResolveParams) (interface{}, error) {
+		repoArgs := p.Args["repository"].(map[string]interface{})
+
+		name, ok := repoArgs["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive name from arguments")
+		}
+
+		description, ok := repoArgs["description"].(string)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive description from arguments")
+		}
+
+		website, ok := repoArgs["website"].(string)
+		if !ok {
+			return nil, fmt.Errorf("can't retreive website from arguments")
+		}
+
+		sessUser := session.GetSessionUser(p.Context)
+
+		u, err := h.users.Find(p.Context, sessUser.ID)
+		if err != nil {
+			return nil, err // TODO
+		}
+
+		r, err := h.repositories.Create(p.Context, u.Username, &repository.Repository{
+			Name:        strings.TrimSpace(name),
+			Description: strings.TrimSpace(description),
+			Website:     strings.TrimSpace(website),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return repositoryResponse{
+			ID:            r.ID,
+			Name:          r.Name,
+			Description:   r.Description,
+			Website:       r.Website,
+			DefaultBranch: r.DefaultBranch,
+			Private:       r.Private,
+			Bare:          r.Bare,
+			Created:       r.Created,
+			Updated:       r.Updated,
 		}, nil
 	}
 }
