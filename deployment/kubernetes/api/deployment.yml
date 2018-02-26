@@ -23,6 +23,8 @@ spec:
       - name: api
         image: gitpods/api:latest
         env:
+        - name: GITPODS_API_PREFIX
+          value: '/api'
         - name: GITPODS_DATABASE_DRIVER
           value: 'postgres'
         - name: GITPODS_DATABASE_DSN

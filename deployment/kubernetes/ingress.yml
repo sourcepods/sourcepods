@@ -4,21 +4,20 @@ metadata:
   name: gitpods
   namespace: gitpods-try
   annotations:
-    kubernetes.io/ingress.class: traefik
-    traefik.frontend.rule.type: PathPrefixStrip
+    kubernetes.io/ingress.class: nginx
 spec:
   tls:
   - hosts:
     - try.gitpods.io
-    secretName: gitpods-tls
+    secretName: try-gitpods-tls
   rules:
   - host: try.gitpods.io
     http:
-      paths:
+     paths:
       - path: /
         backend:
           serviceName: ui
-          servicePort: 80
+          servicePort: http
       - path: /api
         backend:
           serviceName: api

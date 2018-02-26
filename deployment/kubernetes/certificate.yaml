@@ -1,0 +1,19 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: try-gitpods
+  namespace: gitpods-try
+spec:
+  secretName: try-gitpods-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: try.gitpods.io
+  dnsNames:
+  - try.gitpods.io
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - try.gitpods.io
