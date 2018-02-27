@@ -8,6 +8,11 @@ pipeline:
     commands:
       - go test -coverprofile coverage.out -race -v ./...
 
+  codacy:
+    image: plugins/codacy:1
+    pull: true
+    secrets: [ codacy ]
+
   dart:
     image: google/dart
     commands:
