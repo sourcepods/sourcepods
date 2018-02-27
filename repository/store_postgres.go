@@ -32,8 +32,6 @@ SELECT
 	description,
 	website,
 	default_branch,
-	private,
-	bare,
 	created_at,
 	updated_at,
 	(SELECT 42) AS stars,
@@ -58,8 +56,6 @@ ORDER BY updated_at DESC;
 		var description sql.NullString
 		var website sql.NullString
 		var defaultBranch string
-		var private bool
-		var bare bool
 		var created time.Time
 		var updated time.Time
 		var stars int
@@ -71,8 +67,6 @@ ORDER BY updated_at DESC;
 			&description,
 			&website,
 			&defaultBranch,
-			&private,
-			&bare,
 			&created,
 			&updated,
 			&stars,
@@ -85,8 +79,6 @@ ORDER BY updated_at DESC;
 			Description:   description.String,
 			Website:       website.String,
 			DefaultBranch: defaultBranch,
-			Private:       private,
-			Bare:          bare,
 			Created:       created,
 			Updated:       updated,
 		})
@@ -117,8 +109,6 @@ SELECT
 	description,
 	website,
 	default_branch,
-	private,
-	bare,
 	created_at,
 	updated_at,
 	owner_id
@@ -133,8 +123,6 @@ WHERE
 	var description sql.NullString
 	var website sql.NullString
 	var defaultBranch string
-	var private bool
-	var bare bool
 	var created time.Time
 	var updated time.Time
 	var ownerID string
@@ -144,8 +132,6 @@ WHERE
 		&description,
 		&website,
 		&defaultBranch,
-		&private,
-		&bare,
 		&created,
 		&updated,
 		&ownerID,
@@ -159,8 +145,6 @@ WHERE
 			Description:   description.String,
 			Website:       website.String,
 			DefaultBranch: defaultBranch,
-			Private:       private,
-			Bare:          bare,
 			Created:       created,
 			Updated:       updated,
 		},
@@ -195,8 +179,8 @@ func (s *Postgres) Create(ctx context.Context, owner string, r *Repository) (*Re
 	}
 
 	create := `
-INSERT INTO repositories (owner_id, name, description, website, default_branch, private, bare)
-VALUES ((SELECT id FROM users WHERE username = $1 LIMIT 1), $2, $3, $4, $5, $6, $7)
+INSERT INTO repositories (owner_id, name, description, website, default_branch)
+VALUES ((SELECT id FROM users WHERE username = $1 LIMIT 1), $2, $3, $4, $5)
 RETURNING id, created_at, updated_at;
 `
 
@@ -206,8 +190,6 @@ RETURNING id, created_at, updated_at;
 		description,
 		website,
 		r.DefaultBranch,
-		r.Private,
-		r.Bare,
 	)
 
 	if err := row.Scan(&r.ID, &r.Created, &r.Updated); err != nil {

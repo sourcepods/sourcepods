@@ -146,14 +146,6 @@ func Handler(repositories repository.Service, users user.Service) http.Handler {
 				Type:        graphql.NewNonNull(graphql.String),
 				Description: "The user's name",
 			},
-			"private": &graphql.Field{
-				Type:        graphql.NewNonNull(graphql.Boolean),
-				Description: "True when the repository is private and not public",
-			},
-			"bare": &graphql.Field{
-				Type:        graphql.NewNonNull(graphql.Boolean),
-				Description: "True when the repository is bare",
-			},
 			"createdAt": &graphql.Field{
 				Type:        graphql.NewNonNull(graphql.DateTime),
 				Description: "The time the repository was first created",
@@ -449,8 +441,6 @@ type repositoryResponse struct {
 	Description   string    `json:"description"`
 	Website       string    `json:"website"`
 	DefaultBranch string    `json:"defaultBranch"`
-	Private       bool      `json:"private"`
-	Bare          bool      `json:"bare"`
 	Created       time.Time `json:"createdAt"`
 	Updated       time.Time `json:"updatedAt"`
 
@@ -479,8 +469,6 @@ func (h *handler) ResolveRepository() graphql.FieldResolveFn {
 			Description:   r.Description,
 			Website:       r.Website,
 			DefaultBranch: r.DefaultBranch,
-			Private:       r.Private,
-			Bare:          r.Bare,
 			Created:       r.Created,
 			Updated:       r.Updated,
 
@@ -521,8 +509,6 @@ func (h *handler) MutateCreateRepository() graphql.FieldResolveFn {
 			Description:   r.Description,
 			Website:       r.Website,
 			DefaultBranch: r.DefaultBranch,
-			Private:       r.Private,
-			Bare:          r.Bare,
 			Created:       r.Created,
 			Updated:       r.Updated,
 		}, nil
@@ -549,8 +535,6 @@ func (h *handler) ResolveRepositories() graphql.FieldResolveFn {
 				Description:   r.Description,
 				Website:       r.Website,
 				DefaultBranch: r.DefaultBranch,
-				Private:       r.Private,
-				Bare:          r.Bare,
 				Created:       r.Created,
 				Updated:       r.Updated,
 

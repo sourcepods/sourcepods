@@ -9,8 +9,6 @@ type Repository struct {
 	Description   string
 	Website       string
 	DefaultBranch string
-	Private       bool
-	Bare          bool
 	Created       time.Time
 	Updated       time.Time
 }
