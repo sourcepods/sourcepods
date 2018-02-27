@@ -1,40 +1,16 @@
 <div style="display: flex;flex-direction: column;min-height: 100vh;">
     <div class="uk-navbar-container uk-margin">
-        <nav class="uk-container uk-margin" uk-navbar>
+        <nav class="uk-container" uk-navbar>
 
             <div class="uk-position-top-center uk-overlay" *ngIf="loading">
                 <div uk-spinner></div>
             </div>
 
-            <div class="uk-navbar-left">
-                <a [routerLink]="['/UserList']">
-                    <img src="/img/logo.svg" alt="" style="height: 46px;"/>
-                </a>
-
-                <!--<ul class="uk-navbar-nav">-->
-                    <!--<li>-->
-                        <!--<a [routerLink]="['/Issues']">-->
-                            <!--Issues-->
-                            <!--<!--<span class="uk-badge">12</span>-->
-                        <!--</a>-->
-                    <!--</li>-->
-                    <!--<li>-->
-                        <!--<a [routerLink]="['/Pulls']">-->
-                            <!--Pull Requests-->
-                            <!--<!--<span class="uk-badge">1</span>-->
-                        <!--</a>-->
-                    <!--</li>-->
-                <!--</ul>-->
-
-            </div>
+            <a [routerLink]="['/UserList']" style="padding: 17px 0;">
+                <img src="/img/logo.svg" alt="" style="height: 46px;"/>
+            </a>
 
             <div class="uk-navbar-right uk-flex-last@s">
-                <!--<div class="uk-navbar-item">-->
-                <!--<form class="uk-search uk-search-navbar">-->
-                <!--<span class="uk-search-icon-flip" uk-search-icon></span>-->
-                <!--<input class="uk-search-input" type="search" placeholder="Search...">-->
-                <!--</form>-->
-                <!--</div>-->
                 <ul class="uk-navbar-nav" *ngIf="user != null">
                     <li>
                         <div>
