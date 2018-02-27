@@ -1,5 +1,6 @@
 *-packr.go
 
+/coverage.out
 /dev/
 /dist/
 
