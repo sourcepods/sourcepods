@@ -106,7 +106,7 @@ pipeline:
       branch: master
       event: push
 
-  kubernetes-api:
+  kubernetes-ui:
     image: kubeciio/kubectl:0.2
     kubectl: apply
     namespace: gitpods-try
