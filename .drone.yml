@@ -11,7 +11,9 @@ pipeline:
   codacy:
     image: plugins/codacy:1
     pull: true
-    secrets: [ codacy ]
+    secrets:
+      - source: codacy
+        target: codacy_token
 
   dart:
     image: google/dart
