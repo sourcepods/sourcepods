@@ -11,7 +11,7 @@ type tracingService struct {
 	service Service
 }
 
-// NewLoggingService wraps the Service and provides tracing for its methods.
+// NewTracingService wraps the Service and provides tracing for its methods.
 func NewTracingService(s Service) Service {
 	return &tracingService{service: s}
 }

@@ -86,6 +86,8 @@ ORDER BY updated_at DESC;
 	return repositories, owner, nil
 }
 
+// Find a Repository by its name and owner's username.
+// This func returns the repository, its owner's username and an error.
 func (s *Postgres) Find(ctx context.Context, owner string, name string) (*Repository, string, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.Find")
 	span.SetTag("owner", owner)
@@ -140,6 +142,8 @@ WHERE
 		nil
 }
 
+// Create a Repository for a owner (by its username).
+// This func returns the created repository or an error.
 func (s *Postgres) Create(ctx context.Context, owner string, r *Repository) (*Repository, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.Create")
 	span.SetTag("owner", owner)

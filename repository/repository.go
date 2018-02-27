@@ -2,7 +2,7 @@ package repository
 
 import "time"
 
-// Tree is a git repository with some meta information for gitpods.
+// Repository containing source code.
 type Repository struct {
 	ID            string
 	Name          string
@@ -13,6 +13,7 @@ type Repository struct {
 	Updated       time.Time
 }
 
+// Branch of a Repository.
 type Branch struct {
 	Name      string
 	Sha1      string

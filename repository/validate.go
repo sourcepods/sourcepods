@@ -6,6 +6,7 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
+// ValidateCreate takes a Repository and validates its fields.
 func ValidateCreate(r *Repository) error {
 	if err := validateName(r.Name); err != nil {
 		return err
