@@ -44,6 +44,11 @@ func validateDescription(description string) error {
 }
 
 func validateWebsite(website string) error {
+	// website is optional and thus can be an empty string
+	if website == "" {
+		return nil
+	}
+
 	if ok := govalidator.IsURL(website); !ok {
 		return fmt.Errorf("%s is not a url", website)
 	}
