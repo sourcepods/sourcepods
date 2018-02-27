@@ -498,19 +498,10 @@ func (h *handler) MutateCreateRepository() graphql.FieldResolveFn {
 			return nil, fmt.Errorf("can't retreive name from arguments")
 		}
 
-		description, ok := repoArgs["description"].(string)
-		if !ok {
-			return nil, fmt.Errorf("can't retreive description from arguments")
-		}
+		description, _ := repoArgs["description"].(string)
+		website, _ := repoArgs["website"].(string)
 
-		website, ok := repoArgs["website"].(string)
-		if !ok {
-			return nil, fmt.Errorf("can't retreive website from arguments")
-		}
-
-		sessUser := session.GetSessionUser(p.Context)
-
-		u, err := h.users.Find(p.Context, sessUser.ID)
+		u, err := h.users.Find(p.Context, session.GetSessionUser(p.Context).ID)
 		if err != nil {
 			return nil, err // TODO
 		}
