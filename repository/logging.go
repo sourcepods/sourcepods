@@ -75,7 +75,7 @@ func (s *loggingService) Create(ctx context.Context, owner string, repository *R
 	)
 
 	if err != nil {
-		if err != AlreadyExistsError {
+		if err != ErrAlreadyExists {
 			level.Warn(logger).Log(
 				"msg", "failed to create repository",
 				"err", err,
@@ -101,7 +101,7 @@ func (s *loggingService) Branches(ctx context.Context, owner string, name string
 	)
 
 	if err != nil {
-		if err != AlreadyExistsError {
+		if err != ErrAlreadyExists {
 			level.Warn(logger).Log(
 				"msg", "failed to list branches",
 				"err", err,
