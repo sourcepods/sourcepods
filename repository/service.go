@@ -15,8 +15,8 @@ var (
 type (
 	// Store or retrieve repositories from some database.
 	Store interface {
-		List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error)
-		Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error)
+		List(ctx context.Context, owner string) ([]*Repository, string, error)
+		Find(ctx context.Context, owner string, name string) (*Repository, string, error)
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
 	}
 
@@ -30,8 +30,8 @@ type (
 
 	// Service to interact with repositories.
 	Service interface {
-		List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error)
-		Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error)
+		List(ctx context.Context, owner string) ([]*Repository, string, error)
+		Find(ctx context.Context, owner string, name string) (*Repository, string, error)
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
 		Branches(ctx context.Context, owner string, name string) ([]*Branch, error)
 		Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error)
@@ -51,11 +51,11 @@ func NewService(repositories Store, storage Storage) Service {
 	}
 }
 
-func (s *service) List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error) {
+func (s *service) List(ctx context.Context, owner string) ([]*Repository, string, error) {
 	return s.repositories.List(ctx, owner)
 }
 
-func (s *service) Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error) {
+func (s *service) Find(ctx context.Context, owner string, name string) (*Repository, string, error) {
 	return s.repositories.Find(ctx, owner, name)
 }
 

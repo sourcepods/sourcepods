@@ -458,7 +458,7 @@ func (h *handler) ResolveRepository() graphql.FieldResolveFn {
 			return nil, fmt.Errorf("can't retreive owner's username from arguments")
 		}
 
-		r, _, _, err := h.repositories.Find(p.Context, owner, name)
+		r, _, err := h.repositories.Find(p.Context, owner, name)
 		if err != nil {
 			return nil, err // TODO
 		}
@@ -522,7 +522,7 @@ func (h *handler) ResolveRepositories() graphql.FieldResolveFn {
 			return nil, fmt.Errorf("can't retreive owner's username from arguments")
 		}
 
-		rs, _, _, err := h.repositories.List(p.Context, owner)
+		rs, _, err := h.repositories.List(p.Context, owner)
 		if err != nil {
 			return nil, err // TODO
 		}

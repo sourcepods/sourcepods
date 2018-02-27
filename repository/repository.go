@@ -13,18 +13,6 @@ type Repository struct {
 	Updated       time.Time
 }
 
-type Stats struct {
-	Stars int
-	Forks int
-
-	IssueTotalCount        int
-	IssueOpenCount         int
-	IssueClosedCount       int
-	PullRequestTotalCount  int
-	PullRequestOpenCount   int
-	PullRequestClosedCount int
-}
-
 type Branch struct {
 	Name      string
 	Sha1      string

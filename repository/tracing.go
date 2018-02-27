@@ -16,7 +16,7 @@ func NewTracingService(s Service) Service {
 	return &tracingService{service: s}
 }
 
-func (s *tracingService) List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error) {
+func (s *tracingService) List(ctx context.Context, owner string) ([]*Repository, string, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Service.List")
 	span.SetTag("owner", owner)
 	defer span.Finish()
@@ -24,7 +24,7 @@ func (s *tracingService) List(ctx context.Context, owner string) ([]*Repository,
 	return s.service.List(ctx, owner)
 }
 
-func (s *tracingService) Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error) {
+func (s *tracingService) Find(ctx context.Context, owner string, name string) (*Repository, string, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Service.Find")
 	span.SetTag("owner", owner)
 	span.SetTag("name", name)

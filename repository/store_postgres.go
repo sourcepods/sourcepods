@@ -20,7 +20,7 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 }
 
 // List retrieves a list of repositories based on their ownership.
-func (s *Postgres) List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error) {
+func (s *Postgres) List(ctx context.Context, owner string) ([]*Repository, string, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.List")
 	span.SetTag("owner", owner)
 	defer span.Finish()
@@ -43,12 +43,11 @@ ORDER BY updated_at DESC;
 
 	rows, err := s.db.QueryContext(ctx, listByOwnerID, owner)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
 	defer rows.Close()
 
 	var repositories []*Repository
-	var stats []*Stats
 
 	for rows.Next() {
 		var id string
@@ -82,23 +81,12 @@ ORDER BY updated_at DESC;
 			Created:       created,
 			Updated:       updated,
 		})
-
-		stats = append(stats, &Stats{
-			Stars:                  stars,
-			Forks:                  forks,
-			IssueTotalCount:        66,
-			IssueOpenCount:         35,
-			IssueClosedCount:       31,
-			PullRequestTotalCount:  20,
-			PullRequestOpenCount:   4,
-			PullRequestClosedCount: 16,
-		})
 	}
 
-	return repositories, stats, owner, nil
+	return repositories, owner, nil
 }
 
-func (s *Postgres) Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error) {
+func (s *Postgres) Find(ctx context.Context, owner string, name string) (*Repository, string, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Postgres.Find")
 	span.SetTag("owner", owner)
 	defer span.Finish()
@@ -136,7 +124,7 @@ WHERE
 		&updated,
 		&ownerID,
 	); err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
 
 	return &Repository{
@@ -147,16 +135,6 @@ WHERE
 			DefaultBranch: defaultBranch,
 			Created:       created,
 			Updated:       updated,
-		},
-		&Stats{
-			Stars:                  42,
-			Forks:                  23,
-			IssueTotalCount:        66,
-			IssueOpenCount:         13,
-			IssueClosedCount:       53,
-			PullRequestTotalCount:  20,
-			PullRequestOpenCount:   2,
-			PullRequestClosedCount: 18,
 		},
 		owner,
 		nil

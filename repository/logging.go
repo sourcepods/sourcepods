@@ -19,10 +19,10 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger: logger, service: s}
 }
 
-func (s *loggingService) List(ctx context.Context, owner string) ([]*Repository, []*Stats, string, error) {
+func (s *loggingService) List(ctx context.Context, owner string) ([]*Repository, string, error) {
 	start := time.Now()
 
-	repositories, stats, owner, err := s.service.List(ctx, owner)
+	repositories, owner, err := s.service.List(ctx, owner)
 
 	logger := log.With(s.logger,
 		"method", "List",
@@ -38,14 +38,14 @@ func (s *loggingService) List(ctx context.Context, owner string) ([]*Repository,
 		level.Debug(logger).Log()
 	}
 
-	return repositories, stats, owner, err
+	return repositories, owner, err
 
 }
 
-func (s *loggingService) Find(ctx context.Context, owner string, name string) (*Repository, *Stats, string, error) {
+func (s *loggingService) Find(ctx context.Context, owner string, name string) (*Repository, string, error) {
 	start := time.Now()
 
-	repository, stats, owner, err := s.service.Find(ctx, owner, name)
+	repository, owner, err := s.service.Find(ctx, owner, name)
 
 	logger := log.With(s.logger,
 		"method", "Find",
@@ -61,7 +61,7 @@ func (s *loggingService) Find(ctx context.Context, owner string, name string) (*
 		level.Debug(logger).Log()
 	}
 
-	return repository, stats, owner, err
+	return repository, owner, err
 }
 
 func (s *loggingService) Create(ctx context.Context, owner string, repository *Repository) (*Repository, error) {
