@@ -1,10 +1,8 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
 import 'package:gitpods/gravatar_component.dart';
-import 'package:gitpods/issues_component.dart';
 import 'package:gitpods/login_component.dart';
 import 'package:gitpods/login_service.dart';
-import 'package:gitpods/pulls_component.dart';
 import 'package:gitpods/repository_component.dart';
 import 'package:gitpods/repository_create_component.dart';
 import 'package:gitpods/user.dart';
@@ -31,16 +29,6 @@ import 'package:gitpods/user_settings_component.dart';
     path: '/login',
     name: 'Login',
     component: LoginComponent,
-  ),
-  const Route(
-    path: '/issues',
-    name: 'Issues',
-    component: IssuesComponent,
-  ),
-  const Route(
-    path: '/pulls',
-    name: 'Pulls',
-    component: PullsComponent,
   ),
   const Route(
     path: '/:username',
