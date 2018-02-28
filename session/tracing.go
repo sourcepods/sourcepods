@@ -15,23 +15,23 @@ func NewTracingService(s Service) Service {
 	return &tracingService{service: s}
 }
 
-func (s *tracingService) CreateSession(ctx context.Context, userID, userUsername string) (*Session, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Service.CreateSession")
+func (s *tracingService) Create(ctx context.Context, userID, userUsername string) (*Session, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Service.Create")
 	span.SetTag("user_id", userID)
 	span.SetTag("user_username", userUsername)
 	defer span.Finish()
 
-	return s.service.CreateSession(ctx, userID, userUsername)
+	return s.service.Create(ctx, userID, userUsername)
 }
 
-func (s *tracingService) FindSession(ctx context.Context, id string) (*Session, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Service.FindSession")
+func (s *tracingService) Find(ctx context.Context, id string) (*Session, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Service.Find")
 	span.SetTag("id", id)
 	defer span.Finish()
 
-	return s.service.FindSession(ctx, id)
+	return s.service.Find(ctx, id)
 }
 
-func (s *tracingService) ClearSessions(ctx context.Context) (int64, error) {
-	return s.service.ClearSessions(ctx)
+func (s *tracingService) DeleteExpired(ctx context.Context) (int64, error) {
+	return s.service.DeleteExpired(ctx)
 }

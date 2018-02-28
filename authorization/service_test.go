@@ -30,7 +30,7 @@ func (*testStore) FindUserByEmail(context.Context, string) (*user.User, error) {
 
 type sessionService struct{}
 
-func (s sessionService) CreateSession(ctx context.Context, id string, username string) (*session.Session, error) {
+func (s sessionService) Create(ctx context.Context, id string, username string) (*session.Session, error) {
 	return &session.Session{
 		ID:     "410f59a5-75e6-4332-a0d3-ef06a0bfb2a5",
 		Expiry: expiry,
@@ -41,12 +41,12 @@ func (s sessionService) CreateSession(ctx context.Context, id string, username s
 	}, nil
 }
 
-func (s sessionService) FindSession(context.Context, string) (*session.Session, error) {
+func (s sessionService) Find(context.Context, string) (*session.Session, error) {
 	// We don't need this for these tests.
 	panic("implement me")
 }
 
-func (s sessionService) ClearSessions(context.Context) (int64, error) {
+func (s sessionService) DeleteExpired(context.Context) (int64, error) {
 	// We don't need this for these tests.
 	panic("implement me")
 }

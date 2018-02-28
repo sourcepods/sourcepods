@@ -49,5 +49,5 @@ func (s *service) AuthenticateUser(ctx context.Context, email, password string) 
 }
 
 func (s *service) CreateSession(ctx context.Context, userID, userUsername string) (*session.Session, error) {
-	return s.sessions.CreateSession(ctx, userID, userUsername)
+	return s.sessions.Create(ctx, userID, userUsername)
 }

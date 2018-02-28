@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/jsonapi"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 )
 
 type ctxKey int
@@ -53,7 +53,7 @@ func Authorized(s Service) func(http.Handler) http.Handler {
 				return
 			}
 
-			session, err := s.FindSession(ctx, cookie.Value)
+			session, err := s.Find(ctx, cookie.Value)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				jsonapi.MarshalErrors(w, errUnauthorized)

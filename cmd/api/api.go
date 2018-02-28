@@ -284,7 +284,7 @@ func apiAction(c *cli.Context) error {
 			dur := time.Minute
 			level.Info(logger).Log("msg", "starting session cleaner", "interval", dur)
 			for {
-				if _, err := ss.ClearSessions(context.TODO()); err != nil {
+				if _, err := ss.DeleteExpired(context.TODO()); err != nil {
 					return err
 				}
 				time.Sleep(dur)

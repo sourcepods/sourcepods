@@ -18,7 +18,7 @@ type Postgres struct {
 }
 
 // SaveSession in the store.
-func (s *Postgres) SaveSession(ctx context.Context, session *Session) error {
+func (s *Postgres) Save(ctx context.Context, session *Session) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Postgres.SaveSession")
 	defer span.Finish()
 
@@ -31,9 +31,9 @@ func (s *Postgres) SaveSession(ctx context.Context, session *Session) error {
 	).Scan(&session.ID)
 }
 
-// FindSession that aren't expired
-func (s *Postgres) FindSession(ctx context.Context, id string) (*Session, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Postgres.FindSession")
+// Find that aren't expired
+func (s *Postgres) Find(ctx context.Context, id string) (*Session, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Postgres.Find")
 	span.SetTag("id", id)
 	defer span.Finish()
 
@@ -62,9 +62,9 @@ WHERE sessions.id = $1;
 	return &session, nil
 }
 
-// ClearSessions that are expired.
-func (s *Postgres) ClearSessions(ctx context.Context) (int64, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Postgres.ClearSessions")
+// DeleteExpired sessions that are expired.
+func (s *Postgres) DeleteExpired(ctx context.Context) (int64, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Postgres.DeleteExpired")
 	defer span.Finish()
 
 	clearExpired := `DELETE FROM sessions WHERE expires < now();`

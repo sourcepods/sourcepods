@@ -9,7 +9,7 @@ import (
 	"github.com/gitpods/gitpods/session"
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 )
 
 const megabyte = 1024 * 1024 * 1024

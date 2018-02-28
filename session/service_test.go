@@ -11,12 +11,12 @@ import (
 
 type testStore struct{}
 
-func (s *testStore) SaveSession(ctx context.Context, sess *Session) error {
+func (s *testStore) Save(ctx context.Context, sess *Session) error {
 	sess.ID = "6ae1485d-13e8-4535-ba93-1d497f1b809c"
 	return nil
 }
 
-func (s *testStore) FindSession(ctx context.Context, id string) (*Session, error) {
+func (s *testStore) Find(ctx context.Context, id string) (*Session, error) {
 	if id == "6ae1485d-13e8-4535-ba93-1d497f1b809c" {
 		return &Session{
 			ID:     "6ae1485d-13e8-4535-ba93-1d497f1b809c",
@@ -30,7 +30,7 @@ func (s *testStore) FindSession(ctx context.Context, id string) (*Session, error
 	return nil, errors.New("session not found")
 }
 
-func (s *testStore) ClearSessions(ctx context.Context) (int64, error) {
+func (s *testStore) DeleteExpired(ctx context.Context) (int64, error) {
 	panic("implement me")
 }
 
@@ -38,7 +38,7 @@ func TestService_CreateSession(t *testing.T) {
 	store := &testStore{}
 	s := NewService(store)
 
-	sess, err := s.CreateSession(context.Background(), "9749ca6a-82b2-41b5-882b-e89df9e56a2e", "foobar")
+	sess, err := s.Create(context.Background(), "9749ca6a-82b2-41b5-882b-e89df9e56a2e", "foobar")
 	assert.NoError(t, err)
 	assert.Len(t, sess.ID, 36)
 	assert.WithinDuration(t, time.Now().Add(defaultExpiry), sess.Expiry, time.Second)
@@ -50,11 +50,11 @@ func TestService_FindSession(t *testing.T) {
 	store := &testStore{}
 	s := NewService(store)
 
-	sess, err := s.FindSession(context.Background(), "nope")
+	sess, err := s.Find(context.Background(), "nope")
 	assert.Error(t, err)
 	assert.Nil(t, sess)
 
-	sess, err = s.FindSession(context.Background(), "6ae1485d-13e8-4535-ba93-1d497f1b809c")
+	sess, err = s.Find(context.Background(), "6ae1485d-13e8-4535-ba93-1d497f1b809c")
 	assert.NoError(t, err)
 	assert.Len(t, sess.ID, 36)
 	assert.WithinDuration(t, time.Now().Add(defaultExpiry), sess.Expiry, time.Second)

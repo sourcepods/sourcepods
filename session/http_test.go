@@ -21,11 +21,11 @@ var (
 
 type testService struct{}
 
-func (s *testService) CreateSession(context.Context, string, string) (*Session, error) {
+func (s *testService) Create(context.Context, string, string) (*Session, error) {
 	panic("implement me")
 }
 
-func (s *testService) FindSession(ctx context.Context, id string) (*Session, error) {
+func (s *testService) Find(ctx context.Context, id string) (*Session, error) {
 	if id == uuid {
 		return &Session{
 			ID:     uuid,
@@ -39,7 +39,7 @@ func (s *testService) FindSession(ctx context.Context, id string) (*Session, err
 	return nil, errors.New("session not found")
 }
 
-func (s *testService) ClearSessions(context.Context) (int64, error) {
+func (s *testService) DeleteExpired(context.Context) (int64, error) {
 	panic("implement me")
 }
 
