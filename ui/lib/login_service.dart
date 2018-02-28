@@ -14,8 +14,8 @@ class LoginService {
   Future<String> login(String email, String password) async {
     try {
       Map body = {'email': email, 'password': password};
-      final response = await _http.post(
-          '/api/authorize', body: JSON.encode(body));
+      final response =
+          await _http.post('/api/authorize', body: JSON.encode(body));
 
       if (response.statusCode == 200) {
         // Reload the page to have the new cookie set.
@@ -32,9 +32,6 @@ class LoginService {
   }
 
   void logout() {
-    if (document.cookie.contains('_gitpods_session')) {
-      document.cookie = '';
-      // TODO: Redirect to login page
-    }
+    window.location.assign('/api/sessions/logout');
   }
 }
