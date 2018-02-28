@@ -38,6 +38,10 @@ func (s *metricsService) Find(ctx context.Context, id string) (*Session, error) 
 	return s.service.Find(ctx, id)
 }
 
+func (s *metricsService) Delete(ctx context.Context, id string) error {
+	return s.service.Delete(ctx, id)
+}
+
 func (s *metricsService) DeleteExpired(ctx context.Context) (int64, error) {
 	num, err := s.service.DeleteExpired(ctx)
 

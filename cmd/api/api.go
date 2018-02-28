@@ -242,6 +242,7 @@ func apiAction(c *cli.Context) error {
 			router.Group(func(router chi.Router) {
 				router.Use(session.Authorized(ss))
 				router.Mount("/query", middleware.NoCache(res))
+				router.Mount("/sessions", session.NewHandler(ss))
 			})
 
 			router.Mount("/{owner}/{name}.git", githttp)

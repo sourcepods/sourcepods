@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
 	"github.com/opentracing/opentracing-go"
 )
@@ -74,5 +75,37 @@ func GetSessionUser(ctx context.Context) *User {
 	return &User{
 		ID:       ctx.Value(CookieUserID).(string),
 		Username: ctx.Value(CookieUserUsername).(string),
+	}
+}
+
+func NewHandler(s Service) *chi.Mux {
+	r := chi.NewRouter()
+
+	r.Get("/logout", logout(s))
+
+	return r
+}
+
+func logout(s Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie(CookieName)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			jsonapi.MarshalErrors(w, errUnauthorized)
+			return
+		}
+
+		if err := s.Delete(r.Context(), cookie.Value); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			jsonapi.MarshalErrors(w, []*jsonapi.ErrorObject{{
+				Title:  http.StatusText(http.StatusInternalServerError),
+				Detail: "Your session couldn't be terminated",
+				Status: fmt.Sprintf("%d", http.StatusInternalServerError),
+			}})
+			return
+		}
+
+		// TODO: Fix the url
+		http.Redirect(w, r, "https://try.gitpods.io/", http.StatusFound)
 	}
 }

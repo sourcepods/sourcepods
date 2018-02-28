@@ -62,14 +62,23 @@ WHERE sessions.id = $1;
 	return &session, nil
 }
 
+func (s *Postgres) Delete(ctx context.Context, id string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Postgres.Delete")
+	span.SetTag("id", id)
+	defer span.Finish()
+
+	_, err := s.db.ExecContext(ctx, `DELETE FROM sessions WHERE id = $1;`, id)
+	return err
+}
+
 // DeleteExpired sessions that are expired.
 func (s *Postgres) DeleteExpired(ctx context.Context) (int64, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "session.Postgres.DeleteExpired")
 	defer span.Finish()
 
-	clearExpired := `DELETE FROM sessions WHERE expires < now();`
+	deleteExpired := `DELETE FROM sessions WHERE expires < now();`
 
-	res, err := s.db.ExecContext(ctx, clearExpired)
+	res, err := s.db.ExecContext(ctx, deleteExpired)
 	if err != nil {
 		return 0, nil
 	}

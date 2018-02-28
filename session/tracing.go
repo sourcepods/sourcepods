@@ -32,6 +32,10 @@ func (s *tracingService) Find(ctx context.Context, id string) (*Session, error) 
 	return s.service.Find(ctx, id)
 }
 
+func (s *tracingService) Delete(ctx context.Context, id string) error {
+	return s.service.Delete(ctx, id)
+}
+
 func (s *tracingService) DeleteExpired(ctx context.Context) (int64, error) {
 	return s.service.DeleteExpired(ctx)
 }

@@ -9,6 +9,7 @@ import (
 type Service interface {
 	Create(ctx context.Context, userID string, userUsername string) (*Session, error)
 	Find(ctx context.Context, id string) (*Session, error)
+	Delete(ctx context.Context, id string) error
 	DeleteExpired(ctx context.Context) (int64, error)
 }
 
@@ -16,6 +17,7 @@ type Service interface {
 type Store interface {
 	Save(ctx context.Context, s *Session) error
 	Find(ctx context.Context, id string) (*Session, error)
+	Delete(ctx context.Context, id string) error
 	DeleteExpired(ctx context.Context) (int64, error)
 }
 
@@ -46,6 +48,10 @@ func (s *service) Create(ctx context.Context, userID, userUsername string) (*Ses
 
 func (s *service) Find(ctx context.Context, id string) (*Session, error) {
 	return s.store.Find(ctx, id)
+}
+
+func (s *service) Delete(ctx context.Context, id string) error {
+	return s.store.Delete(ctx, id)
 }
 
 func (s *service) DeleteExpired(ctx context.Context) (int64, error) {
