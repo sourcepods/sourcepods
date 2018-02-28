@@ -30,6 +30,10 @@ func (s *testStore) Find(ctx context.Context, id string) (*Session, error) {
 	return nil, errors.New("session not found")
 }
 
+func (s *testStore) Delete(ctx context.Context, id string) error {
+	panic("implement me")
+}
+
 func (s *testStore) DeleteExpired(ctx context.Context) (int64, error) {
 	panic("implement me")
 }

@@ -46,6 +46,11 @@ func (s sessionService) Find(context.Context, string) (*session.Session, error) 
 	panic("implement me")
 }
 
+func (s sessionService) Delete(context.Context, string) error {
+	// We don't need this for these tests.
+	panic("implement me")
+}
+
 func (s sessionService) DeleteExpired(context.Context) (int64, error) {
 	// We don't need this for these tests.
 	panic("implement me")
