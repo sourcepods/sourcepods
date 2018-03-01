@@ -26,6 +26,7 @@ pipeline:
     image: google/dart:1.24
     commands:
       - cd ui
+      - pub get --no-precompile
       - pub build
       - rm -rf build/web/packages
 
