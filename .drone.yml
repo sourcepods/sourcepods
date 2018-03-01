@@ -16,7 +16,7 @@ pipeline:
         target: codacy_token
 
   dart:
-    image: google/dart
+    image: google/dart:1.24
     commands:
       - cd ui
       - pub get --no-precompile
