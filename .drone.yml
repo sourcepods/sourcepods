@@ -15,11 +15,17 @@ pipeline:
       - source: codacy
         target: codacy_token
 
+  dartanalyzer:
+     image: google/dart:1.24
+     commands:
+       - cd ui/
+       - pub get --no-precompile
+       - dartanalyzer ./lib/
+
   dart:
     image: google/dart:1.24
     commands:
       - cd ui
-      - pub get --no-precompile
       - pub build
       - rm -rf build/web/packages
 
