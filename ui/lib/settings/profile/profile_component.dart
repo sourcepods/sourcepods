@@ -8,7 +8,7 @@ import 'package:gitpods/user_service.dart';
 
 @Component(
   selector: 'profile',
-  templateUrl: 'profile.html',
+  templateUrl: 'profile_component.html',
   directives: const [COMMON_DIRECTIVES, formDirectives],
 )
 class ProfileComponent implements OnInit {

@@ -2,7 +2,7 @@ import 'package:angular/angular.dart';
 
 @Component(
   selector: 'security',
-  templateUrl: 'security.html',
+  templateUrl: 'security_component.html',
 )
 class SecurityComponent implements OnInit {
   @override

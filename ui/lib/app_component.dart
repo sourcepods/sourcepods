@@ -9,12 +9,11 @@ import 'package:gitpods/user.dart';
 import 'package:gitpods/user_list_component.dart';
 import 'package:gitpods/user_profile_component.dart';
 import 'package:gitpods/user_service.dart';
-import 'package:gitpods/settings/settings.dart';
+import 'package:gitpods/settings/settings_component.dart';
 
 @Component(
   selector: 'gitpods-app',
   templateUrl: 'app_component.html',
-//  template: '<router-outlet></router-outlet>',
   directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, Gravatar],
   providers: const [ROUTER_PROVIDERS, UserService, LoginService],
 )
