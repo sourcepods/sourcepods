@@ -1,4 +1,4 @@
-import 'package:gitpods/user.dart';
+import 'package:gitpods/src/user/user.dart';
 
 class Repository {
   String id;

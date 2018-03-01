@@ -1,15 +1,15 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/gravatar_component.dart';
-import 'package:gitpods/repository.dart';
-import 'package:gitpods/repository_service.dart';
-import 'package:gitpods/repository_tree.dart';
+import 'package:gitpods/src/gravatar_component.dart';
+import 'package:gitpods/src/repository/repository.dart';
+import 'package:gitpods/src/repository/repository_service.dart';
+import 'package:gitpods/src/repository/repository_tree.dart';
 
 @Component(
   selector: 'gitpods-repository',
   templateUrl: 'repository_component.html',
   styleUrls: const['repository_component.css'],
-  directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, Gravatar],
+  directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, GravatarComponent],
   providers: const [RepositoryService],
 )
 class RepositoryComponent implements OnInit {

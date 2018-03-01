@@ -5,7 +5,7 @@ import 'package:crypto/crypto.dart';
     selector: 'gravatar',
     template: '<img class="{{classs}}" src="https://www.gravatar.com/avatar/{{hash}}?s={{size}}&d=mm&r=g"/>'
 )
-class Gravatar implements OnInit {
+class GravatarComponent implements OnInit {
   @Input()
   String email;
 

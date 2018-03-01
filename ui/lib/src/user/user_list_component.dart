@@ -1,13 +1,13 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/gravatar_component.dart';
-import 'package:gitpods/user.dart';
-import 'package:gitpods/user_service.dart';
+import 'package:gitpods/src/gravatar_component.dart';
+import 'package:gitpods/src/user/user.dart';
+import 'package:gitpods/src/user/user_service.dart';
 
 @Component(
   selector: 'gitpods-user-list',
   templateUrl: 'user_list_component.html',
-  directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, Gravatar],
+  directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, GravatarComponent],
   providers: const [UserService],
 )
 class UserListComponent implements OnInit {

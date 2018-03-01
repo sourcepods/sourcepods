@@ -4,8 +4,8 @@ import 'dart:html';
 import 'package:angular/angular.dart';
 import 'package:angular_forms/angular_forms.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/repository.dart';
-import 'package:gitpods/repository_service.dart';
+import 'package:gitpods/src/repository/repository.dart';
+import 'package:gitpods/src/repository/repository_service.dart';
 
 @Component(
   selector: 'gitpods-repository-create',

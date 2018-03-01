@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:angular/angular.dart';
-import 'package:gitpods/repository.dart';
-import 'package:gitpods/user.dart';
+import 'package:gitpods/src/repository/repository.dart';
+import 'package:gitpods/src/user/user.dart';
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 

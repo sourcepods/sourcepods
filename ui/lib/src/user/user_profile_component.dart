@@ -1,11 +1,11 @@
 import 'package:angular/angular.dart';
 import 'package:angular_forms/angular_forms.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/gravatar_component.dart';
-import 'package:gitpods/mailto_pipe.dart';
-import 'package:gitpods/repository.dart';
-import 'package:gitpods/user.dart';
-import 'package:gitpods/user_service.dart';
+import 'package:gitpods/src/gravatar_component.dart';
+import 'package:gitpods/src/mailto_pipe.dart';
+import 'package:gitpods/src/repository/repository.dart';
+import 'package:gitpods/src/user/user.dart';
+import 'package:gitpods/src/user/user_service.dart';
 
 @Component(
   selector: 'gitpods-user-profile',
@@ -13,7 +13,7 @@ import 'package:gitpods/user_service.dart';
   styleUrls: const ['user_profile_component.css'],
   providers: const [UserService],
   directives: const [
-    COMMON_DIRECTIVES, ROUTER_DIRECTIVES, formDirectives, Gravatar
+    COMMON_DIRECTIVES, ROUTER_DIRECTIVES, formDirectives, GravatarComponent
   ],
   pipes: const [DatePipe, MailtoPipe, FilteredReposPipe],
 )

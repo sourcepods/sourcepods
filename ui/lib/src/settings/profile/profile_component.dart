@@ -3,8 +3,8 @@ import 'dart:html';
 import 'package:angular/angular.dart';
 import 'package:angular_forms/angular_forms.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/user.dart';
-import 'package:gitpods/user_service.dart';
+import 'package:gitpods/src/user/user.dart';
+import 'package:gitpods/src/user/user_service.dart';
 
 @Component(
   selector: 'profile',

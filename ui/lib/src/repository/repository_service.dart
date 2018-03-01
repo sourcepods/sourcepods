@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:angular/angular.dart';
-import 'package:gitpods/repository.dart';
-import 'package:gitpods/repository_component.dart';
-import 'package:gitpods/validation_exception.dart';
+import 'package:gitpods/src/repository/repository.dart';
+import 'package:gitpods/src/repository/repository_component.dart';
+import 'package:gitpods/src/validation_exception.dart';
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 

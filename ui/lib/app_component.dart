@@ -1,21 +1,21 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/gravatar_component.dart';
-import 'package:gitpods/login_component.dart';
-import 'package:gitpods/login_service.dart';
-import 'package:gitpods/repository_component.dart';
-import 'package:gitpods/repository_create_component.dart';
+import 'package:gitpods/src/gravatar_component.dart';
+import 'package:gitpods/src/login/login_component.dart';
+import 'package:gitpods/src/login/login_service.dart';
+import 'package:gitpods/src/repository/repository_component.dart';
+import 'package:gitpods/src/repository/repository_create_component.dart';
 import 'package:gitpods/src/not_found_component.dart';
-import 'package:gitpods/user.dart';
-import 'package:gitpods/user_list_component.dart';
-import 'package:gitpods/user_profile_component.dart';
-import 'package:gitpods/user_service.dart';
-import 'package:gitpods/settings/settings_component.dart';
+import 'package:gitpods/src/user/user.dart';
+import 'package:gitpods/src/user/user_list_component.dart';
+import 'package:gitpods/src/user/user_profile_component.dart';
+import 'package:gitpods/src/user/user_service.dart';
+import 'package:gitpods/src/settings/settings_component.dart';
 
 @Component(
   selector: 'gitpods-app',
   templateUrl: 'app_component.html',
-  directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, Gravatar],
+  directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, GravatarComponent],
   providers: const [ROUTER_PROVIDERS, UserService, LoginService],
 )
 @RouteConfig(const [
@@ -54,9 +54,9 @@ import 'package:gitpods/settings/settings_component.dart';
     component: RepositoryCreateComponent,
   ),
   const Route(
-      path: '/**',
-      name: 'NotFound',
-      component: NotFoundComponent,
+    path: '/**',
+    name: 'NotFound',
+    component: NotFoundComponent,
   )
 ])
 class AppComponent implements OnInit {
