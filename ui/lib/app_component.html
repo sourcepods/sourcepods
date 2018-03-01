@@ -26,12 +26,11 @@
                                     <a [routerLink]="['UserProfile', {'username': user.username}]">Profile</a>
                                 </li>
                                 <li>
-                                    <a [routerLink]="['UserSettings']">Settings</a>
+                                    <a [routerLink]="['Settings', 'Profile']">Settings</a>
                                 </li>
                                 <li class="uk-nav-divider"></li>
                                 <li>
                                     <a (click)="logout()">Sign out</a>
-                                    <!--<a [routerLink]="/login">Sign out</a>-->
                                 </li>
                             </ul>
                         </div>
@@ -39,11 +38,6 @@
                 </ul>
             </div>
         </nav>
-
-        <!--<nav class="uk-container uk-hidden@s" uk-navbar>-->
-        <!--<div class="uk-navbar-left">-->
-        <!--<main-nav class="uk-hidden@s"></main-nav>-->
-        <!--</div>-->
     </div>
 
     <div style="flex: 1;">

@@ -9,7 +9,7 @@ import 'package:gitpods/user.dart';
 import 'package:gitpods/user_list_component.dart';
 import 'package:gitpods/user_profile_component.dart';
 import 'package:gitpods/user_service.dart';
-import 'package:gitpods/user_settings_component.dart';
+import 'package:gitpods/settings/settings.dart';
 
 @Component(
   selector: 'gitpods-app',
@@ -18,12 +18,15 @@ import 'package:gitpods/user_settings_component.dart';
   directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, Gravatar],
   providers: const [ROUTER_PROVIDERS, UserService, LoginService],
 )
-@RouteConfig(const[
-  const Route(
+@RouteConfig(const [
+  const Redirect(
     path: '/',
+    redirectTo: const ['UserList'],
+  ),
+  const Route(
+    path: '/users',
     name: 'UserList',
     component: UserListComponent,
-    useAsDefault: true,
   ),
   const Route(
     path: '/login',
@@ -36,9 +39,9 @@ import 'package:gitpods/user_settings_component.dart';
     component: UserProfileComponent,
   ),
   const Route(
-    path: '/settings/profile',
-    name: 'UserSettings',
-    component: UserSettingsComponent,
+    path: '/settings/...',
+    name: 'Settings',
+    component: SettingsComponent,
   ),
   const Route(
     path: '/:owner/:name',
@@ -50,6 +53,11 @@ import 'package:gitpods/user_settings_component.dart';
     name: 'RepositoryCreate',
     component: RepositoryCreateComponent,
   ),
+//  const Route(
+//      path: '/**',
+//      name: 'NotFound',
+//      component: NotFoundComponent,
+//  )
 ])
 class AppComponent implements OnInit {
   final Router _router;

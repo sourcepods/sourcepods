@@ -7,15 +7,15 @@ import 'package:gitpods/user.dart';
 import 'package:gitpods/user_service.dart';
 
 @Component(
-  selector: 'gitpods-user-settings',
-  templateUrl: 'user_settings_component.html',
+  selector: 'profile',
+  templateUrl: 'profile.html',
   directives: const [COMMON_DIRECTIVES, formDirectives],
 )
-class UserSettingsComponent implements OnInit {
+class ProfileComponent implements OnInit {
   final Router _router;
   final UserService _userService;
 
-  UserSettingsComponent(this._router, this._userService);
+  ProfileComponent(this._router, this._userService);
 
   User user;
 
@@ -29,6 +29,6 @@ class UserSettingsComponent implements OnInit {
     event.preventDefault();
 
     this._userService.update(user)
-        .then((user) => this._router.navigate(['UserProfile', {'username': user.username}]));
+        .then((user) => this._router.navigate(['/UserProfile', {'username': user.username}]));
   }
 }

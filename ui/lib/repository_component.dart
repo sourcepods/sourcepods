@@ -23,7 +23,7 @@ class RepositoryComponent implements OnInit {
   List<RepositoryTree> tree;
 
   @override
-  ngOnInit() {
+  void ngOnInit() {
     ownerName = this._routeParams.get('owner');
     String name = this._routeParams.get('name');
 

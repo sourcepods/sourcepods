@@ -3,6 +3,7 @@ class ValidationException implements Exception {
 
   ValidationException(this.message);
 
+  @override
   String toString() {
     return "Validation Exception: $message";
   }

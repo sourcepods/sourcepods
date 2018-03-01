@@ -18,7 +18,7 @@ class Gravatar implements OnInit {
   Digest hash;
 
   @override
-  ngOnInit() {
+  void ngOnInit() {
     this.hash = md5.convert(this.email.codeUnits);
   }
 }
