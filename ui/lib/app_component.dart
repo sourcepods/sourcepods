@@ -5,6 +5,7 @@ import 'package:gitpods/login_component.dart';
 import 'package:gitpods/login_service.dart';
 import 'package:gitpods/repository_component.dart';
 import 'package:gitpods/repository_create_component.dart';
+import 'package:gitpods/src/not_found_component.dart';
 import 'package:gitpods/user.dart';
 import 'package:gitpods/user_list_component.dart';
 import 'package:gitpods/user_profile_component.dart';
@@ -52,11 +53,11 @@ import 'package:gitpods/settings/settings_component.dart';
     name: 'RepositoryCreate',
     component: RepositoryCreateComponent,
   ),
-//  const Route(
-//      path: '/**',
-//      name: 'NotFound',
-//      component: NotFoundComponent,
-//  )
+  const Route(
+      path: '/**',
+      name: 'NotFound',
+      component: NotFoundComponent,
+  )
 ])
 class AppComponent implements OnInit {
   final Router _router;
