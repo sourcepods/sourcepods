@@ -17,18 +17,21 @@ class ProfileComponent implements OnInit {
 
   ProfileComponent(this._router, this._userService);
 
+  bool loading;
   User user;
 
   @override
   void ngOnInit() {
-    this._userService.me()
-        .then((user) => this.user = user);
+    this._userService.me().then((user) => this.user = user);
   }
 
-  void submit(Event event) {
-    event.preventDefault();
+  void submit(Event e) {
+    e.preventDefault();
+    loading = true;
 
-    this._userService.update(user)
-        .then((user) => this._router.navigate(['/UserProfile', {'username': user.username}]));
+    this._userService.update(user).then((user) {
+      loading = false;
+      this._router.navigate(['/UserProfile',{'username': user.username}]);
+    });
   }
 }

@@ -1,14 +1,17 @@
 <div style="margin-top: -20px;margin-bottom: 20px;background-color: #f8f8f8">
-<div class="uk-container">
-    <ul class="uk-flex-center" uk-tab>
-        <li class="uk-active">
-            <a [routerLink]="['Profile']">Profile</a>
-        </li>
-        <li>
-            <a [routerLink]="['Security']">Security</a>
-        </li>
-    </ul>
-</div>
+    <div class="uk-container">
+        <ul class="uk-flex-center" uk-tab>
+            <li class="uk-active">
+                <a [routerLink]="['Profile']">Profile</a>
+            </li>
+            <li>
+                <a [routerLink]="['Account']">Account</a>
+            </li>
+            <li>
+                <a [routerLink]="['Security']">Security</a>
+            </li>
+        </ul>
+    </div>
 </div>
 
 <router-outlet></router-outlet>

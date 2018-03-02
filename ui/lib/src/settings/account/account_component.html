@@ -1,0 +1,38 @@
+<div class="uk-container">
+    <h3>Account</h3>
+
+    <div class="uk-child-width-1-2@s" uk-grid>
+        <form class="uk-form-horizontal" (submit)="changePassword($event)">
+            <fieldset class="uk-fieldset">
+
+                <legend class="uk-legend">Change your password</legend>
+
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="password-current">Current Password</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input" id="password-current" type="password" required [(ngModel)]="passwordCurrent">
+                    </div>
+                </div>
+
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="password-1">New Password</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input" id="password-1" type="password" required [(ngModel)]="password1">
+                    </div>
+                </div>
+
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="password-2">Retype New Password</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input" id="password-2" type="password" required [(ngModel)]="password2">
+                    </div>
+                </div>
+
+                <div class="uk-form-controls">
+                    <button class="uk-button uk-button-primary" [disabled]="loading">Change Password</button>
+                </div>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
