@@ -1,5 +1,7 @@
-<div class="uk-container">
-    <form class="uk-form-stacked" *ngIf="user != null" (submit)="submit($event)">
+<gitpods-loading *ngIf="user == null"></gitpods-loading>
+
+<div class="uk-container" *ngIf="user != null">
+    <form class="uk-form-stacked" (submit)="submit($event)">
         <div class="uk-margin">
             <label for="form-stacked-text" class="uk-form-label">Name</label>
             <div class="uk-form-controls">

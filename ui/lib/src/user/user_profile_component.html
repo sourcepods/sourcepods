@@ -1,6 +1,7 @@
-<div class="uk-container">
+<gitpods-loading *ngIf="user == null"></gitpods-loading>
 
-    <div class="uk-grid-small" uk-grid *ngIf="user!=null">
+<div class="uk-container" *ngIf="user!=null">
+    <div class="uk-grid-small" uk-grid>
         <div class="uk-flex-top uk-padding-small uk-width-2-5@m uk-width-1-4@l">
             <gravatar email="{{user.email}}" size="512"></gravatar>
             <h3 class="user-name">{{user.name}}</h3>

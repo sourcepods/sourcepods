@@ -2,6 +2,7 @@ import 'package:angular/angular.dart';
 import 'package:angular_forms/angular_forms.dart';
 import 'package:angular_router/angular_router.dart';
 import 'package:gitpods/src/gravatar_component.dart';
+import 'package:gitpods/src/loading_component.dart';
 import 'package:gitpods/src/mailto_pipe.dart';
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/user/user.dart';
@@ -13,7 +14,11 @@ import 'package:gitpods/src/user/user_service.dart';
   styleUrls: const ['user_profile_component.css'],
   providers: const [UserService],
   directives: const [
-    COMMON_DIRECTIVES, ROUTER_DIRECTIVES, formDirectives, GravatarComponent
+    COMMON_DIRECTIVES,
+    ROUTER_DIRECTIVES,
+    formDirectives,
+    LoadingComponent,
+    GravatarComponent,
   ],
   pipes: const [DatePipe, MailtoPipe, FilteredReposPipe],
 )
