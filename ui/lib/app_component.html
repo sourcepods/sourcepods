@@ -1,77 +1,11 @@
-<div style="display: flex;flex-direction: column;min-height: 100vh;">
-    <div class="uk-navbar-container uk-margin">
-        <nav class="uk-container" uk-navbar>
-
-            <div class="uk-position-top-center uk-overlay" *ngIf="loading">
-                <div uk-spinner></div>
-            </div>
-
-            <a [routerLink]="['/UserList']" style="padding: 17px 0;">
-                <img src="/img/logo.svg" alt="" style="height: 46px;"/>
-            </a>
-
-            <div class="uk-navbar-right uk-flex-last@s">
-                <ul class="uk-navbar-nav" *ngIf="user != null">
-                    <li>
-                        <div>
-                            <a [routerLink]="['/UserProfile', {'username': user.username}]"
-                               style="text-decoration: none">
-                                <gravatar email="{{user.email}}" size="46" class="uk-border-circle"></gravatar>
-                            </a>
-                            <span uk-icon="icon: more-vertical"></span>
-                        </div>
-                        <div class="uk-navbar-dropdown">
-                            <ul class="uk-nav uk-navbar-dropdown-nav">
-                                <li>
-                                    <a [routerLink]="['UserProfile', {'username': user.username}]">Profile</a>
-                                </li>
-                                <li>
-                                    <a [routerLink]="['Settings', 'Profile']">Settings</a>
-                                </li>
-                                <li class="uk-nav-divider"></li>
-                                <li>
-                                    <a (click)="logout()">Sign out</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+<div class="wrapper">
+    <div *ngIf="user != null">
+        <gitpods-header email="{{user.email}}" username="{{user.username}}"></gitpods-header>
     </div>
 
-    <div style="flex: 1;">
+    <div class="content">
         <router-outlet></router-outlet>
     </div>
 
-    <footer class="uk-section uk-section-muted" style="margin-top: 64px;font-size: 0.9em;">
-        <div class="uk-container">
-            <div class="uk-grid-match uk-child-width-1-2@s uk-child-width-1-4@m" uk-grid>
-                <div>
-                </div>
-                <div>
-                </div>
-                <div>
-                    <h6 style="margin: 0;">Community</h6>
-                    <ul class="uk-list">
-                        <li>
-                            <a href="https://github.com/gitpods">GitHub</a>
-                        </li>
-                        <li>
-                            <a href="https://twitter.com/GitPodsIO">Twitter</a>
-                        </li>
-
-                    </ul>
-                </div>
-                <div>
-                    <h6 style="margin: 0;">Developers</h6>
-                    <ul class="uk-list">
-                        <li>
-                            <a href="/api">API</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <gitpods-footer></gitpods-footer>
 </div>

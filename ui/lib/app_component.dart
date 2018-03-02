@@ -1,21 +1,28 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/src/gravatar_component.dart';
+import 'package:gitpods/footer_component.dart';
+import 'package:gitpods/header_component.dart';
 import 'package:gitpods/src/login/login_component.dart';
 import 'package:gitpods/src/login/login_service.dart';
+import 'package:gitpods/src/not_found_component.dart';
 import 'package:gitpods/src/repository/repository_component.dart';
 import 'package:gitpods/src/repository/repository_create_component.dart';
-import 'package:gitpods/src/not_found_component.dart';
+import 'package:gitpods/src/settings/settings_component.dart';
 import 'package:gitpods/src/user/user.dart';
 import 'package:gitpods/src/user/user_list_component.dart';
 import 'package:gitpods/src/user/user_profile_component.dart';
 import 'package:gitpods/src/user/user_service.dart';
-import 'package:gitpods/src/settings/settings_component.dart';
 
 @Component(
   selector: 'gitpods-app',
   templateUrl: 'app_component.html',
-  directives: const [COMMON_DIRECTIVES, ROUTER_DIRECTIVES, GravatarComponent],
+  styleUrls: const ['app_component.css'],
+  directives: const [
+    COMMON_DIRECTIVES,
+    ROUTER_DIRECTIVES,
+    HeaderComponent,
+    FooterComponent,
+  ],
   providers: const [ROUTER_PROVIDERS, UserService, LoginService],
 )
 @RouteConfig(const [
@@ -62,21 +69,18 @@ import 'package:gitpods/src/settings/settings_component.dart';
 class AppComponent implements OnInit {
   final Router _router;
   final UserService _userService;
-  final LoginService _loginService;
 
-  AppComponent(this._router, this._userService, this._loginService);
+  AppComponent(this._router, this._userService);
 
   User user;
   bool loading = false;
 
   @override
   void ngOnInit() {
-    this._userService.me()
+    this
+        ._userService
+        .me()
         .then((User user) => this.user = user)
         .catchError((e) => this._router.navigate(['Login']));
-  }
-
-  void logout() {
-    this._loginService.logout();
   }
 }

@@ -1,0 +1,8 @@
+:host {
+    margin-top: 64px;
+    font-size: 0.9em;
+}
+
+:host h6 {
+    margin: 0;
+}

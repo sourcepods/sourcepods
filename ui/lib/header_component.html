@@ -1,0 +1,35 @@
+<div class="uk-navbar-container uk-margin">
+    <nav class="uk-container" uk-navbar>
+
+        <a [routerLink]="['/UserList']" class="logo">
+            <img src="/img/logo.svg" alt="" />
+        </a>
+
+        <div class="uk-navbar-right uk-flex-last@s">
+            <ul class="uk-navbar-nav">
+                <li>
+                    <div>
+                        <a [routerLink]="['/UserProfile', {'username': username}]" class="profile">
+                            <gravatar email="{{email}}" size="46" class="uk-border-circle"></gravatar>
+                        </a>
+                        <span uk-icon="icon: more-vertical"></span>
+                    </div>
+                    <div class="uk-navbar-dropdown">
+                        <ul class="uk-nav uk-navbar-dropdown-nav">
+                            <li>
+                                <a [routerLink]="['UserProfile', {'username': username}]">Profile</a>
+                            </li>
+                            <li>
+                                <a [routerLink]="['Settings', 'Profile']">Settings</a>
+                            </li>
+                            <li class="uk-nav-divider"></li>
+                            <li>
+                                <a (click)="logout()">Sign out</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</div>
