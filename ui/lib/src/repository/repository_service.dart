@@ -15,12 +15,6 @@ query (\$owner: String!, \$name: String!) {
     name
     description
     website
-    defaultBranch
-    createdAt
-    updatedAt
-    branches {
-      name
-    }
   }
 }
 ''';

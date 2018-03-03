@@ -4,7 +4,7 @@
     <div class="repository-nav">
         <div class="uk-container">
             <div uk-grid>
-                <div>
+                <div style="margin-left: -40px;">
                     <h3><span uk-icon="icon: lock"></span></h3>
                 </div>
 
@@ -18,38 +18,31 @@
                             {{repository.name}}
                         </a>
                     </h3>
-                    <span>{{repository.description}}</span>
-                    <span *ngIf="repository.website != null">
-                        -
+
+                    <span *ngIf="repository.description != ''">{{repository.description}}</span>
+                    <span *ngIf="repository.description != '' && repository.website != ''"> - </span>
+                    <span *ngIf="repository.website != ''">
                         <a href="{{repository.website}}">{{repository.website}}</a>
                     </span>
-
                 </div>
             </div>
 
             <ul class="uk-child-width-expand" uk-tab>
                 <li>
-                    <a href="#">
+                    <a [routerLink]="['./Files']">
                         <span uk-icon="icon: code"></span>
                         Files
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a [routerLink]="['./Commits']">
                         <span uk-icon="icon: history"></span>
                         Commits
                         <span class="uk-badge">123</span>
                     </a>
                 </li>
-                <!--<li>-->
-                    <!--<a href="#">-->
-                        <!--<span uk-icon="icon: warning"></span>-->
-                        <!--Issues-->
-                        <!--<span class="uk-badge">2</span>-->
-                    <!--</a>-->
-                <!--</li>-->
                 <li>
-                    <a href="#">
+                    <a [routerLink]="['./Settings']">
                         <span uk-icon="icon: settings"></span>
                         Settings
                     </a>
@@ -58,66 +51,6 @@
         </div>
     </div>
 
-    <div class="uk-container">
-        <div class="uk-flex-middle" uk-grid>
-            <div class="uk-width-auto">
-                <div class="uk-margin">
-                    <div *ngIf="repository.branches != null">
-                        <select class="uk-select">
-                            <option *ngFor="let branch of repository.branches"
-                                    [selected]="repository.defaultBranch == branch.name">
-                                {{branch.name}}
-                            </option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+    <router-outlet></router-outlet>
 
-            <div class="uk-width-expand">
-                <ul class="uk-breadcrumb">
-                    <li class="uk-disabled"><a href="#">metalmatze</a></li>
-                    <li><a href="#">gitpods</a></li>
-                    <li><a href="#">vendor</a></li>
-                    <li><a href="#">github.com</a></li>
-                    <li><a href="#">beorn7</a></li>
-                    <li><a href="#">perks</a></li>
-                    <li><a href="#">quantile</a></li>
-                    <li><span>stream.go</span></li>
-                </ul>
-            </div>
-            <!--<div class="uk-width-auto">-->
-            <!--<a class="uk-link-text" href="#" style="text-decoration: none">-->
-            <!--<span uk-icon="icon: copy"></span>-->
-            <!--Copy Link-->
-            <!--</a>-->
-            <!--</div>-->
-        </div>
-    </div>
-</div>
-
-<br>
-
-<div *ngIf="tree != null">
-    <div class="uk-container">
-        <div uk-grid>
-            <div class="uk-width-1-4">
-                <ul class="uk-list uk-list-divider" style="overflow: auto;">
-                    <li *ngFor="let element of tree">
-                        <span uk-icon="icon: chevron-right" *ngIf="element.type == 'tree'"></span>
-                        {{ element.file }}
-                    </li>
-                </ul>
-            </div>
-            <div class="uk-width-3-4 uk-text-center" style="border: 1px solid #e5e5e5; padding-top: 64px">
-                <span uk-icon="icon: git-branch; ratio: 5"></span>
-                <h3>Open a file</h3>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div *ngIf="tree == null">
-    <div class="uk-container">
-        <h4>Please push something to the repository!</h4>
-    </div>
 </div>

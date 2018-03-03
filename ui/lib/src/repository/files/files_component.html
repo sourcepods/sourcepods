@@ -1,0 +1,42 @@
+<gitpods-loading *ngIf="loading"></gitpods-loading>
+
+<div class="uk-container">
+    <div class="uk-flex-middle" uk-grid>
+        <div class="uk-width-auto">
+            <div class="uk-margin">
+                <div *ngIf="branches != null">
+                    <select class="uk-select">
+                        <option *ngFor="let branch of branches" [selected]="defaultBranch == branch.name">
+                            {{branch.name}}
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<div *ngIf="tree != null">-->
+    <!--<div class="uk-container">-->
+        <!--<div uk-grid>-->
+            <!--<div class="uk-width-1-4">-->
+                <!--<ul class="uk-list uk-list-divider" style="overflow: auto;">-->
+                    <!--<li *ngFor="let element of tree">-->
+                        <!--<span uk-icon="icon: chevron-right" *ngIf="element.type == 'tree'"></span>-->
+                        <!--{{ element.file }}-->
+                    <!--</li>-->
+                <!--</ul>-->
+            <!--</div>-->
+            <!--<div class="uk-width-3-4 uk-text-center" style="border: 1px solid #e5e5e5; padding-top: 64px">-->
+                <!--<span uk-icon="icon: git-branch; ratio: 5"></span>-->
+                <!--<h3>Open a file</h3>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+<!--</div>-->
+
+<!--<div *ngIf="tree == null">-->
+    <!--<div class="uk-container">-->
+        <!--<h4>Please push something to the repository!</h4>-->
+    <!--</div>-->
+<!--</div>-->

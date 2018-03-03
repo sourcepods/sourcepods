@@ -51,7 +51,7 @@ import 'package:gitpods/src/user/user_service.dart';
     component: SettingsComponent,
   ),
   const Route(
-    path: '/:owner/:name',
+    path: '/:owner/:name/...',
     name: 'Repository',
     component: RepositoryComponent,
   ),
