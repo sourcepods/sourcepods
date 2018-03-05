@@ -124,7 +124,7 @@ func devAction(c *cli.Context) error {
 
 	if watch {
 		watcher := &FileWatcher{}
-		watcher.Add(uiRunner, apiRunner)
+		watcher.Add(uiRunner, apiRunner, storageRunner)
 
 		go watcher.Watch()
 	}
