@@ -68,15 +68,17 @@ steps:
   settings:
     group: build
 
-- name: ui
-  pull: default
-  image: golang:1.10
-  commands:
-  - "curl -s -L https://github.com/gobuffalo/packr/releases/download/v1.10.4/packr_1.10.4_linux_amd64.tar.gz | tar -xz"
-  - ./packr
-  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui"
-  settings:
-    group: build
+# Needs to be enabled with dart 2 again
+
+#- name: ui
+#  pull: default
+#  image: golang:1.10
+#  commands:
+#  - "curl -s -L https://github.com/gobuffalo/packr/releases/download/v1.10.4/packr_1.10.4_linux_amd64.tar.gz | tar -xz"
+#  - ./packr
+#  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui"
+#  settings:
+#    group: build
 
 - name: docker-api
   pull: default
@@ -119,26 +121,28 @@ steps:
     event:
     - push
 
-- name: docker-ui
-  pull: default
-  image: plugins/docker
-  settings:
-    context: ./cmd/ui
-    dockerfile: cmd/ui/Dockerfile
-    group: docker
-    repo: gitpods/ui
-    tag:
-    - latest
-  environment:
-    docker_password:
-      from_secret: docker_password
-    docker_username:
-      from_secret: docker_username
-  when:
-    branch:
-    - master
-    event:
-    - push
+# Needs to be enabled with dart 2 again
+
+#- name: docker-ui
+#  pull: default
+#  image: plugins/docker
+#  settings:
+#    context: ./cmd/ui
+#    dockerfile: cmd/ui/Dockerfile
+#    group: docker
+#    repo: gitpods/ui
+#    tag:
+#    - latest
+#  environment:
+#    docker_password:
+#      from_secret: docker_password
+#    docker_username:
+#      from_secret: docker_username
+#  when:
+#    branch:
+#    - master
+#    event:
+#    - push
 
 # Don't deploy to Kubernetes at the moment
 
