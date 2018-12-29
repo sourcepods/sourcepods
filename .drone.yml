@@ -19,8 +19,8 @@ steps:
 - name: codacy
   pull: always
   image: plugins/codacy:1
-  settings:
-    codacy_token:
+  environment:
+    CODACY_TOKEN:
       from_secret: codacy
 
 # Don't build the UI with dart until updating to Dart 2
