@@ -5,6 +5,10 @@ platform:
   os: linux
   arch: amd64
 
+workspace:
+  base: /go
+  path: src/github.com/gitpods/gitpods
+
 steps:
 - name: test
   pull: default
