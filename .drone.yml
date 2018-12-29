@@ -16,12 +16,14 @@ steps:
   commands:
   - go test -coverprofile coverage.out -race -v ./...
 
-- name: codacy
-  pull: always
-  image: plugins/codacy:1
-  environment:
-    CODACY_TOKEN:
-      from_secret: codacy
+# Not sure if the plugin is outdated - TODO @tboerger
+
+#- name: codacy
+#  pull: always
+#  image: plugins/codacy:1
+#  environment:
+#    CODACY_TOKEN:
+#      from_secret: codacy
 
 # Don't build the UI with dart until updating to Dart 2
 
