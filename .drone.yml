@@ -1,125 +1,188 @@
-workspace:
-  base: /go
-  path: src/github.com/gitpods/gitpods
+kind: pipeline
+name: default
 
-pipeline:
-  test:
-    image: golang:1.10
-    commands:
-      - go test -coverprofile coverage.out -race -v ./...
+platform:
+  os: linux
+  arch: amd64
 
-  codacy:
-    image: plugins/codacy:1
-    pull: true
-    secrets:
-      - source: codacy
-        target: codacy_token
+steps:
+- name: test
+  pull: default
+  image: golang:1.10
+  commands:
+  - go test -coverprofile coverage.out -race -v ./...
 
-  dartanalyzer:
-     image: google/dart:1.24
-     commands:
-       - cd ui/
-       - pub get --no-precompile
-       - dartanalyzer ./lib/
+- name: codacy
+  pull: always
+  image: plugins/codacy:1
+  environment:
+    codacy_token:
+      from_secret: codacy
 
-  dart:
-    image: google/dart:1.24
-    commands:
-      - cd ui
-      - pub get --no-precompile
-      - pub build
-      - rm -rf build/web/packages
+# Don't build the UI with dart until updating to Dart 2
 
-  api:
+#- name: dartanalyzer
+#  pull: default
+#  image: google/dart:1.24
+#  commands:
+#  - cd ui/
+#  - pub get --no-precompile
+#  - dartanalyzer ./lib/
+#
+#- name: dart
+#  pull: default
+#  image: google/dart:1.24
+#  commands:
+#  - cd ui
+#  - pub get --no-precompile
+#  - pub build
+#  - rm -rf build/web/packages
+
+- name: api
+  pull: default
+  image: golang:1.10
+  commands:
+  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api/api ./cmd/api"
+  settings:
     group: build
-    image: golang:1.10
-    commands:
-      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api/api ./cmd/api
 
-  gitpods:
+- name: gitpods
+  pull: default
+  image: golang:1.10
+  commands:
+  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/gitpods/gitpods ./cmd/gitpods"
+  settings:
     group: build
-    image: golang:1.10
-    commands:
-      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/gitpods/gitpods ./cmd/gitpods
 
-  storage:
+- name: storage
+  pull: default
+  image: golang:1.10
+  commands:
+  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/storage/storage ./cmd/storage"
+  settings:
     group: build
-    image: golang:1.10
-    commands:
-      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/storage/storage ./cmd/storage
 
-  ui:
+- name: ui
+  pull: default
+  image: golang:1.10
+  commands:
+  - "curl -s -L https://github.com/gobuffalo/packr/releases/download/v1.10.4/packr_1.10.4_linux_amd64.tar.gz | tar -xz"
+  - ./packr
+  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui"
+  settings:
     group: build
-    image: golang:1.10
-    commands:
-      - curl -s -L https://github.com/gobuffalo/packr/releases/download/v1.10.4/packr_1.10.4_linux_amd64.tar.gz | tar -xz
-      - ./packr
-      - CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui
 
-  docker-api:
-    group: docker
-    image: plugins/docker
-    repo: gitpods/api
+- name: docker-api
+  pull: default
+  image: plugins/docker
+  settings:
     dockerfile: ./cmd/api/Dockerfile
-    secrets: [ docker_username, docker_password ]
-    tag: [ latest ]
-    when:
-      branch: master
-      event: push
-
-  docker-storage:
     group: docker
-    image: plugins/docker
-    repo: gitpods/storage
-    dockerfile: cmd/storage/Dockerfile
+    repo: gitpods/api
+    tag:
+    - latest
+  environment:
+    docker_password:
+      from_secret: docker_password
+    docker_username:
+      from_secret: docker_username
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+- name: docker-storage
+  pull: default
+  image: plugins/docker
+  settings:
     context: ./cmd/storage
-    secrets: [ docker_username, docker_password ]
-    tag: [ latest ]
-    when:
-      branch: master
-      event: push
-
-  docker-ui:
+    dockerfile: cmd/storage/Dockerfile
     group: docker
-    image: plugins/docker
-    repo: gitpods/ui
-    dockerfile: cmd/ui/Dockerfile
+    repo: gitpods/storage
+    tag:
+    - latest
+  environment:
+    docker_password:
+      from_secret: docker_password
+    docker_username:
+      from_secret: docker_username
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+- name: docker-ui
+  pull: default
+  image: plugins/docker
+  settings:
     context: ./cmd/ui
-    secrets: [ docker_username, docker_password ]
-    tag: [ latest ]
-    when:
-      branch: master
-      event: push
+    dockerfile: cmd/ui/Dockerfile
+    group: docker
+    repo: gitpods/ui
+    tag:
+    - latest
+  environment:
+    docker_password:
+      from_secret: docker_password
+    docker_username:
+      from_secret: docker_username
+  when:
+    branch:
+    - master
+    event:
+    - push
 
-  kubernetes-api:
-    image: kubeciio/kubectl:0.2
-    kubectl: apply
-    namespace: gitpods-try
-    templates:
-      - deployment/kubernetes/api/deployment.yml
-    secrets: [ kubeconfig ]
-    when:
-      branch: master
-      event: push
+# Don't deploy to Kubernetes at the moment
 
-  kubernetes-storage:
-    image: kubeciio/kubectl:0.2
-    kubectl: apply
-    namespace: gitpods-try
-    templates:
-      - deployment/kubernetes/storage/deployment.yml
-    secrets: [ kubeconfig ]
-    when:
-      branch: master
-      event: push
-
-  kubernetes-ui:
-    image: kubeciio/kubectl:0.2
-    kubectl: apply
-    namespace: gitpods-try
-    templates:
-      - deployment/kubernetes/ui/deployment.yml
-    secrets: [ kubeconfig ]
-    when:
-      branch: master
-      event: push
+#- name: kubernetes-api
+#  pull: default
+#  image: kubeciio/kubectl:0.2
+#  settings:
+#    kubectl: apply
+#    namespace: gitpods-try
+#    templates:
+#    - deployment/kubernetes/api/deployment.yml
+#  environment:
+#    kubeconfig:
+#      from_secret: kubeconfig
+#  when:
+#    branch:
+#    - master
+#    event:
+#    - push
+#
+#- name: kubernetes-storage
+#  pull: default
+#  image: kubeciio/kubectl:0.2
+#  settings:
+#    kubectl: apply
+#    namespace: gitpods-try
+#    templates:
+#    - deployment/kubernetes/storage/deployment.yml
+#  environment:
+#    kubeconfig:
+#      from_secret: kubeconfig
+#  when:
+#    branch:
+#    - master
+#    event:
+#    - push
+#
+#- name: kubernetes-ui
+#  pull: default
+#  image: kubeciio/kubectl:0.2
+#  settings:
+#    kubectl: apply
+#    namespace: gitpods-try
+#    templates:
+#    - deployment/kubernetes/ui/deployment.yml
+#  environment:
+#    kubeconfig:
+#      from_secret: kubeconfig
+#  when:
+#    branch:
+#    - master
+#    event:
+#    - push
