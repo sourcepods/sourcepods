@@ -19,7 +19,7 @@ steps:
 - name: codacy
   pull: always
   image: plugins/codacy:1
-  environment:
+  settings:
     codacy_token:
       from_secret: codacy
 
