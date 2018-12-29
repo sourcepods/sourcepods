@@ -2,99 +2,126 @@
 
 
 [[projects]]
+  digest = "1:9752dad5e89cd779096bf2477a4ded16bea7ac62de453c8d6b4bf841d51a8512"
   name = "github.com/apache/thrift"
   packages = ["lib/go/thrift"]
+  pruneopts = "NUT"
   revision = "b2a4d4ae21c789b689dd162deb819665567f481c"
   version = "0.10.0"
 
 [[projects]]
+  digest = "1:d54b845e98684fc00de7bb3d8ce4353f76c7e4c841ecef84a034d86b7f731300"
   name = "github.com/asaskevich/govalidator"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "73945b6115bfbbcc57d89b7316e28109364124e1"
   version = "v7"
 
 [[projects]]
   branch = "master"
+  digest = "1:cb0535f5823b47df7dcb9768ebb6c000b79ad115472910c70efe93c9ed9b2315"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
+  pruneopts = "NUT"
   revision = "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9"
 
 [[projects]]
   branch = "master"
+  digest = "1:8ecb89af7dfe3ac401bdb0c9390b134ef96a97e85f732d2b0604fb7b3977839f"
   name = "github.com/codahale/hdrhistogram"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "3a0bb77429bd3a61596f5e8a3172445844342120"
 
 [[projects]]
+  digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
+  pruneopts = "NUT"
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:1b91ae0dc69a41d4c2ed23ea5cffb721ea63f5037ca4b81e6d6771fbb8f45129"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
   version = "v1.4.7"
 
 [[projects]]
+  digest = "1:717e36544bc2aaa9f037ba61f80bf088aa2e3fd3805320f0f6107089104a787d"
   name = "github.com/go-chi/chi"
   packages = [
     ".",
-    "middleware"
+    "middleware",
   ]
+  pruneopts = "NUT"
   revision = "e83ac2304db3c50cf03d96a2fcd39009d458bc35"
   version = "v3.3.2"
 
 [[projects]]
+  digest = "1:56ecad5cdc73d200e560495bf22c681b7c7a9f9dc2894bcf5412269708ef3f68"
   name = "github.com/go-kit/kit"
   packages = [
     "log",
     "log/level",
     "metrics",
     "metrics/internal/lv",
-    "metrics/prometheus"
+    "metrics/prometheus",
   ]
+  pruneopts = "NUT"
   revision = "4dc7be5d2d12881735283bcab7352178e190fc71"
   version = "v0.6.0"
 
 [[projects]]
+  digest = "1:341a7df38da99fe91ed40e4008c13cc5d02dcc98ed1a094360cb7d5df26d6d26"
   name = "github.com/go-logfmt/logfmt"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "390ab7935ee28ec6b286364bba9b4dd6410cb3d5"
   version = "v0.3.0"
 
 [[projects]]
+  digest = "1:a1efdbc2762667c8a41cbf02b19a0549c846bf2c1d08cad4f445e3344089f1f0"
   name = "github.com/go-stack/stack"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "259ab82a6cad3992b4e21ff5cac294ccb06474bc"
   version = "v1.7.0"
 
 [[projects]]
+  digest = "1:8b0ad2382e3edbd824c7fb56572ce32d481b4b713e541d67d64e2a1c5b07a316"
   name = "github.com/gobuffalo/packr"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "6434a292ac52e6964adebfdce3f9ce6d9f16be01"
   version = "v1.10.4"
 
 [[projects]]
   branch = "master"
+  digest = "1:d470faddd8d4b027226f9a5ff9d88962c34bb1699dde2acd7e9bfb70a3703d45"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
-    "ptypes/timestamp"
+    "ptypes/timestamp",
   ]
+  pruneopts = "NUT"
   revision = "bbd03ef6da3a115852eaf24c8a1c46aeb39aa175"
 
 [[projects]]
+  digest = "1:58752107b48e9f8925373932d47e6b8368b1398f8847ed0990d4739b469b61d5"
   name = "github.com/google/jsonapi"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "46d3ced0434461be12e555852e2f1a9ed382e139"
   version = "1.0.0"
 
 [[projects]]
+  digest = "1:a646778cd3eed23be9283daa58a78a230dd9100d055f219fc14ecac1891fa4a4"
   name = "github.com/graphql-go/graphql"
   packages = [
     ".",
@@ -107,123 +134,153 @@
     "language/printer",
     "language/source",
     "language/typeInfo",
-    "language/visitor"
+    "language/visitor",
   ]
+  pruneopts = "NUT"
   revision = "5e7dd4fc3e87341229fa03d8f79d2ab5455963fb"
   version = "v0.7.4"
 
 [[projects]]
   branch = "master"
+  digest = "1:b550525fe2f9f946878d089606187262eddd156697c34358378b13d91f231efe"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   packages = [
     ".",
     "tags",
     "tracing/opentracing",
-    "util/metautils"
+    "util/metautils",
   ]
+  pruneopts = "NUT"
   revision = "d0c54e68681ec7999ac17864470f3bee6521ba2b"
 
 [[projects]]
   branch = "master"
+  digest = "1:f91bb67d051a94cf6ab2cf07eee0550432afc31655838d42cdec258db4b348f0"
   name = "github.com/kr/logfmt"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
 
 [[projects]]
   branch = "master"
+  digest = "1:f524f5a04ab8b473961d9cc79fb947b9a91188437abf5a39e333e9a58230435d"
   name = "github.com/lib/pq"
   packages = [
     ".",
-    "oid"
+    "oid",
   ]
+  pruneopts = "NUT"
   revision = "88edab0803230a3898347e77b474f8c1820a1f20"
 
 [[projects]]
+  digest = "1:8c1773b55b26aa18cd1ae359b35c77af20e5d3e62422d4461276bad57418d8e1"
   name = "github.com/mattes/migrate"
   packages = [
     ".",
     "database",
     "database/postgres",
     "source",
-    "source/file"
+    "source/file",
   ]
+  pruneopts = "NUT"
   revision = "035c07716cd373d88456ec4d701402df52584cb4"
   version = "v3.0.1"
 
 [[projects]]
+  digest = "1:5985ef4caf91ece5d54817c11ea25f182697534f8ae6521eadcd628c142ac4b6"
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
+  pruneopts = "NUT"
   revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:3b517122f3aad1ecce45a630ea912b3092b4729f25532a911d0cb2935a1f9352"
   name = "github.com/oklog/run"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "4dadeb3030eda0273a12382bb2348ffc7c9d1a39"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:7da29c22bcc5c2ffb308324377dc00b5084650348c2799e573ed226d8cc9faf0"
   name = "github.com/opentracing/opentracing-go"
   packages = [
     ".",
     "ext",
-    "log"
+    "log",
   ]
+  pruneopts = "NUT"
   revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
   version = "v1.0.2"
 
 [[projects]]
+  digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
   name = "github.com/pkg/errors"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
 
 [[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
+  pruneopts = "NUT"
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:736760205d6d2a547a9829f7d1aa39c0ecf54796b2bb677cd7ee3591564dde68"
   name = "github.com/prometheus/client_golang"
   packages = ["prometheus"]
+  pruneopts = "NUT"
   revision = "c3324c1198cf3374996e9d3098edd46a6b55afc9"
 
 [[projects]]
   branch = "master"
+  digest = "1:32d10bdfa8f09ecf13598324dba86ab891f11db3c538b6a34d1c3b5b99d7c36b"
   name = "github.com/prometheus/client_model"
   packages = ["go"]
+  pruneopts = "NUT"
   revision = "99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c"
 
 [[projects]]
   branch = "master"
+  digest = "1:4a6bb73eb5d7b8e67f25d22d87c84116cc69dfa80299dfd06622b8eee47917a8"
   name = "github.com/prometheus/common"
   packages = [
     "expfmt",
     "internal/bitbucket.org/ww/goautoneg",
-    "model"
+    "model",
   ]
+  pruneopts = "NUT"
   revision = "89604d197083d4781071d3c65855d24ecfb0a563"
 
 [[projects]]
   branch = "master"
+  digest = "1:b2f81139ed70ba4358171bc3024a5f2a3a9d2148ccc3fff03e3a011afe9b7543"
   name = "github.com/prometheus/procfs"
   packages = [
     ".",
     "internal/util",
     "nfs",
-    "xfs"
+    "xfs",
   ]
+  pruneopts = "NUT"
   revision = "282c8707aa210456a825798969cc27edda34992a"
 
 [[projects]]
   branch = "master"
+  digest = "1:ea81f81a99dcb2303dc72b64b8284684c43ef6a8a459d1a56e339df69890d24f"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
+  pruneopts = "NUT"
   revision = "be8372ae8ec5c6daaed3cc28ebf73c54b737c240"
 
 [[projects]]
+  digest = "1:2daa7d4a0624b0b9fc8388550e308a57709c300b27f62d233f8d142f944ad97c"
   name = "github.com/uber/jaeger-client-go"
   packages = [
     ".",
@@ -238,34 +295,42 @@
     "thrift-gen/jaeger",
     "thrift-gen/sampling",
     "thrift-gen/zipkincore",
-    "utils"
+    "utils",
   ]
+  pruneopts = "NUT"
   revision = "3ac96c6e679cb60a74589b0d0aa7c70a906183f7"
   version = "v2.11.2"
 
 [[projects]]
+  digest = "1:0da2810678a062e0567c3215911869b0423da0e497c56683ff8e87e7a6952597"
   name = "github.com/uber/jaeger-lib"
   packages = ["metrics"]
+  pruneopts = "NUT"
   revision = "7f95f4f7e80028096410abddaae2556e4c61b59f"
   version = "v1.3.1"
 
 [[projects]]
+  digest = "1:5dba68a1600a235630e208cb7196b24e58fcbb77bb7a6bec08fcd23f081b0a58"
   name = "github.com/urfave/cli"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:1ecf2a49df33be51e757d0033d5d51d5f784f35f68e5a38f797b2d3f03357d71"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
-    "blowfish"
+    "blowfish",
   ]
+  pruneopts = "NUT"
   revision = "49796115aa4b964c318aad4f3084fdb41e9aa067"
 
 [[projects]]
   branch = "master"
+  digest = "1:0744fec18e9083ec13cb19d8df60841b66a5caa0226171dc83d113969daa2968"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -274,17 +339,21 @@
     "idna",
     "internal/timeseries",
     "lex/httplex",
-    "trace"
+    "trace",
   ]
+  pruneopts = "NUT"
   revision = "cbe0f9307d0156177f9dd5dc85da1a31abc5f2fb"
 
 [[projects]]
   branch = "master"
+  digest = "1:a0eaec37b1bf3abd20a7ed9e8368e5c8a98ce1bdfce5fb27d017d6314b0ff5a2"
   name = "golang.org/x/sys"
   packages = ["unix"]
+  pruneopts = "NUT"
   revision = "f6cff0780e542efa0c8e864dc8fa522808f6a598"
 
 [[projects]]
+  digest = "1:e7071ed636b5422cc51c0e3a6cebc229d6c9fffc528814b519a980641422d619"
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -300,18 +369,22 @@
     "unicode/bidi",
     "unicode/cldr",
     "unicode/norm",
-    "unicode/rangetable"
+    "unicode/rangetable",
   ]
+  pruneopts = "NUT"
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:cd018653a358d4b743a9d3bee89e825521f2ab2f2ec0770164bf7632d8d73ab7"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
+  pruneopts = "NUT"
   revision = "2b5a72b8730b0b16380010cfe5286c42108d88e7"
 
 [[projects]]
+  digest = "1:6134b1973a1161ed8b4183bcac7135566211a165db9f81f501d69c0747d73cbd"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -336,14 +409,44 @@
     "stats",
     "status",
     "tap",
-    "transport"
+    "transport",
   ]
+  pruneopts = "NUT"
   revision = "8e4536a86ab602859c20df5ebfd0bd4228d08655"
   version = "v1.10.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dc6f3db62f36278c14a084b86b8ea973bad8839c7e1747c85c20ec7306837b70"
+  input-imports = [
+    "github.com/asaskevich/govalidator",
+    "github.com/fsnotify/fsnotify",
+    "github.com/go-chi/chi",
+    "github.com/go-chi/chi/middleware",
+    "github.com/go-kit/kit/log",
+    "github.com/go-kit/kit/log/level",
+    "github.com/go-kit/kit/metrics",
+    "github.com/go-kit/kit/metrics/prometheus",
+    "github.com/gobuffalo/packr",
+    "github.com/golang/protobuf/proto",
+    "github.com/google/jsonapi",
+    "github.com/graphql-go/graphql",
+    "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing",
+    "github.com/lib/pq",
+    "github.com/mattes/migrate",
+    "github.com/mattes/migrate/database/postgres",
+    "github.com/mattes/migrate/source/file",
+    "github.com/oklog/run",
+    "github.com/opentracing/opentracing-go",
+    "github.com/pkg/errors",
+    "github.com/prometheus/client_golang/prometheus",
+    "github.com/stretchr/testify/assert",
+    "github.com/uber/jaeger-client-go",
+    "github.com/uber/jaeger-client-go/config",
+    "github.com/urfave/cli",
+    "golang.org/x/crypto/bcrypt",
+    "golang.org/x/net/context",
+    "google.golang.org/grpc",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

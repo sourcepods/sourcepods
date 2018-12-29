@@ -2,7 +2,6 @@ package gqlerrors
 
 import (
 	"errors"
-
 	"github.com/graphql-go/graphql/language/ast"
 )
 
