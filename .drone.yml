@@ -44,6 +44,8 @@ steps:
   - pub global activate webdev
   - webdev build
   - rm -rf build/web/packages
+  environment:
+    PATH: '"$PATH":"$HOME/.pub-cache/bin"'
 
 - name: api
   pull: default
