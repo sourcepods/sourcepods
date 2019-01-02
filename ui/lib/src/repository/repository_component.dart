@@ -50,27 +50,19 @@ class RepositoryComponent implements OnActivate {
   String userProfileUrl() =>
       global.RoutePaths.userProfile.toUrl(parameters: {'username': ownerName});
 
-// TODO: Create method to get repository parameters for the following
+  Map<String, String> _parameters() => {
+        'owner': this.ownerName,
+        'name': this.repository.name,
+      };
 
-  String repositoryUrl() => global.RoutePaths.repository.toUrl(parameters: {
-        'owner': ownerName,
-        'name': repository.name,
-      });
+  String repositoryUrl() =>
+      global.RoutePaths.repository.toUrl(parameters: _parameters());
 
-  String filesUrl() => RoutePaths.files.toUrl(parameters: {
-        'owner': ownerName,
-        'name': repository.name,
-      });
+  String filesUrl() => RoutePaths.files.toUrl(parameters: _parameters());
 
-  String commitsUrl() => RoutePaths.commits.toUrl(parameters: {
-        'owner': ownerName,
-        'name': repository.name,
-      });
+  String commitsUrl() => RoutePaths.commits.toUrl(parameters: _parameters());
 
-  String settingsUrl() => RoutePaths.settings.toUrl(parameters: {
-        'owner': ownerName,
-        'name': repository.name,
-      });
+  String settingsUrl() => RoutePaths.settings.toUrl(parameters: _parameters());
 }
 
 class RepositoryPage {
