@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
+	"database/sql"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,7 +14,9 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 
+	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
@@ -35,8 +38,8 @@ func devSetupAction(c *cli.Context) error {
 		return errors.Wrap(err, "failed to create ./dev/ for development")
 	}
 
-	log.Println("Create docker container: gitpods-postgres")
-	if err := setupPostgres(); err != nil {
+	log.Println("Creating docker container: gitpods-cockroach")
+	if err := setupCockroach(); err != nil {
 		return err
 	}
 
@@ -52,26 +55,68 @@ func devSetupAction(c *cli.Context) error {
 	return nil
 }
 
-func setupPostgres() error {
+func setupCockroach() error {
 	docker, err := exec.LookPath("docker")
 	if err != nil {
 		return err
 	}
 
 	args := []string{
-		"run", "-d",
-		"--env", "POSTGRES_PASSWORD=postgres",
-		"--name", "gitpods-postgres",
-		"--publish", "5432:5432",
-		"--restart", "always",
-		"postgres:9.6-alpine",
+		"ps",
+		"--filter", "name=gitpods-cockroach",
 	}
 
 	cmd := exec.Command(docker, args...)
+	output, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+
+	// If more than 2 lines, container exists
+	lines := strings.Split(string(output), "\n")
+	if len(lines) > 2 {
+		return nil
+	}
+
+	args = []string{
+		"run", "-d",
+		"--name", "gitpods-cockroach",
+		"--publish", "8080:8080",
+		"--publish", "26257:26257",
+		"--restart", "always",
+		"cockroachdb/cockroach:v2.1.3",
+		"start", "--insecure",
+	}
+
+	cmd = exec.Command(docker, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	if err = cmd.Run(); err != nil {
+		return err
+	}
+
+	log.Println("waiting for cockroach to start")
+
+	db, err := sql.Open("postgres", "postgresql://root@localhost:26257?sslmode=disable")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	time.Sleep(15 * time.Second)
+
+	if err = db.Ping(); err != nil {
+		return err
+	}
+
+	log.Println("creating gitpods database if not exists")
+	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS gitpods;")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func setupPub() error {

@@ -41,7 +41,7 @@ var (
 		cli.StringFlag{
 			Name:  "database-dsn",
 			Usage: "The database connection data",
-			Value: "postgres://postgres:postgres@localhost:5432?sslmode=disable",
+			Value: "postgres://root@localhost:26257/gitpods?sslmode=disable",
 		},
 		cli.StringFlag{
 			Name:  "log-level",
