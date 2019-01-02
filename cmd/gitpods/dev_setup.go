@@ -134,7 +134,7 @@ func setupPub() error {
 }
 
 func setupCaddy() error {
-	url := fmt.Sprintf("https://caddyserver.com/download/%s/%s", runtime.GOOS, runtime.GOARCH)
+	url := fmt.Sprintf("https://caddyserver.com/download/%s/%s?license=personal&telemetry=off", runtime.GOOS, runtime.GOARCH)
 	archive := ""
 
 	switch runtime.GOOS {
