@@ -33,7 +33,7 @@ steps:
   - pub get --no-precompile
   - pub global activate webdev
   - ~/.pub-cache/bin/webdev build
-  - rm -rf build/web/packages
+  - rm -rf build/packages
 
 - name: api
   pull: default
