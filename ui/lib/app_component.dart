@@ -23,8 +23,4 @@ import 'package:gitpods/routes.dart';
     Routes,
   ],
 )
-class AppComponent {
-  AppComponent(this.routes);
-
-  final Routes routes;
-}
+class AppComponent {}

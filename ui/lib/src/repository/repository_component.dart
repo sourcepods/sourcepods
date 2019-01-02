@@ -21,18 +21,17 @@ import 'package:gitpods/src/repository/routes.dart';
       GravatarComponent,
     ],
     providers: const [
-      RepositoryService,
-      ClassProvider(Routes)
+      ClassProvider(RepositoryService),
+      ClassProvider(Routes),
     ],
     exports: [
       Routes,
       RoutePaths,
     ])
 class RepositoryComponent implements OnActivate {
-  RepositoryComponent(this._repositoryService, this.routes);
+  RepositoryComponent(this._repositoryService);
 
   final RepositoryService _repositoryService;
-  final Routes routes;
 
   String ownerName;
   Repository repository;

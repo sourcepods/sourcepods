@@ -8,22 +8,18 @@ import 'package:gitpods/src/user/user_list_component.template.dart';
 import 'package:gitpods/src/user/user_profile_component.template.dart';
 
 class RoutePaths {
-  static final root = RoutePath(path: '/');
-  static final login = RoutePath(path: '/login');
-  static final repositoryCreate = RoutePath(path: '/new');
-  static final settings = RoutePath(path: '/settings');
-  static final userList = RoutePath(path: '/users');
-  static final userProfile = RoutePath(path: '/:username');
-  static final repository = RoutePath(path: '/:owner/:name');
+  static final login = RoutePath(path: 'login');
+  static final repositoryCreate = RoutePath(path: 'new');
+  static final settings = RoutePath(path: 'settings');
+  static final userList = RoutePath(path: 'users');
+  static final userProfile = RoutePath(path: ':username');
+  static final repository = RoutePath(path: ':owner/:name');
+  static final root = RoutePath(path: '');
   static final notFound = RoutePath(path: '.+');
 }
 
 class Routes {
-  final List<RouteDefinition> all = [
-    RouteDefinition.redirect(
-      routePath: RoutePaths.root,
-      redirectTo: RoutePaths.userList.toUrl(),
-    ),
+  static final List<RouteDefinition> all = [
     RouteDefinition(
       routePath: RoutePaths.login,
       component: LoginComponentNgFactory,
@@ -47,6 +43,10 @@ class Routes {
     RouteDefinition(
       routePath: RoutePaths.repository,
       component: RepositoryComponentNgFactory,
+    ),
+    RouteDefinition.redirect(
+      routePath: RoutePaths.root,
+      redirectTo: RoutePaths.userList.toUrl(),
     ),
     RouteDefinition(
       routePath: RoutePaths.notFound,
