@@ -20,7 +20,7 @@ class FilesComponent {
 }
 
 class Branch {
-  String name;
-
   Branch(this.name);
+
+  String name;
 }

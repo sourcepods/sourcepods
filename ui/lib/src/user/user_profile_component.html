@@ -47,9 +47,7 @@
                             <!-- Only show 'New' button to the user on its own profile -->
                             <!--<div class="uk-width-auto" *ngIf="authUser.username === user.username">-->
                             <div class="uk-width-auto">
-                                <!--
-                                <a class="uk-button uk-button-primary" [routerLink]="['/RepositoryCreate']">New</a>
-                                -->
+                                <a class="uk-button uk-button-primary" [routerLink]="createRepositoryUrl()">New</a>
                             </div>
                         </div>
                     </li>
@@ -57,11 +55,9 @@
                         <div class="uk-flex">
                             <div class="uk-flex-auto">
                                 <h4 class="repository-name">
-                                    <!--
-                                    <a [routerLink]="['Repository', {'owner': user.username, 'name': repository.name}]">
+                                    <a [routerLink]="repositoryUrl(user.username, repository.name)">
                                         {{repository.name}}
                                     </a>
-                                    -->
                                 </h4>
                                 <p class="repository-description">{{repository.description}}</p>
                             </div>

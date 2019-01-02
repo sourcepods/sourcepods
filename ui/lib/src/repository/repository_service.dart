@@ -5,10 +5,17 @@ import 'package:angular/angular.dart';
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/repository/repository_component.dart';
 import 'package:gitpods/src/validation_exception.dart';
-import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 
-const repositoryGet = '''
+
+@Injectable()
+class RepositoryService {
+  RepositoryService(this._http);
+
+  final Client _http;
+
+  Future<RepositoryPage> get(String owner, String name) async {
+    const repositoryGet = '''
 query (\$owner: String!, \$name: String!) {
   repository(owner: \$owner, name: \$name) {
     id
@@ -19,32 +26,6 @@ query (\$owner: String!, \$name: String!) {
 }
 ''';
 
-const repositoryCreate = '''
-mutation (\$repository: newRepository!) {
-  createRepository(repository: \$repository) {
-    id
-    name
-    description
-    website
-    createdAt
-    updatedAt
-    owner {
-      id
-      username
-      name
-      email
-    }
-  }
-}
-''';
-
-@Injectable()
-class RepositoryService {
-  final BrowserClient _http;
-
-  RepositoryService(this._http);
-
-  Future<RepositoryPage> get(String owner, String name) async {
     var payload = json.encode({
       'query': repositoryGet,
       'variables': {
@@ -65,6 +46,25 @@ class RepositoryService {
   }
 
   Future<Repository> create(Repository repository) async {
+    const repositoryCreate = '''
+mutation (\$repository: newRepository!) {
+  createRepository(repository: \$repository) {
+    id
+    name
+    description
+    website
+    createdAt
+    updatedAt
+    owner {
+      id
+      username
+      name
+      email
+    }
+  }
+}
+''';
+
     var payload = json.encode({
       'query': repositoryCreate,
       'variables': {

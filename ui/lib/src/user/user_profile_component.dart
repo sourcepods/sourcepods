@@ -1,6 +1,7 @@
 import 'package:angular/angular.dart';
 import 'package:angular_forms/angular_forms.dart';
 import 'package:angular_router/angular_router.dart';
+import 'package:gitpods/routes.dart';
 import 'package:gitpods/src/gravatar_component.dart';
 import 'package:gitpods/src/loading_component.dart';
 import 'package:gitpods/src/mailto_pipe.dart';
@@ -39,6 +40,14 @@ class UserProfileComponent implements OnActivate {
       this.repositories = profile.repositories;
     });
   }
+
+  String createRepositoryUrl() => RoutePaths.repositoryCreate.toUrl();
+
+  String repositoryUrl(String owner, String name) =>
+      RoutePaths.repository.toUrl(parameters: {
+        'owner': owner,
+        'name': name,
+      });
 }
 
 @Pipe('filteredRepos')
