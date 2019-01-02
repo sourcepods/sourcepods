@@ -171,7 +171,7 @@ func devAction(c *cli.Context) error {
 
 	if dart {
 		{
-			c := exec.Command("pub", "serve", "--port=3011")
+			c := exec.Command("webdev", "serve", "--hot-reload", "web:3011")
 			g.Add(func() error {
 				c.Dir = "ui"
 				c.Stdout = os.Stdout
@@ -187,10 +187,19 @@ func devAction(c *cli.Context) error {
 		}
 		{
 			redirect := func(path string) bool {
-				if path == "/main.dart" {
+				if path == "/main.dart.js" {
 					return false
 				}
-				if path == "/main.template.dart" {
+				if path == "/main.dart.bootstrap.js" {
+					return false
+				}
+				if path == "/main.ddc.js" {
+					return false
+				}
+				if path == "/main.ddc.js.map" {
+					return false
+				}
+				if path == "/$assetDigests" {
 					return false
 				}
 				if strings.HasPrefix(path, "/components") {
