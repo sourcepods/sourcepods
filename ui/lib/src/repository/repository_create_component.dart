@@ -10,7 +10,7 @@ import 'package:gitpods/src/repository/repository_service.dart';
 @Component(
   selector: 'gitpods-repository-create',
   templateUrl: 'repository_create_component.html',
-  directives: const [COMMON_DIRECTIVES, formDirectives],
+  directives: const [coreDirectives, formDirectives],
   providers: const [RepositoryService],
 )
 class RepositoryCreateComponent {
@@ -30,8 +30,8 @@ class RepositoryCreateComponent {
 
     Future<Repository> resp = this._repositoryService.create(this.repository);
 
-    resp.then((Repository repository) => this._router.navigate(['Repository', {'owner': repository.owner.username, 'name': repository.name}]))
-        .catchError((e) => this.error = e.toString())
-        .whenComplete(() => this.loading = false);
+//    resp.then((Repository repository) => this._router.navigate(['Repository', {'owner': repository.owner.username, 'name': repository.name}]))
+//        .catchError((e) => this.error = e.toString())
+//        .whenComplete(() => this.loading = false);
   }
 }

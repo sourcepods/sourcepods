@@ -14,8 +14,8 @@ import 'package:gitpods/src/user/user_service.dart';
   styleUrls: const ['user_profile_component.css'],
   providers: const [UserService],
   directives: const [
-    COMMON_DIRECTIVES,
-    ROUTER_DIRECTIVES,
+    coreDirectives,
+    routerDirectives,
     formDirectives,
     LoadingComponent,
     GravatarComponent,
@@ -23,10 +23,11 @@ import 'package:gitpods/src/user/user_service.dart';
   pipes: const [DatePipe, MailtoPipe, FilteredReposPipe],
 )
 class UserProfileComponent implements OnInit {
-  final RouteParams _routeParams;
-  final UserService _userService;
+  UserProfileComponent(this._userService);
+//  UserProfileComponent(this._routeParams, this._userService);
 
-  UserProfileComponent(this._routeParams, this._userService);
+  //  final RouteParams _routeParams;
+  final UserService _userService;
 
   User user;
   List<Repository> repositories;
@@ -34,7 +35,8 @@ class UserProfileComponent implements OnInit {
 
   @override
   void ngOnInit() {
-    String username = this._routeParams.get('username');
+//    String username = this._routeParams.get('username');
+    String username = '';
     this._userService.profile(username).then((UserProfile profile) {
       this.user = profile.user;
       this.repositories = profile.repositories;

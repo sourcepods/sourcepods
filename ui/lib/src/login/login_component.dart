@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:html';
 
 import 'package:angular/angular.dart';
@@ -9,10 +8,12 @@ import 'package:gitpods/src/login/login_service.dart';
   selector: 'gitpods-selector',
   templateUrl: 'login_component.html',
   styleUrls: const ['login_component.css'],
-  directives: const[COMMON_DIRECTIVES, formDirectives],
-  providers: const[LoginService],
+  directives: const [coreDirectives, formDirectives],
+  providers: const [LoginService],
 )
 class LoginComponent {
+  LoginComponent(this._loginService);
+
   final LoginService _loginService;
 
   String email;
@@ -20,13 +21,12 @@ class LoginComponent {
 
   String error = '';
 
-  LoginComponent(this._loginService);
-
-  void submit(Event event) {
-    event.preventDefault();
+  void submit(Event e) {
+    e.preventDefault();
     this.error = '';
 
-    Future<String> resp = this._loginService.login(this.email, this.password);
-    resp.then((String error) => this.error = error);
+    _loginService
+        .login(this.email, this.password)
+        .then((String error) => this.error = error);
   }
 }

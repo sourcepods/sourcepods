@@ -5,7 +5,7 @@ import 'package:gitpods/src/loading_component.dart';
   selector: 'repository-files',
   templateUrl: 'files_component.html',
   directives: const [
-    COMMON_DIRECTIVES,
+    coreDirectives,
     LoadingComponent,
   ],
 )

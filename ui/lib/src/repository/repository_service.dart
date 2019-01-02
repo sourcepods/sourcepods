@@ -45,7 +45,7 @@ class RepositoryService {
   RepositoryService(this._http);
 
   Future<RepositoryPage> get(String owner, String name) async {
-    var payload = JSON.encode({
+    var payload = json.encode({
       'query': repositoryGet,
       'variables': {
         'owner': owner,
@@ -54,7 +54,7 @@ class RepositoryService {
     });
 
     Response resp = await this._http.post('/api/query', body: payload);
-    var body = JSON.decode(resp.body);
+    var body = json.decode(resp.body);
 
     if (body['errors'] != null) {
       throw new Exception(body['errors'][0]['message']);
@@ -65,7 +65,7 @@ class RepositoryService {
   }
 
   Future<Repository> create(Repository repository) async {
-    var payload = JSON.encode({
+    var payload = json.encode({
       'query': repositoryCreate,
       'variables': {
         'repository': {
@@ -77,7 +77,7 @@ class RepositoryService {
     });
 
     Response resp = await this._http.post('/api/query', body: payload);
-    var body = JSON.decode(resp.body);
+    var body = json.decode(resp.body);
 
     if (body['errors'] != null) {
       throw new ValidationException(body['errors'][0]['message']);

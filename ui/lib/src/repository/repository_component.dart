@@ -14,36 +14,38 @@ import 'package:gitpods/src/repository/settings/settings_component.dart';
   templateUrl: 'repository_component.html',
   styleUrls: const ['repository_component.css'],
   directives: const [
-    COMMON_DIRECTIVES,
-    ROUTER_DIRECTIVES,
+    coreDirectives,
+    routerDirectives,
     LoadingComponent,
     GravatarComponent,
   ],
   providers: const [RepositoryService],
 )
-@RouteConfig(const [
-  const Route(
-    path: '/',
-    name: 'Files',
-    component: FilesComponent,
-    useAsDefault: true,
-  ),
-  const Route(
-    path: '/commits',
-    name: 'Commits',
-    component: CommitsComponent,
-  ),
-  const Route(
-    path: '/settings',
-    name: 'Settings',
-    component: SettingsComponent,
-  ),
-])
+//@RouteConfig(const [
+//  const Route(
+//    path: '/',
+//    name: 'Files',
+//    component: FilesComponent,
+//    useAsDefault: true,
+//  ),
+//  const Route(
+//    path: '/commits',
+//    name: 'Commits',
+//    component: CommitsComponent,
+//  ),
+//  const Route(
+//    path: '/settings',
+//    name: 'Settings',
+//    component: SettingsComponent,
+//  ),
+//])
 class RepositoryComponent implements OnInit {
-  final RouteParams _routeParams;
+//  final RouteParams _routeParams;
   final RepositoryService _repositoryService;
 
-  RepositoryComponent(this._routeParams, this._repositoryService);
+  RepositoryComponent(this._repositoryService);
+
+//  RepositoryComponent(this._routeParams, this._repositoryService);
 
   String ownerName;
   Repository repository;
@@ -51,8 +53,9 @@ class RepositoryComponent implements OnInit {
 
   @override
   void ngOnInit() {
-    ownerName = this._routeParams.get('owner');
-    String name = this._routeParams.get('name');
+//    ownerName = this._routeParams.get('owner');
+//    String name = this._routeParams.get('name');
+    String name = '';
 
     this._repositoryService.get(ownerName, name).then((RepositoryPage page) {
       this.repository = page.repository;
