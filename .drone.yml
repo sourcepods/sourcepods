@@ -42,10 +42,8 @@ steps:
   - dartanalyzer --version
   - pub get --no-precompile
   - pub global activate webdev
-  - webdev build
+  - ~/.pub-cache/bin/webdev build
   - rm -rf build/web/packages
-  environment:
-    PATH: '"$PATH":"$HOME/.pub-cache/bin"'
 
 - name: api
   pull: default
