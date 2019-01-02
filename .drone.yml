@@ -34,15 +34,16 @@ steps:
 #  - cd ui/
 #  - pub get --no-precompile
 #  - dartanalyzer ./lib/
-#
-#- name: dart
-#  pull: default
-#  image: google/dart:1.24
-#  commands:
-#  - cd ui
-#  - pub get --no-precompile
-#  - pub build
-#  - rm -rf build/web/packages
+
+- name: dart
+  image: google/dart:2.1
+  commands:
+  - cd ui
+  - dartanalyzer --version
+  - pub get --no-precompile
+  - pub global activate webdev
+  - webdev build
+  - rm -rf build/web/packages
 
 - name: api
   pull: default
