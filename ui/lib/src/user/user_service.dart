@@ -12,7 +12,8 @@ class UserService {
 
   final Client _http;
 
-  final userMe = '''
+  Future<User> me() async {
+    final userMe = '''
 query me {
   me {
     id
@@ -25,7 +26,6 @@ query me {
 }
 ''';
 
-  Future<User> me() async {
     String payload = json.encode({
       'query': userMe,
     });
@@ -41,7 +41,8 @@ query me {
     return new User.fromJSON(body['data']['me']);
   }
 
-  final usersQuery = '''
+  Future<List<User>> list() async {
+    final usersQuery = '''
 query UsersQuery {
   users {
     id
@@ -54,7 +55,6 @@ query UsersQuery {
 }
 ''';
 
-  Future<List<User>> list() async {
     var payload = json.encode({
       'query': usersQuery,
     });
@@ -62,12 +62,14 @@ query UsersQuery {
     Response resp = await this._http.post('/api/query', body: payload);
 
     var body = json.decode(resp.body);
-    return body['data']['users']
-        .map((json) => new User.fromJSON(json))
+
+    return (body['data']['users'] as List)
+        .map((user) => new User.fromJSON(user))
         .toList();
   }
 
-  final userProfile = '''
+  Future<UserProfile> profile(String username) async {
+    final userProfile = '''
 query userProfile(\$username: String!) {
   user(username: \$username) {
     id
@@ -85,7 +87,6 @@ query userProfile(\$username: String!) {
 }
 ''';
 
-  Future<UserProfile> profile(String username) async {
     var payload = json.encode({
       'query': userProfile,
       'variables': {
@@ -98,7 +99,8 @@ query userProfile(\$username: String!) {
     var body = json.decode(resp.body);
 
     User user = new User.fromJSON(body['data']['user']);
-    List<Repository> repositories = body['data']['repositories']
+
+    List<Repository> repositories = (body['data']['repositories'] as List)
         .map((json) => new Repository.fromJSON(json))
         .toList();
 
@@ -108,7 +110,8 @@ query userProfile(\$username: String!) {
     );
   }
 
-  final userUpdate = '''
+  Future<User> update(User user) async {
+    final userUpdate = '''
 mutation updateUser(\$id: ID!, \$user: UpdatedUser!) {
   user: updateUser(id: \$id, user: \$user) {
     id
@@ -121,7 +124,6 @@ mutation updateUser(\$id: ID!, \$user: UpdatedUser!) {
 }
 ''';
 
-  Future<User> update(User user) async {
     var payload = json.encode({
       'query': userUpdate,
       'variables': {

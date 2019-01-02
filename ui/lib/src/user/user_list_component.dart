@@ -34,7 +34,7 @@ class UserListComponent implements OnInit {
 
   String userProfileUrl(String username) {
     return RoutePaths.userProfile.toUrl(parameters: {
-      username: username,
+      'username': username,
     });
   }
 }

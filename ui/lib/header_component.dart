@@ -32,15 +32,17 @@ class HeaderComponent implements OnInit {
 
   @override
   void ngOnInit() {
-    _userService
-        .me()
-        .then((User user) {
+    _userService.me().then((User user) {
       this.username = user.username;
       this.email = user.email;
     });
   }
 
   String usersUrl() => RoutePaths.userList.toUrl();
+
+  String userProfile() =>
+      RoutePaths.userProfile.toUrl(parameters: {'username': username});
+
   String loginUrl() => RoutePaths.login.toUrl();
 
   void logout() => this._loginService.logout();

@@ -22,11 +22,9 @@ import 'package:gitpods/src/user/user_service.dart';
   ],
   pipes: const [DatePipe, MailtoPipe, FilteredReposPipe],
 )
-class UserProfileComponent implements OnInit {
+class UserProfileComponent implements OnActivate {
   UserProfileComponent(this._userService);
-//  UserProfileComponent(this._routeParams, this._userService);
 
-  //  final RouteParams _routeParams;
   final UserService _userService;
 
   User user;
@@ -34,9 +32,8 @@ class UserProfileComponent implements OnInit {
   String repoQuery = '';
 
   @override
-  void ngOnInit() {
-//    String username = this._routeParams.get('username');
-    String username = '';
+  void onActivate(RouterState previous, RouterState current) {
+    String username = current.parameters['username'];
     this._userService.profile(username).then((UserProfile profile) {
       this.user = profile.user;
       this.repositories = profile.repositories;
