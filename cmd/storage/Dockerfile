@@ -2,7 +2,7 @@ FROM alpine
 
 RUN apk add --update ca-certificates git
 
-COPY ./storage /usr/bin/
+COPY ./cmd/api/storage /usr/bin/
 
 EXPOSE 3030
 

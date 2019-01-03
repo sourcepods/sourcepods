@@ -2,7 +2,7 @@ FROM alpine
 
 RUN apk add --update ca-certificates
 
-COPY ./ui /usr/bin/
+COPY ./cmd/ui/ui /usr/bin/
 
 EXPOSE 3010
 
