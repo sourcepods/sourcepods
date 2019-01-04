@@ -45,5 +45,7 @@ class HeaderComponent implements OnInit {
 
   String loginUrl() => RoutePaths.login.toUrl();
 
+  String settingsUrl() => RoutePaths.settings.toUrl();
+
   void logout() => this._loginService.logout();
 }

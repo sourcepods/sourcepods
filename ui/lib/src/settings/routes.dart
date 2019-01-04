@@ -1,27 +1,39 @@
-import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
+import 'package:gitpods/routes.dart' as _parent;
 import 'package:gitpods/src/settings/account/account_component.template.dart';
 import 'package:gitpods/src/settings/profile/profile_component.template.dart';
 import 'package:gitpods/src/settings/security/security_component.template.dart';
 
-final profileRoute = new RoutePath(path: '/', useAsDefault: true);
-final accountRoute = new RoutePath(path: '/account');
-final securityRoute = new RoutePath(path: '/security');
+class RoutesPaths {
+  static final account = RoutePath(
+    path: '/account',
+    parent: _parent.RoutePaths.settings,
+  );
+  static final security = RoutePath(
+    path: '/security',
+    parent: _parent.RoutePaths.settings,
+  );
+  static final profile = RoutePath(
+    path: '',
+    parent: _parent.RoutePaths.settings,
+    useAsDefault: true,
+  );
+}
 
-@Injectable()
 class Routes {
-  final List<RouteDefinition> all = [
+  static final List<RouteDefinition> all = [
     new RouteDefinition(
-      routePath: profileRoute,
-      component: ProfileComponentNgFactory,
-    ),
-    new RouteDefinition(
-      routePath: accountRoute,
+      routePath: RoutesPaths.account,
       component: AccountComponentNgFactory,
     ),
     new RouteDefinition(
-      routePath: securityRoute,
+      routePath: RoutesPaths.security,
       component: SecurityComponentNgFactory,
-    )
+    ),
+    new RouteDefinition(
+      routePath: RoutesPaths.profile,
+      component: ProfileComponentNgFactory,
+      useAsDefault: true,
+    ),
   ];
 }

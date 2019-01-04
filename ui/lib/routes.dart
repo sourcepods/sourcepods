@@ -3,7 +3,7 @@ import 'package:gitpods/src/login/login_component.template.dart';
 import 'package:gitpods/src/not_found_component.template.dart';
 import 'package:gitpods/src/repository/repository_component.template.dart';
 import 'package:gitpods/src/repository/repository_create_component.template.dart';
-import 'package:gitpods/src/repository/settings/settings_component.template.dart';
+import 'package:gitpods/src/settings/settings_component.template.dart';
 import 'package:gitpods/src/user/user_list_component.template.dart';
 import 'package:gitpods/src/user/user_profile_component.template.dart';
 

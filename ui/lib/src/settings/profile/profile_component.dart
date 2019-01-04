@@ -15,18 +15,20 @@ import 'package:gitpods/src/user/user_service.dart';
     formDirectives,
     LoadingComponent,
   ],
+  providers: [
+    ClassProvider(UserService),
+  ]
 )
-class ProfileComponent implements OnInit {
-  ProfileComponent(this._router, this._userService);
+class ProfileComponent implements OnActivate {
+  ProfileComponent(this._userService);
 
-  final Router _router;
   final UserService _userService;
 
   bool loading;
   User user;
 
   @override
-  void ngOnInit() {
+  void onActivate(RouterState previous, RouterState current) {
     _userService.me().then((User user) => this.user = user);
   }
 
