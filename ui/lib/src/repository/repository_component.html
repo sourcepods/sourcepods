@@ -10,11 +10,11 @@
 
                 <div style="padding-left: 16px;">
                     <h3>
-                        <a [routerLink]="['/UserProfile', {'username': ownerName}]">
+                        <a [routerLink]="userProfileUrl()">
                             {{ownerName}}
                         </a>
                         <span>/</span>
-                        <a [routerLink]="['/Repository', {'owner':ownerName, 'name': repository.name}]">
+                        <a [routerLink]="repositoryUrl()">
                             {{repository.name}}
                         </a>
                     </h3>
@@ -26,23 +26,22 @@
                     </span>
                 </div>
             </div>
-
             <ul class="uk-child-width-expand" uk-tab>
                 <li>
-                    <a [routerLink]="['./Files']">
+                    <a [routerLink]="filesUrl()">
                         <span uk-icon="icon: code"></span>
                         Files
                     </a>
                 </li>
                 <li>
-                    <a [routerLink]="['./Commits']">
+                    <a [routerLink]="commitsUrl()">
                         <span uk-icon="icon: history"></span>
                         Commits
                         <span class="uk-badge">123</span>
                     </a>
                 </li>
                 <li>
-                    <a [routerLink]="['./Settings']">
+                    <a [routerLink]="settingsUrl()">
                         <span uk-icon="icon: settings"></span>
                         Settings
                     </a>
@@ -50,7 +49,6 @@
             </ul>
         </div>
     </div>
-
-    <router-outlet></router-outlet>
-
 </div>
+
+<router-outlet [routes]="Routes.all"></router-outlet>

@@ -1,6 +1,6 @@
 <gitpods-loading *ngIf="user == null"></gitpods-loading>
 
-<div class="uk-container" *ngIf="user!=null">
+<div class="uk-container" *ngIf="user != null">
     <div class="uk-grid-small" uk-grid>
         <div class="uk-flex-top uk-padding-small uk-width-2-5@m uk-width-1-4@l">
             <gravatar email="{{user.email}}" size="512"></gravatar>
@@ -47,7 +47,7 @@
                             <!-- Only show 'New' button to the user on its own profile -->
                             <!--<div class="uk-width-auto" *ngIf="authUser.username === user.username">-->
                             <div class="uk-width-auto">
-                                <a class="uk-button uk-button-primary" [routerLink]="['/RepositoryCreate']">New</a>
+                                <a class="uk-button uk-button-primary" [routerLink]="createRepositoryUrl()">New</a>
                             </div>
                         </div>
                     </li>
@@ -55,7 +55,7 @@
                         <div class="uk-flex">
                             <div class="uk-flex-auto">
                                 <h4 class="repository-name">
-                                    <a [routerLink]="['Repository', {'owner': user.username, 'name': repository.name}]">
+                                    <a [routerLink]="repositoryUrl(user.username, repository.name)">
                                         {{repository.name}}
                                     </a>
                                 </h4>

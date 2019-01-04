@@ -1,10 +1,8 @@
 <div class="wrapper">
-    <div *ngIf="user != null">
-        <gitpods-header email="{{user.email}}" username="{{user.username}}"></gitpods-header>
-    </div>
+    <gitpods-header></gitpods-header>
 
     <div class="content">
-        <router-outlet></router-outlet>
+        <router-outlet [routes]="Routes.all"></router-outlet>
     </div>
 
     <gitpods-footer></gitpods-footer>

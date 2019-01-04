@@ -11,23 +11,25 @@ import 'package:gitpods/src/user/user_service.dart';
   selector: 'profile',
   templateUrl: 'profile_component.html',
   directives: const [
-    COMMON_DIRECTIVES,
+    coreDirectives,
     formDirectives,
     LoadingComponent,
   ],
+  providers: [
+    ClassProvider(UserService),
+  ]
 )
-class ProfileComponent implements OnInit {
-  final Router _router;
-  final UserService _userService;
+class ProfileComponent implements OnActivate {
+  ProfileComponent(this._userService);
 
-  ProfileComponent(this._router, this._userService);
+  final UserService _userService;
 
   bool loading;
   User user;
 
   @override
-  void ngOnInit() {
-    this._userService.me().then((user) => this.user = user);
+  void onActivate(RouterState previous, RouterState current) {
+    _userService.me().then((User user) => this.user = user);
   }
 
   void submit(Event e) {
@@ -36,7 +38,7 @@ class ProfileComponent implements OnInit {
 
     this._userService.update(user).then((user) {
       loading = false;
-      this._router.navigate(['/UserProfile',{'username': user.username}]);
+//      this._router.navigate(['/UserProfile',{'username': user.username}]);
     });
   }
 }

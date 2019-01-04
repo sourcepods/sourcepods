@@ -59,7 +59,7 @@ func ActionUI(c *cli.Context) error {
 
 	// Create FileServer handler with buffalo's packr to serve file from disk or from within the binary.
 	// The path is relative to this file.
-	box := packr.NewBox("../../ui/build/web")
+	box := packr.NewBox("../../ui/build")
 
 	homeHandler := HomeHandler(box, HTMLConfig{
 		API: uiConfig.AddrAPI,

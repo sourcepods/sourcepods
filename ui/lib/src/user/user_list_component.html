@@ -1,6 +1,6 @@
-<gitpods-loading *ngIf="users.length == 0"></gitpods-loading>
+<gitpods-loading *ngIf="users == null"></gitpods-loading>
 
-<div class="uk-container" *ngIf="users.length > 0">
+<div class="uk-container" *ngIf="users != null">
     <h3>Users</h3>
     <ul class="uk-list uk-list-divider">
         <li *ngFor="let user of users">
@@ -9,7 +9,7 @@
                     <gravatar email="{{user.email}}" size="46" class="uk-border-circle"></gravatar>
                 </div>
                 <div class="uk-width-expand">
-                    <a [routerLink]="['UserProfile', {'username': user.username}]" class="uk-link-reset uk-text-bold">{{user.name}}</a><br>
+                    <a [routerLink]="userProfileUrl(user.username)" class="uk-link-reset uk-text-bold">{{user.name}}</a><br>
                     <span>{{user.email}}</span>
                 </div>
             </div>

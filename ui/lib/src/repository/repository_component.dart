@@ -1,67 +1,68 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
+import 'package:gitpods/routes.dart' as global;
 import 'package:gitpods/src/gravatar_component.dart';
 import 'package:gitpods/src/loading_component.dart';
-import 'package:gitpods/src/repository/commits/commits_component.dart';
-import 'package:gitpods/src/repository/files/files_component.dart';
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/repository/repository_service.dart';
 import 'package:gitpods/src/repository/repository_tree.dart';
-import 'package:gitpods/src/repository/settings/settings_component.dart';
+import 'package:gitpods/src/repository/routes.dart';
 
 @Component(
   selector: 'gitpods-repository',
   templateUrl: 'repository_component.html',
   styleUrls: const ['repository_component.css'],
-  directives: const [
-    COMMON_DIRECTIVES,
-    ROUTER_DIRECTIVES,
+  directives: [
+    coreDirectives,
+    routerDirectives,
     LoadingComponent,
     GravatarComponent,
   ],
-  providers: const [RepositoryService],
+  providers: const [
+    ClassProvider(RepositoryService),
+    ClassProvider(Routes),
+  ],
+  exports: [Routes],
 )
-@RouteConfig(const [
-  const Route(
-    path: '/',
-    name: 'Files',
-    component: FilesComponent,
-    useAsDefault: true,
-  ),
-  const Route(
-    path: '/commits',
-    name: 'Commits',
-    component: CommitsComponent,
-  ),
-  const Route(
-    path: '/settings',
-    name: 'Settings',
-    component: SettingsComponent,
-  ),
-])
-class RepositoryComponent implements OnInit {
-  final RouteParams _routeParams;
-  final RepositoryService _repositoryService;
+class RepositoryComponent implements OnActivate {
+  RepositoryComponent(this._repositoryService);
 
-  RepositoryComponent(this._routeParams, this._repositoryService);
+  final RepositoryService _repositoryService;
 
   String ownerName;
   Repository repository;
   List<RepositoryTree> tree;
 
   @override
-  void ngOnInit() {
-    ownerName = this._routeParams.get('owner');
-    String name = this._routeParams.get('name');
+  void onActivate(RouterState previous, RouterState current) {
+    ownerName = current.parameters['owner'];
+    String name = current.parameters['name'];
 
     this._repositoryService.get(ownerName, name).then((RepositoryPage page) {
       this.repository = page.repository;
     });
   }
+
+  String userProfileUrl() =>
+      global.RoutePaths.userProfile.toUrl(parameters: {'username': ownerName});
+
+  Map<String, String> _parameters() => {
+        'owner': this.ownerName,
+        'name': this.repository.name,
+      };
+
+  String repositoryUrl() =>
+      global.RoutePaths.repository.toUrl(parameters: _parameters());
+
+  String filesUrl() => RoutePaths.files.toUrl(parameters: _parameters());
+
+  String commitsUrl() => RoutePaths.commits.toUrl(parameters: _parameters());
+
+  String settingsUrl() => RoutePaths.settings.toUrl(parameters: _parameters());
 }
 
 class RepositoryPage {
-  Repository repository;
-
   RepositoryPage(this.repository);
+
+  Repository repository;
 }

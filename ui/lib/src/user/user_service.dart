@@ -4,10 +4,16 @@ import 'dart:convert';
 import 'package:angular/angular.dart';
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/user/user.dart';
-import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 
-const userMe = '''
+@Injectable()
+class UserService {
+  UserService(this._http);
+
+  final Client _http;
+
+  Future<User> me() async {
+    final userMe = '''
 query me {
   me {
     id
@@ -20,7 +26,23 @@ query me {
 }
 ''';
 
-const usersQuery = '''
+    String payload = json.encode({
+      'query': userMe,
+    });
+
+    Response resp = await _http.post('/api/query', body: payload);
+
+    if (resp.statusCode != 200) {
+      var body = json.decode(resp.body);
+      throw new UnauthorizedError(body['errors'][0]['detail']);
+    }
+
+    var body = json.decode(resp.body);
+    return new User.fromJSON(body['data']['me']);
+  }
+
+  Future<List<User>> list() async {
+    final usersQuery = '''
 query UsersQuery {
   users {
     id
@@ -33,7 +55,21 @@ query UsersQuery {
 }
 ''';
 
-const userProfile = '''
+    var payload = json.encode({
+      'query': usersQuery,
+    });
+
+    Response resp = await this._http.post('/api/query', body: payload);
+
+    var body = json.decode(resp.body);
+
+    return (body['data']['users'] as List)
+        .map((user) => new User.fromJSON(user))
+        .toList();
+  }
+
+  Future<UserProfile> profile(String username) async {
+    final userProfile = '''
 query userProfile(\$username: String!) {
   user(username: \$username) {
     id
@@ -51,7 +87,31 @@ query userProfile(\$username: String!) {
 }
 ''';
 
-const userUpdate = '''
+    var payload = json.encode({
+      'query': userProfile,
+      'variables': {
+        'username': username,
+      }
+    });
+
+    Response resp = await this._http.post('/api/query', body: payload);
+
+    var body = json.decode(resp.body);
+
+    User user = new User.fromJSON(body['data']['user']);
+
+    List<Repository> repositories = (body['data']['repositories'] as List)
+        .map((json) => new Repository.fromJSON(json))
+        .toList();
+
+    return new UserProfile(
+      user: user,
+      repositories: repositories,
+    );
+  }
+
+  Future<User> update(User user) async {
+    final userUpdate = '''
 mutation updateUser(\$id: ID!, \$user: UpdatedUser!) {
   user: updateUser(id: \$id, user: \$user) {
     id
@@ -64,66 +124,7 @@ mutation updateUser(\$id: ID!, \$user: UpdatedUser!) {
 }
 ''';
 
-@Injectable()
-class UserService {
-  final BrowserClient _http;
-
-  UserService(this._http);
-
-  Future<User> me() async {
-    var payload = JSON.encode({
-      'query': userMe,
-    });
-
-    Response resp = await this._http.post('/api/query', body: payload);
-
-    if (resp.statusCode != 200) {
-      var body = JSON.decode(resp.body);
-      throw new UnauthorizedError(body['errors'][0]['detail']);
-    }
-
-    var body = JSON.decode(resp.body);
-    return new User.fromJSON(body['data']['me']);
-  }
-
-  Future<List<User>> list() async {
-    var payload = JSON.encode({
-      'query': usersQuery,
-    });
-
-    Response resp = await this._http.post('/api/query', body: payload);
-
-    var body = JSON.decode(resp.body);
-    return body['data']['users']
-        .map((json) => new User.fromJSON(json))
-        .toList();
-  }
-
-  Future<UserProfile> profile(String username) async {
-    var payload = JSON.encode({
-      'query': userProfile,
-      'variables': {
-        'username': username,
-      }
-    });
-
-    Response resp = await this._http.post('/api/query', body: payload);
-
-    var body = JSON.decode(resp.body);
-
-    User user = new User.fromJSON(body['data']['user']);
-    List<Repository> repositories = body['data']['repositories']
-        .map((json) => new Repository.fromJSON(json))
-        .toList();
-
-    return new UserProfile(
-      user: user,
-      repositories: repositories,
-    );
-  }
-
-  Future<User> update(User user) async {
-    var payload = JSON.encode({
+    var payload = json.encode({
       'query': userUpdate,
       'variables': {
         'id': user.id,
@@ -135,22 +136,22 @@ class UserService {
 
     Response resp = await this._http.post('/api/query', body: payload);
 
-    var body = JSON.decode(resp.body);
+    var body = json.decode(resp.body);
     return new User.fromJSON(body['data']['user']);
   }
 }
 
 class UserProfile {
+  UserProfile({this.repositories, this.user});
+
   List<Repository> repositories;
   User user;
-
-  UserProfile({this.repositories, this.user});
 }
 
 class UnauthorizedError extends Error {
-  final String message;
-
   UnauthorizedError(this.message);
+
+  final String message;
 
   @override
   String toString() => "Unauthorizted state: $message";

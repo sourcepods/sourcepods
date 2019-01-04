@@ -5,10 +5,17 @@ import 'package:angular/angular.dart';
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/repository/repository_component.dart';
 import 'package:gitpods/src/validation_exception.dart';
-import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 
-const repositoryGet = '''
+
+@Injectable()
+class RepositoryService {
+  RepositoryService(this._http);
+
+  final Client _http;
+
+  Future<RepositoryPage> get(String owner, String name) async {
+    const repositoryGet = '''
 query (\$owner: String!, \$name: String!) {
   repository(owner: \$owner, name: \$name) {
     id
@@ -19,7 +26,27 @@ query (\$owner: String!, \$name: String!) {
 }
 ''';
 
-const repositoryCreate = '''
+    var payload = json.encode({
+      'query': repositoryGet,
+      'variables': {
+        'owner': owner,
+        'name': name,
+      },
+    });
+
+    Response resp = await this._http.post('/api/query', body: payload);
+    var body = json.decode(resp.body);
+
+    if (body['errors'] != null) {
+      throw new Exception(body['errors'][0]['message']);
+    }
+
+    Repository repository = new Repository.fromJSON(body['data']['repository']);
+    return new RepositoryPage(repository);
+  }
+
+  Future<Repository> create(Repository repository) async {
+    const repositoryCreate = '''
 mutation (\$repository: newRepository!) {
   createRepository(repository: \$repository) {
     id
@@ -38,34 +65,7 @@ mutation (\$repository: newRepository!) {
 }
 ''';
 
-@Injectable()
-class RepositoryService {
-  final BrowserClient _http;
-
-  RepositoryService(this._http);
-
-  Future<RepositoryPage> get(String owner, String name) async {
-    var payload = JSON.encode({
-      'query': repositoryGet,
-      'variables': {
-        'owner': owner,
-        'name': name,
-      },
-    });
-
-    Response resp = await this._http.post('/api/query', body: payload);
-    var body = JSON.decode(resp.body);
-
-    if (body['errors'] != null) {
-      throw new Exception(body['errors'][0]['message']);
-    }
-
-    Repository repository = new Repository.fromJSON(body['data']['repository']);
-    return new RepositoryPage(repository);
-  }
-
-  Future<Repository> create(Repository repository) async {
-    var payload = JSON.encode({
+    var payload = json.encode({
       'query': repositoryCreate,
       'variables': {
         'repository': {
@@ -77,7 +77,7 @@ class RepositoryService {
     });
 
     Response resp = await this._http.post('/api/query', body: payload);
-    var body = JSON.decode(resp.body);
+    var body = json.decode(resp.body);
 
     if (body['errors'] != null) {
       throw new ValidationException(body['errors'][0]['message']);

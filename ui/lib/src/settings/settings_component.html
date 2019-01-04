@@ -2,16 +2,16 @@
     <div class="uk-container">
         <ul class="uk-flex-center" uk-tab>
             <li class="uk-active">
-                <a [routerLink]="['Profile']">Profile</a>
+                <a [routerLink]="profileUrl()">Profile</a>
             </li>
             <li>
-                <a [routerLink]="['Account']">Account</a>
+                <a [routerLink]="accountUrl()">Account</a>
             </li>
             <li>
-                <a [routerLink]="['Security']">Security</a>
+                <a [routerLink]="securityUrl()">Security</a>
             </li>
         </ul>
     </div>
 </div>
 
-<router-outlet></router-outlet>
+<router-outlet [routes]="Routes.all"></router-outlet>

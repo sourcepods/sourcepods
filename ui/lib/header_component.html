@@ -1,15 +1,13 @@
 <div class="uk-navbar-container uk-margin">
     <nav class="uk-container" uk-navbar>
-
-        <a [routerLink]="['/UserList']" class="logo">
-            <img src="/img/logo.svg" alt="" />
+        <a [routerLink]="usersUrl()" class="logo">
+            <img src="/img/logo.svg" alt=""/>
         </a>
-
-        <div class="uk-navbar-right uk-flex-last@s">
+        <div class="uk-navbar-right uk-flex-last@s" *ngIf="username != null">
             <ul class="uk-navbar-nav">
                 <li>
                     <div>
-                        <a [routerLink]="['/UserProfile', {'username': username}]" class="profile">
+                        <a [routerLink]="userProfile()" class="profile">
                             <gravatar email="{{email}}" size="46" class="uk-border-circle"></gravatar>
                         </a>
                         <span uk-icon="icon: more-vertical"></span>
@@ -17,10 +15,11 @@
                     <div class="uk-navbar-dropdown">
                         <ul class="uk-nav uk-navbar-dropdown-nav">
                             <li>
-                                <a [routerLink]="['UserProfile', {'username': username}]">Profile</a>
+                                <a [routerLink]="userProfile()">Profile</a>
                             </li>
                             <li>
-                                <a [routerLink]="['Settings', 'Profile']">Settings</a>
+                                <a [routerLink]="settingsUrl()">Settings</a>
+                                <!--<a [routerLink]="['Settings', 'Profile']">Settings</a>-->
                             </li>
                             <li class="uk-nav-divider"></li>
                             <li>
@@ -28,6 +27,13 @@
                             </li>
                         </ul>
                     </div>
+                </li>
+            </ul>
+        </div>
+        <div class="uk-navbar-right uk-flex-last@s" *ngIf="username == null">
+            <ul class="uk-navbar-nav">
+                <li>
+                    <a [routerLink]="loginUrl()">Sign in</a>
                 </li>
             </ul>
         </div>

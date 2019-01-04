@@ -3,6 +3,7 @@
 /coverage.out
 /dev/
 /dist/
+/ui/.dart_tool
 
 /vendor/**/*.py
 /vendor/**/*.xml

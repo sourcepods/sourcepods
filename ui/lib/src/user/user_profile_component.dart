@@ -1,6 +1,7 @@
 import 'package:angular/angular.dart';
 import 'package:angular_forms/angular_forms.dart';
 import 'package:angular_router/angular_router.dart';
+import 'package:gitpods/routes.dart';
 import 'package:gitpods/src/gravatar_component.dart';
 import 'package:gitpods/src/loading_component.dart';
 import 'package:gitpods/src/mailto_pipe.dart';
@@ -14,32 +15,39 @@ import 'package:gitpods/src/user/user_service.dart';
   styleUrls: const ['user_profile_component.css'],
   providers: const [UserService],
   directives: const [
-    COMMON_DIRECTIVES,
-    ROUTER_DIRECTIVES,
+    coreDirectives,
+    routerDirectives,
     formDirectives,
     LoadingComponent,
     GravatarComponent,
   ],
   pipes: const [DatePipe, MailtoPipe, FilteredReposPipe],
 )
-class UserProfileComponent implements OnInit {
-  final RouteParams _routeParams;
-  final UserService _userService;
+class UserProfileComponent implements OnActivate {
+  UserProfileComponent(this._userService);
 
-  UserProfileComponent(this._routeParams, this._userService);
+  final UserService _userService;
 
   User user;
   List<Repository> repositories;
   String repoQuery = '';
 
   @override
-  void ngOnInit() {
-    String username = this._routeParams.get('username');
+  void onActivate(RouterState previous, RouterState current) {
+    String username = current.parameters['username'];
     this._userService.profile(username).then((UserProfile profile) {
       this.user = profile.user;
       this.repositories = profile.repositories;
     });
   }
+
+  String createRepositoryUrl() => RoutePaths.repositoryCreate.toUrl();
+
+  String repositoryUrl(String owner, String name) =>
+      RoutePaths.repository.toUrl(parameters: {
+        'owner': owner,
+        'name': name,
+      });
 }
 
 @Pipe('filteredRepos')

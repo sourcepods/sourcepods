@@ -1,6 +1,8 @@
 <gitpods-loading *ngIf="user == null"></gitpods-loading>
 
-<div class="uk-container" *ngIf="user != null">
+<div class="uk-container uk-container-xsmall" *ngIf="user != null">
+    <h3>Profile Settings</h3>
+
     <form class="uk-form-stacked" (submit)="submit($event)">
         <div class="uk-margin">
             <label for="form-stacked-text" class="uk-form-label">Name</label>

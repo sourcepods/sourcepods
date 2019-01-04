@@ -5,7 +5,7 @@ import 'package:angular_forms/angular_forms.dart';
 @Component(
   selector: 'account',
   templateUrl: 'account_component.html',
-  directives: const [CORE_DIRECTIVES, formDirectives],
+  directives: const [coreDirectives, formDirectives],
 )
 class AccountComponent {
   bool loading;
