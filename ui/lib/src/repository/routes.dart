@@ -5,11 +5,6 @@ import 'package:gitpods/src/repository/settings/settings_component.template.dart
 import 'package:gitpods/routes.dart' as _parent;
 
 class RoutePaths {
-  static final files = RoutePath(
-    path: '',
-    parent: _parent.RoutePaths.repository,
-    useAsDefault: true,
-  );
   static final commits = RoutePath(
     path: 'commits',
     parent: _parent.RoutePaths.repository,
@@ -17,6 +12,11 @@ class RoutePaths {
   static final settings = RoutePath(
     path: 'settings',
     parent: _parent.RoutePaths.repository,
+  );
+  static final files = RoutePath(
+    path: '',
+    parent: _parent.RoutePaths.repository,
+    useAsDefault: true,
   );
 }
 

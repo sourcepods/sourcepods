@@ -9,25 +9,21 @@ import 'package:gitpods/src/repository/repository_tree.dart';
 import 'package:gitpods/src/repository/routes.dart';
 
 @Component(
-    selector: 'gitpods-repository',
-    templateUrl: 'repository_component.html',
-    styleUrls: const [
-      'repository_component.css'
-    ],
-    directives: const [
-      coreDirectives,
-      routerDirectives,
-      LoadingComponent,
-      GravatarComponent,
-    ],
-    providers: const [
-      ClassProvider(RepositoryService),
-      ClassProvider(Routes),
-    ],
-    exports: [
-      Routes,
-      RoutePaths,
-    ])
+  selector: 'gitpods-repository',
+  templateUrl: 'repository_component.html',
+  styleUrls: const ['repository_component.css'],
+  directives: [
+    coreDirectives,
+    routerDirectives,
+    LoadingComponent,
+    GravatarComponent,
+  ],
+  providers: const [
+    ClassProvider(RepositoryService),
+    ClassProvider(Routes),
+  ],
+  exports: [Routes],
+)
 class RepositoryComponent implements OnActivate {
   RepositoryComponent(this._repositoryService);
 
