@@ -2,6 +2,22 @@
 
 
 [[projects]]
+  digest = "1:d8ebbd207f3d3266d4423ce4860c9f3794956306ded6c7ba312ecc69cdfbf04c"
+  name = "github.com/PuerkitoBio/purell"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4"
+  version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:8098cd40cd09879efbf12e33bcd51ead4a66006ac802cd563a66c4f3373b9727"
+  name = "github.com/PuerkitoBio/urlesc"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "de5bf2ad457846296e2031421a34e2568e304e35"
+
+[[projects]]
   digest = "1:9752dad5e89cd779096bf2477a4ded16bea7ac62de453c8d6b4bf841d51a8512"
   name = "github.com/apache/thrift"
   packages = ["lib/go/thrift"]
@@ -42,12 +58,31 @@
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:4340101f42556a9cb2f7a360a0e95a019bfef6247d92e6c4c46f2433cf86a482"
+  name = "github.com/docker/go-units"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "47565b4f722fb6ceae66b95f853feed578a4a51c"
+  version = "v0.3.3"
+
+[[projects]]
   digest = "1:1b91ae0dc69a41d4c2ed23ea5cffb721ea63f5037ca4b81e6d6771fbb8f45129"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
   pruneopts = "NUT"
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
   version = "v1.4.7"
+
+[[projects]]
+  branch = "master"
+  digest = "1:ce0cdcf4a121add67d3c6f7cc08e6233275d0f417852f025b790d35da88fab10"
+  name = "github.com/globalsign/mgo"
+  packages = [
+    "bson",
+    "internal/json",
+  ]
+  pruneopts = "NUT"
+  revision = "eeefdecb41b842af6dc652aaea4026e8403e62df"
 
 [[projects]]
   digest = "1:717e36544bc2aaa9f037ba61f80bf088aa2e3fd3805320f0f6107089104a787d"
@@ -81,6 +116,98 @@
   pruneopts = "NUT"
   revision = "390ab7935ee28ec6b286364bba9b4dd6410cb3d5"
   version = "v0.3.0"
+
+[[projects]]
+  digest = "1:e101aa2e25fac7e82ba4d2f66807eedd4bcf11abc5afcb4a4629a88f9a652b84"
+  name = "github.com/go-openapi/analysis"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = "NUT"
+  revision = "e2f3fdbb7ed0e56e070ccbfb6fc75b288a33c014"
+  version = "v0.18.0"
+
+[[projects]]
+  digest = "1:2c25c65f6928a43066d02607fbedd6a1b21322db5f8d1ab92ac77ac3bcc72776"
+  name = "github.com/go-openapi/errors"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "7a7ff1b7b8020f22574411a32f28b4d168d69237"
+  version = "v0.18.0"
+
+[[projects]]
+  digest = "1:260f7ebefc63024c8dfe2c9f1a2935a89fa4213637a1f522f592f80c001cc441"
+  name = "github.com/go-openapi/jsonpointer"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "ef5f0afec364d3b9396b7b77b43dbe26bf1f8004"
+  version = "v0.18.0"
+
+[[projects]]
+  digest = "1:98abd61947ff5c7c6fcfec5473d02a4821ed3a2dd99a4fbfdb7925b0dd745546"
+  name = "github.com/go-openapi/jsonreference"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "8483a886a90412cd6858df4ea3483dce9c8e35a3"
+  version = "v0.18.0"
+
+[[projects]]
+  digest = "1:c3cb0571346173abe3b329baf50e5ca05d2d1640cfe2817c65ed377e44c34afc"
+  name = "github.com/go-openapi/loads"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "74628589c3b94e3526a842d24f46589980f5ab22"
+  version = "v0.18.0"
+
+[[projects]]
+  digest = "1:07db956f02b4373fa863e560f6c4a821a4c514fe6de429d2ac994b913577d96a"
+  name = "github.com/go-openapi/runtime"
+  packages = [
+    ".",
+    "flagext",
+    "logger",
+    "middleware",
+    "middleware/denco",
+    "middleware/header",
+    "middleware/untyped",
+    "security",
+  ]
+  pruneopts = "NUT"
+  revision = "41e24cc66d7af6af39eb9b5a6418e901bcdd333c"
+  version = "v0.18.0"
+
+[[projects]]
+  digest = "1:4da4ea0a664ba528965683d350f602d0f11464e6bb2e17aad0914723bc25d163"
+  name = "github.com/go-openapi/spec"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "5b6cdde3200976e3ecceb2868706ee39b6aff3e4"
+  version = "v0.18.0"
+
+[[projects]]
+  digest = "1:4226678c15d6932792564e34e71694cd5f555ddaa09641e0b711fed5c6f1d878"
+  name = "github.com/go-openapi/strfmt"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "e471370ae57ac74eaf0afe816a66e4ddd7f1b027"
+  version = "v0.18.0"
+
+[[projects]]
+  digest = "1:dc0f590770e5a6c70ea086232324f7b7dc4857c60eca63ab8ff78e0a5cfcdbf3"
+  name = "github.com/go-openapi/swag"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "1d29f06aebd59ccdf11ae04aa0334ded96e2d909"
+  version = "v0.18.0"
+
+[[projects]]
+  digest = "1:7d7626b94bc5e04d1c23eaa97816181f4ff6218540a6d43379070d6ece9ca467"
+  name = "github.com/go-openapi/validate"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "d2eab7d93009e9215fc85b2faa2c2f2a98c2af48"
+  version = "v0.18.0"
 
 [[projects]]
   digest = "1:a1efdbc2762667c8a41cbf02b19a0549c846bf2c1d08cad4f445e3344089f1f0"
@@ -154,6 +281,14 @@
   revision = "d0c54e68681ec7999ac17864470f3bee6521ba2b"
 
 [[projects]]
+  digest = "1:d0fbb40af7faf9cc62d1728be5fdd140ae17ce6e2aac6371971a0a6a2cc139d3"
+  name = "github.com/jessevdk/go-flags"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "c6ca198ec95c841fdb89fc0de7496fed11ab854e"
+  version = "v1.4.0"
+
+[[projects]]
   branch = "master"
   digest = "1:f91bb67d051a94cf6ab2cf07eee0550432afc31655838d42cdec258db4b348f0"
   name = "github.com/kr/logfmt"
@@ -171,6 +306,18 @@
   ]
   pruneopts = "NUT"
   revision = "88edab0803230a3898347e77b474f8c1820a1f20"
+
+[[projects]]
+  branch = "master"
+  digest = "1:84a5a2b67486d5d67060ac393aa255d05d24ed5ee41daecd5635ec22657b6492"
+  name = "github.com/mailru/easyjson"
+  packages = [
+    "buffer",
+    "jlexer",
+    "jwriter",
+  ]
+  pruneopts = "NUT"
+  revision = "60711f1a8329503b04e1c88535f419d0bb440bff"
 
 [[projects]]
   digest = "1:8c1773b55b26aa18cd1ae359b35c77af20e5d3e62422d4461276bad57418d8e1"
@@ -193,6 +340,14 @@
   pruneopts = "NUT"
   revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:a45ae66dea4c899d79fceb116accfa1892105c251f0dcd9a217ddc276b42ec68"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "3536a929edddb9a5b34bd6861dc4a9647cb459fe"
+  version = "v1.1.2"
 
 [[projects]]
   digest = "1:3b517122f3aad1ecce45a630ea912b3092b4729f25532a911d0cb2935a1f9352"
@@ -330,7 +485,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0744fec18e9083ec13cb19d8df60841b66a5caa0226171dc83d113969daa2968"
+  digest = "1:7a63ac364f430a614d797b772694f4344c6003ad44953facc730b666706f96fc"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -339,6 +494,7 @@
     "idna",
     "internal/timeseries",
     "lex/httplex",
+    "netutil",
     "trace",
   ]
   pruneopts = "NUT"
@@ -353,7 +509,7 @@
   revision = "f6cff0780e542efa0c8e864dc8fa522808f6a598"
 
 [[projects]]
-  digest = "1:e7071ed636b5422cc51c0e3a6cebc229d6c9fffc528814b519a980641422d619"
+  digest = "1:e33513a825fcd765e97b5de639a2f7547542d1a8245df0cef18e1fd390b778a9"
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -370,6 +526,7 @@
     "unicode/cldr",
     "unicode/norm",
     "unicode/rangetable",
+    "width",
   ]
   pruneopts = "NUT"
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
@@ -415,6 +572,14 @@
   revision = "8e4536a86ab602859c20df5ebfd0bd4228d08655"
   version = "v1.10.0"
 
+[[projects]]
+  digest = "1:18108594151654e9e696b27b181b953f9a90b16bf14d253dd1b397b025a1487f"
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
+  version = "v2.2.2"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -427,11 +592,22 @@
     "github.com/go-kit/kit/log/level",
     "github.com/go-kit/kit/metrics",
     "github.com/go-kit/kit/metrics/prometheus",
+    "github.com/go-openapi/errors",
+    "github.com/go-openapi/loads",
+    "github.com/go-openapi/runtime",
+    "github.com/go-openapi/runtime/flagext",
+    "github.com/go-openapi/runtime/middleware",
+    "github.com/go-openapi/runtime/security",
+    "github.com/go-openapi/spec",
+    "github.com/go-openapi/strfmt",
+    "github.com/go-openapi/swag",
+    "github.com/go-openapi/validate",
     "github.com/gobuffalo/packr",
     "github.com/golang/protobuf/proto",
     "github.com/google/jsonapi",
     "github.com/graphql-go/graphql",
     "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing",
+    "github.com/jessevdk/go-flags",
     "github.com/lib/pq",
     "github.com/mattes/migrate",
     "github.com/mattes/migrate/database/postgres",
@@ -446,6 +622,7 @@
     "github.com/urfave/cli",
     "golang.org/x/crypto/bcrypt",
     "golang.org/x/net/context",
+    "golang.org/x/net/netutil",
     "google.golang.org/grpc",
   ]
   solver-name = "gps-cdcl"
