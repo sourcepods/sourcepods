@@ -61,7 +61,7 @@ func (o *UpdateUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-// UpdateUserBody Update to make to the user
+// UpdateUserBody update user body
 // swagger:model UpdateUserBody
 type UpdateUserBody struct {
 
@@ -86,7 +86,7 @@ func (o *UpdateUserBody) Validate(formats strfmt.Registry) error {
 
 func (o *UpdateUserBody) validateName(formats strfmt.Registry) error {
 
-	if err := validate.Required("body"+"."+"name", "body", o.Name); err != nil {
+	if err := validate.Required("updatedUser"+"."+"name", "body", o.Name); err != nil {
 		return err
 	}
 

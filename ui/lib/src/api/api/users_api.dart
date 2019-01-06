@@ -111,15 +111,15 @@ class UsersApi {
   /// Update the user&#39;s information
   ///
   /// 
-  Future<User> updateUser(String username, Body body) async {
-    Object postBody = body;
+  Future<User> updateUser(String username, UpdatedUser updatedUser) async {
+    Object postBody = updatedUser;
 
     // verify required params are set
     if(username == null) {
      throw new ApiException(400, "Missing required param: username");
     }
-    if(body == null) {
-     throw new ApiException(400, "Missing required param: body");
+    if(updatedUser == null) {
+     throw new ApiException(400, "Missing required param: updatedUser");
     }
 
     // create path and map variables

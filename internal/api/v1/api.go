@@ -97,7 +97,7 @@ func UpdateUserHandler(us user.Service) users.UpdateUserHandlerFunc {
 			return users.NewUpdateUserDefault(http.StatusInternalServerError)
 		}
 
-		old.Name = *params.Body.Name
+		old.Name = *params.UpdatedUser.Name
 
 		updated, err := us.Update(params.HTTPRequest.Context(), old)
 		if err != nil {

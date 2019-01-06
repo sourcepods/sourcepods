@@ -73,10 +73,10 @@ paths:
           required: true
           description: The username of the user to update
         - in: body
-          name: body
+          name: updatedUser
           required: true
+          description: The updated user
           schema:
-            description: Update to make to the user
             type: object
             required:
               - name

@@ -15,8 +15,8 @@ part 'auth/http_basic_auth.dart';
 
 part 'api/users_api.dart';
 
-part 'model/body.dart';
 part 'model/error.dart';
+part 'model/updated_user.dart';
 part 'model/user.dart';
 part 'model/validation_error.dart';
 part 'model/validation_error_errors.dart';
