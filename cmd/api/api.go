@@ -13,6 +13,7 @@ import (
 
 	"github.com/gitpods/gitpods/authorization"
 	"github.com/gitpods/gitpods/cmd"
+	apiv1 "github.com/gitpods/gitpods/internal/api/v1"
 	"github.com/gitpods/gitpods/repository"
 	"github.com/gitpods/gitpods/resolver"
 	"github.com/gitpods/gitpods/session"
@@ -219,9 +220,17 @@ func apiAction(c *cli.Context) error {
 	rs = repository.NewTracingService(rs)
 
 	//
-	// Resolvers
+	// GraphQL Resolvers
 	//
 	res := resolver.Handler(rs, us)
+
+	//
+	// OpenAPI
+	//
+	openapi, err := apiv1.New(us)
+	if err != nil {
+		return err
+	}
 
 	//
 	// Router
@@ -243,6 +252,7 @@ func apiAction(c *cli.Context) error {
 				router.Use(session.Authorized(ss))
 				router.Mount("/query", middleware.NoCache(res))
 				router.Mount("/sessions", session.NewHandler(ss))
+				router.Mount("/v1", openapi.Handler)
 			})
 
 			router.Mount("/{owner}/{name}.git", githttp)

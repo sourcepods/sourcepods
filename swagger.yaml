@@ -1,0 +1,149 @@
+swagger: "2.0"
+info:
+  description: 'This is the API for GitPods - git in the cloud.'
+  title: GitPods OpenAPI
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+schemes:
+  - http
+  - https
+
+basePath: '/v1'
+
+paths:
+  /users:
+    get:
+      summary: List all users
+      operationId: listUsers
+      tags:
+        - users
+      responses:
+        200:
+          description: An array of all users
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/user'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+  /users/{username}:
+    get:
+      summary: Get a user by their username
+      operationId: getUser
+      tags:
+        - users
+      parameters:
+        - in: path
+          name: username
+          type: string
+          required: true
+          description: The username of a user
+      responses:
+        200:
+          description: The user by their username
+          schema:
+            $ref: '#/definitions/user'
+        404:
+          description: The user is not found by their username
+          schema:
+            $ref: '#/definitions/error'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+    patch:
+      summary: Update the user's information
+      operationId: updateUser
+      tags:
+        - users
+      parameters:
+        - in: path
+          name: username
+          type: string
+          required: true
+          description: The username of the user to update
+        - in: body
+          name: body
+          required: true
+          schema:
+            description: Update to make to the user
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: The user has been updated
+          schema:
+            $ref: '#/definitions/user'
+        404:
+          description: The user could not be found by this username
+          schema:
+            $ref: '#/definitions/error'
+        422:
+          description: The updated user has invalid input
+          schema:
+            $ref: '#/definitions/validationError'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+definitions:
+  user:
+    type: object
+    required:
+      - id
+      - username
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      email:
+        type: string
+        format: email
+      username:
+        type: string
+      name:
+        type: string
+      created_at:
+        type: string
+        format: 'date-time'
+      updated_at:
+        type: string
+        format: 'date-time'
+  validationError:
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+      errors:
+        type: array
+        items:
+          type: object
+          properties:
+            field:
+              type: string
+            message:
+              type: string
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
