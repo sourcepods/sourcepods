@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:angular/angular.dart';
+import 'package:gitpods/src/api/api.dart' as api;
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/user/user.dart';
 import 'package:http/http.dart';
@@ -11,6 +12,7 @@ class UserService {
   UserService(this._http);
 
   final Client _http;
+  final api.UsersApi _usersApi = new api.UsersApi();
 
   Future<User> me() async {
     final userMe = '''
@@ -42,30 +44,20 @@ query me {
   }
 
   Future<List<User>> list() async {
-    final usersQuery = '''
-query UsersQuery {
-  users {
-    id
-    email
-    username
-    name
-    createdAt
-    updatedAt
-  }
-}
-''';
+    List<api.User> list = await _usersApi.listUsers();
 
-    var payload = json.encode({
-      'query': usersQuery,
-    });
+    List<User> users = list.map((api.User user) {
+      return User(
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+        created: user.createdAt,
+        updated: user.updatedAt,
+      );
+    }).toList();
 
-    Response resp = await this._http.post('/api/query', body: payload);
-
-    var body = json.decode(resp.body);
-
-    return (body['data']['users'] as List)
-        .map((user) => new User.fromJSON(user))
-        .toList();
+    return users;
   }
 
   Future<UserProfile> profile(String username) async {
