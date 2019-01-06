@@ -38,3 +38,13 @@ dev/ui: cmd/ui internal dev/packr
 dev/packr:
 	mkdir -p dev/
 	curl -s -L https://github.com/gobuffalo/packr/releases/download/v1.10.4/packr_1.10.4_linux_amd64.tar.gz | tar -xz -C dev packr
+
+.PHONY: dart
+dart:
+	-rm -rf ui/lib/src/api
+	docker run --rm \
+		--user=$(shell id -u $(USER)):$(shell id -g $(USER)) \
+		-v $(shell pwd):/local swaggerapi/swagger-codegen-cli:2.4.0 \
+		generate -i /local/swagger.yaml -l dart -o /local/tmp/dart
+	mv tmp/dart/lib ui/lib/src/api
+	-rm -rf tmp/
