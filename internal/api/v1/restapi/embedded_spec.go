@@ -51,7 +51,10 @@ func init() {
           "200": {
             "description": "An array of all users",
             "schema": {
-              "$ref": "#/definitions/users"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/user"
+              }
             }
           },
           "default": {
@@ -203,12 +206,6 @@ func init() {
         "username": {
           "type": "string"
         }
-      }
-    },
-    "users": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/user"
       }
     },
     "validationError": {
@@ -272,7 +269,10 @@ func init() {
           "200": {
             "description": "An array of all users",
             "schema": {
-              "$ref": "#/definitions/users"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/user"
+              }
             }
           },
           "default": {
@@ -424,12 +424,6 @@ func init() {
         "username": {
           "type": "string"
         }
-      }
-    },
-    "users": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/user"
       }
     },
     "validationError": {

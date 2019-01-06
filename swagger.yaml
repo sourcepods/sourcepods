@@ -29,7 +29,9 @@ paths:
         200:
           description: An array of all users
           schema:
-            $ref: '#/definitions/users'
+            type: array
+            items:
+              $ref: '#/definitions/user'
         default:
           description: unexpected error
           schema:
@@ -122,10 +124,6 @@ definitions:
       updated_at:
         type: string
         format: 'date-time'
-  users:
-    type: array
-    items:
-      $ref: '#/definitions/user'
   validationError:
     type: object
     required:

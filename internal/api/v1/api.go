@@ -52,7 +52,7 @@ func ListUsersHandler(us user.Service) users.ListUsersHandlerFunc {
 			return users.NewListUsersDefault(http.StatusInternalServerError)
 		}
 
-		var payload models.Users
+		var payload []*models.User
 
 		for _, u := range list {
 			payload = append(payload, convertUser(u))

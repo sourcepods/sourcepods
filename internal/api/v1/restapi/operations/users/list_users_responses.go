@@ -25,7 +25,7 @@ type ListUsersOK struct {
 	/*
 	  In: Body
 	*/
-	Payload models.Users `json:"body,omitempty"`
+	Payload []*models.User `json:"body,omitempty"`
 }
 
 // NewListUsersOK creates ListUsersOK with default headers values
@@ -35,13 +35,13 @@ func NewListUsersOK() *ListUsersOK {
 }
 
 // WithPayload adds the payload to the list users o k response
-func (o *ListUsersOK) WithPayload(payload models.Users) *ListUsersOK {
+func (o *ListUsersOK) WithPayload(payload []*models.User) *ListUsersOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the list users o k response
-func (o *ListUsersOK) SetPayload(payload models.Users) {
+func (o *ListUsersOK) SetPayload(payload []*models.User) {
 	o.Payload = payload
 }
 
@@ -51,7 +51,7 @@ func (o *ListUsersOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
-		payload = make(models.Users, 0, 50)
+		payload = make([]*models.User, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {
