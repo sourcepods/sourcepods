@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:angular/angular.dart';
+import 'package:gitpods/api.dart';
 import 'package:gitpods/src/api/api.dart' as api;
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/user/user.dart';
@@ -9,10 +10,10 @@ import 'package:http/http.dart';
 
 @Injectable()
 class UserService {
-  UserService(this._http);
+  UserService(this._http, this._api);
 
   final Client _http;
-  final api.UsersApi _usersApi = new api.UsersApi();
+  final API _api;
 
   Future<User> me() async {
     final userMe = '''
@@ -44,7 +45,7 @@ query me {
   }
 
   Future<List<User>> list() async {
-    List<api.User> list = await _usersApi.listUsers();
+    List<api.User> list = await _api.users.listUsers();
 
     List<User> users = list.map((api.User user) {
       return User(
@@ -103,33 +104,19 @@ query userProfile(\$username: String!) {
   }
 
   Future<User> update(User user) async {
-    final userUpdate = '''
-mutation updateUser(\$id: ID!, \$user: UpdatedUser!) {
-  user: updateUser(id: \$id, user: \$user) {
-    id
-    email
-    username
-    name
-    createdAt
-    updatedAt
-  }
-}
-''';
+    api.UpdatedUser updated = new api.UpdatedUser();
+    updated.name = user.name;
 
-    var payload = json.encode({
-      'query': userUpdate,
-      'variables': {
-        'id': user.id,
-        'user': {
-          'name': user.name,
-        },
-      },
-    });
+    api.User apiUser = await _api.users.updateUser(user.username, updated);
 
-    Response resp = await this._http.post('/api/query', body: payload);
-
-    var body = json.decode(resp.body);
-    return new User.fromJSON(body['data']['user']);
+    return User(
+      id: apiUser.id,
+      email: apiUser.email,
+      username: apiUser.username,
+      name: apiUser.name,
+      created: apiUser.createdAt,
+      updated: apiUser.updatedAt,
+    );
   }
 }
 
