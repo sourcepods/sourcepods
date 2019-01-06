@@ -4,16 +4,27 @@ GO := CGO_ENABLED=0 go
 generate: apiv1
 
 .PHONY: apiv1
-apiv1: internal/api/v1/models internal/api/v1/restapi
+apiv1: internal/api/v1/models internal/api/v1/restapi ui/lib/src/api
 
-SWAGGER ?= docker run --rm \
+GOSWAGGER ?= docker run --rm \
 	--user=$(shell id -u $(USER)):$(shell id -g $(USER)) \
 	-v $(shell pwd):/go/src/github.com/gitpods/gitpods \
 	-w /go/src/github.com/gitpods/gitpods quay.io/goswagger/swagger:v0.18.0
 
 internal/api/v1/models internal/api/v1/restapi: swagger.yaml
 	-rm -r internal/api/v1/{models,restapi}
-	$(SWAGGER) generate server -f swagger.yaml --exclude-main -A gitpods --target internal/api/v1
+	$(GOSWAGGER) generate server -f swagger.yaml --exclude-main -A gitpods --target internal/api/v1
+
+SWAGGER ?= docker run --rm \
+		--user=$(shell id -u $(USER)):$(shell id -g $(USER)) \
+		-v $(shell pwd):/local \
+		swaggerapi/swagger-codegen-cli:2.4.0
+
+ui/lib/src/api: swagger.yaml
+	-rm -rf ui/lib/src/api
+	$(SWAGGER) generate -i /local/swagger.yaml -l dart -o /local/tmp/dart
+	mv tmp/dart/lib ui/lib/src/api
+	-rm -rf tmp/
 
 .PHONY: test
 test:
@@ -38,13 +49,3 @@ dev/ui: cmd/ui internal dev/packr
 dev/packr:
 	mkdir -p dev/
 	curl -s -L https://github.com/gobuffalo/packr/releases/download/v1.10.4/packr_1.10.4_linux_amd64.tar.gz | tar -xz -C dev packr
-
-.PHONY: dart
-dart:
-	-rm -rf ui/lib/src/api
-	docker run --rm \
-		--user=$(shell id -u $(USER)):$(shell id -g $(USER)) \
-		-v $(shell pwd):/local swaggerapi/swagger-codegen-cli:2.4.0 \
-		generate -i /local/swagger.yaml -l dart -o /local/tmp/dart
-	mv tmp/dart/lib ui/lib/src/api
-	-rm -rf tmp/
