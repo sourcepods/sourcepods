@@ -1,5 +1,6 @@
+---
 kind: pipeline
-name: default
+name: testing
 
 platform:
   os: linux
@@ -11,177 +12,238 @@ workspace:
 
 steps:
 - name: test
-  pull: default
   image: golang:1.10
+  pull: always
   commands:
-  - go test -coverprofile coverage.out -race -v ./...
+  - make test
 
-# Not sure if the plugin is outdated - TODO @tboerger
+# - name: codacy
+#   image: plugins/codacy:1
+#   pull: always
+#   settings:
+#     token:
+#       from_secret: codacy
 
-#- name: codacy
-#  pull: always
-#  image: plugins/codacy:1
-#  environment:
-#    CODACY_TOKEN:
-#      from_secret: codacy
+---
+kind: pipeline
+name: gitpods
 
-- name: dart
-  image: google/dart:2.1
-  commands:
-  - cd ui
-  - dartanalyzer --version
-  - pub get --no-precompile
-  - pub global activate webdev
-  - ~/.pub-cache/bin/webdev build
-  - rm -rf build/packages
+platform:
+  os: linux
+  arch: amd64
 
-- name: api
-  pull: default
+workspace:
+  base: /go
+  path: src/github.com/gitpods/gitpods
+
+steps:
+- name: binary
   image: golang:1.10
+  pull: always
   commands:
-  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/api/api ./cmd/api"
-  settings:
-    group: build
+  - make dev/gitpods
 
-- name: gitpods
-  pull: default
+depends_on:
+- testing
+
+---
+kind: pipeline
+name: api
+
+platform:
+  os: linux
+  arch: amd64
+
+workspace:
+  base: /go
+  path: src/github.com/gitpods/gitpods
+
+steps:
+- name: binary
   image: golang:1.10
+  pull: always
   commands:
-  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/gitpods/gitpods ./cmd/gitpods"
-  settings:
-    group: build
+  - make dev/api
 
-- name: storage
-  pull: default
-  image: golang:1.10
-  commands:
-  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/storage/storage ./cmd/storage"
+- name: docker
+  image: plugins/docker:17.12
+  pull: always
   settings:
-    group: build
-
-- name: ui
-  pull: default
-  image: golang:1.10
-  commands:
-  - "curl -s -L https://github.com/gobuffalo/packr/releases/download/v1.21.1/packr_1.21.1_linux_amd64.tar.gz | tar -xz"
-  - ./packr
-  - "CGO_ENABLED=0 go build -v -ldflags '-w -extldflags '-static'' -o ./cmd/ui/ui ./cmd/ui"
-  settings:
-    group: build
-
-- name: docker-api
-  pull: default
-  image: plugins/docker
-  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
     dockerfile: ./cmd/api/Dockerfile
-    group: docker
     repo: gitpods/api
     tag:
     - latest
-  environment:
-    docker_password:
-      from_secret: docker_password
-    docker_username:
-      from_secret: docker_username
   when:
     branch:
     - master
     event:
     - push
 
-- name: docker-storage
-  pull: default
-  image: plugins/docker
+depends_on:
+- testing
+
+---
+kind: pipeline
+name: storage
+
+platform:
+  os: linux
+  arch: amd64
+
+workspace:
+  base: /go
+  path: src/github.com/gitpods/gitpods
+
+steps:
+- name: binary
+  image: golang:1.10
+  pull: always
+  commands:
+  - make dev/storage
+
+- name: docker
+  image: plugins/docker:17.12
+  pull: always
   settings:
-    context: ./cmd/storage
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
     dockerfile: cmd/storage/Dockerfile
-    group: docker
     repo: gitpods/storage
     tag:
     - latest
-  environment:
-    docker_password:
-      from_secret: docker_password
-    docker_username:
-      from_secret: docker_username
   when:
     branch:
     - master
     event:
     - push
 
-# Needs to be enabled with dart 2 again
+depends_on:
+- testing
 
-#- name: docker-ui
-#  pull: default
-#  image: plugins/docker
-#  settings:
-#    context: ./cmd/ui
-#    dockerfile: cmd/ui/Dockerfile
-#    group: docker
-#    repo: gitpods/ui
-#    tag:
-#    - latest
-#  environment:
-#    docker_password:
-#      from_secret: docker_password
-#    docker_username:
-#      from_secret: docker_username
-#  when:
-#    branch:
-#    - master
-#    event:
-#    - push
+---
+kind: pipeline
+name: ui
 
-# Don't deploy to Kubernetes at the moment
+platform:
+  os: linux
+  arch: amd64
 
-#- name: kubernetes-api
-#  pull: default
+workspace:
+  base: /go
+  path: src/github.com/gitpods/gitpods
+
+steps:
+- name: dart
+  image: google/dart:2.1
+  pull: always
+  commands:
+  - cd ui/
+  - pub get --no-precompile
+  # - dartanalyzer ./lib/ - Need to fix code first, probably move to testing pipeline
+  - pub global activate webdev
+  - ~/.pub-cache/bin/webdev build
+  - rm -rf build/packages
+  volumes:
+  - name: pub
+    path: /root/.pub-cache
+
+- name: binary
+  image: golang:1.10
+  pull: always
+  commands:
+  - make dev/ui
+
+- name: docker
+  image: plugins/docker:17.12
+  pull: always
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    dockerfile: cmd/ui/Dockerfile
+    repo: gitpods/ui
+    tag:
+    - latest
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+volumes:
+- name: pub
+  temp: {}
+
+depends_on:
+- testing
+
+# TODO(metalmatze): Need to deploy to kubernetes before having continuous deployment
+#---
+#kind: pipeline
+#name: deploy
+#
+#platform:
+#  os: linux
+#  arch: amd64
+#
+#workspace:
+#  base: /go
+#  path: src/github.com/gitpods/gitpods
+#
+#steps:
+#- name: api
 #  image: kubeciio/kubectl:0.2
+#  pull: always
+#  environment:
+#    kubeconfig:
+#      from_secret: kubeconfig
 #  settings:
 #    kubectl: apply
 #    namespace: gitpods-try
 #    templates:
 #    - deployment/kubernetes/api/deployment.yml
+#
+#- name: storage
+#  image: kubeciio/kubectl:0.2
+#  pull: always
 #  environment:
 #    kubeconfig:
 #      from_secret: kubeconfig
-#  when:
-#    branch:
-#    - master
-#    event:
-#    - push
-#
-#- name: kubernetes-storage
-#  pull: default
-#  image: kubeciio/kubectl:0.2
 #  settings:
 #    kubectl: apply
 #    namespace: gitpods-try
 #    templates:
 #    - deployment/kubernetes/storage/deployment.yml
+#
+#- name: ui
+#  image: kubeciio/kubectl:0.2
+#  pull: always
 #  environment:
 #    kubeconfig:
 #      from_secret: kubeconfig
-#  when:
-#    branch:
-#    - master
-#    event:
-#    - push
-#
-#- name: kubernetes-ui
-#  pull: default
-#  image: kubeciio/kubectl:0.2
 #  settings:
 #    kubectl: apply
 #    namespace: gitpods-try
 #    templates:
 #    - deployment/kubernetes/ui/deployment.yml
-#  environment:
-#    kubeconfig:
-#      from_secret: kubeconfig
-#  when:
-#    branch:
-#    - master
-#    event:
-#    - push
+#
+#trigger:
+#  branch:
+#  - master
+#  event:
+#  - push
+#  status:
+#  - success
+#
+#depends_on:
+#- gitpods
+#- api
+#- storage
+#- ui
