@@ -27,7 +27,7 @@ func New(us user.Service) (*API, error) {
 
 	gitpodsAPI.UsersListUsersHandler = ListUsersHandler(us)
 	gitpodsAPI.UsersGetUserHandler = GetUserHandler(us)
-	gitpodsAPI.UsersUpdateUserHandler = UpdateUserHandlerFunc(us)
+	gitpodsAPI.UsersUpdateUserHandler = UpdateUserHandler(us)
 
 	return &API{
 		Handler: gitpodsAPI.Serve(nil),
@@ -79,7 +79,7 @@ func GetUserHandler(us user.Service) users.GetUserHandlerFunc {
 	}
 }
 
-func UpdateUserHandlerFunc(us user.Service) users.UpdateUserHandlerFunc {
+func UpdateUserHandler(us user.Service) users.UpdateUserHandlerFunc {
 	return func(params users.UpdateUserParams) middleware.Responder {
 		old, err := us.FindByUsername(params.HTTPRequest.Context(), params.Username)
 		if err != nil {
