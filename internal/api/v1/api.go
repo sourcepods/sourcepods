@@ -13,10 +13,12 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
+// API has the http.Handler for the OpenAPI implementation
 type API struct {
 	Handler http.Handler
 }
 
+// New creates a new API that adds our own Handler implementations
 func New(us user.Service) (*API, error) {
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
@@ -45,6 +47,7 @@ func convertUser(u *user.User) *models.User {
 	}
 }
 
+// ListUsersHandler gets a list of users from the user.Service and returns a API response
 func ListUsersHandler(us user.Service) users.ListUsersHandlerFunc {
 	return func(params users.ListUsersParams) middleware.Responder {
 		list, err := us.FindAll(params.HTTPRequest.Context())
@@ -62,6 +65,7 @@ func ListUsersHandler(us user.Service) users.ListUsersHandlerFunc {
 	}
 }
 
+// GetUserHandler gets a user from the user.Service and returns a API response
 func GetUserHandler(us user.Service) users.GetUserHandlerFunc {
 	return func(params users.GetUserParams) middleware.Responder {
 		u, err := us.FindByUsername(params.HTTPRequest.Context(), params.Username)
@@ -79,6 +83,7 @@ func GetUserHandler(us user.Service) users.GetUserHandlerFunc {
 	}
 }
 
+// UpdateUserHandler receives a updated user and returns a API response after updating
 func UpdateUserHandler(us user.Service) users.UpdateUserHandlerFunc {
 	return func(params users.UpdateUserParams) middleware.Responder {
 		old, err := us.FindByUsername(params.HTTPRequest.Context(), params.Username)
