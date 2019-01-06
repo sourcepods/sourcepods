@@ -18,9 +18,8 @@ part 'api/users_api.dart';
 part 'model/body.dart';
 part 'model/error.dart';
 part 'model/user.dart';
-part 'model/users.dart';
 part 'model/validation_error.dart';
 part 'model/validation_error_errors.dart';
 
 
-ApiClient defaultApiClient = new ApiClient(basePath: 'http://localhost:3000/api/v1');
+ApiClient defaultApiClient = new ApiClient();

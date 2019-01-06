@@ -43,8 +43,6 @@ class ApiClient {
           return new Error.fromJson(value);
         case 'User':
           return new User.fromJson(value);
-        case 'Users':
-          return new Users.fromJson(value);
         case 'ValidationError':
           return new ValidationError.fromJson(value);
         case 'ValidationErrorErrors':
