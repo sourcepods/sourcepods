@@ -36,6 +36,21 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/error'
+  /users/me:
+    get:
+      summary: Get the current authenticated user
+      operationId: getUserMe
+      tags:
+        - users
+      responses:
+        200:
+          description: The current authenticated user
+          schema:
+            $ref: '#/definitions/user'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
   /users/{username}:
     get:
       summary: Get a user by their username
@@ -73,10 +88,10 @@ paths:
           required: true
           description: The username of the user to update
         - in: body
-          name: body
+          name: updatedUser
           required: true
+          description: The updated user
           schema:
-            description: Update to make to the user
             type: object
             required:
               - name

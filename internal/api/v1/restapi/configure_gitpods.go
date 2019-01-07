@@ -37,6 +37,9 @@ func configureAPI(api *operations.GitpodsAPI) http.Handler {
 	api.UsersGetUserHandler = users.GetUserHandlerFunc(func(params users.GetUserParams) middleware.Responder {
 		return middleware.NotImplemented("operation users.GetUser has not yet been implemented")
 	})
+	api.UsersGetUserMeHandler = users.GetUserMeHandlerFunc(func(params users.GetUserMeParams) middleware.Responder {
+		return middleware.NotImplemented("operation users.GetUserMe has not yet been implemented")
+	})
 	api.UsersListUsersHandler = users.ListUsersHandlerFunc(func(params users.ListUsersParams) middleware.Responder {
 		return middleware.NotImplemented("operation users.ListUsers has not yet been implemented")
 	})

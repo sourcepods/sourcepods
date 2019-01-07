@@ -7,6 +7,7 @@ import (
 	"github.com/gitpods/gitpods/internal/api/v1/restapi"
 	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations"
 	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations/users"
+	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
@@ -28,6 +29,7 @@ func New(us user.Service) (*API, error) {
 	gitpodsAPI := operations.NewGitpodsAPI(swaggerSpec)
 
 	gitpodsAPI.UsersListUsersHandler = ListUsersHandler(us)
+	gitpodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
 	gitpodsAPI.UsersGetUserHandler = GetUserHandler(us)
 	gitpodsAPI.UsersUpdateUserHandler = UpdateUserHandler(us)
 
@@ -65,6 +67,20 @@ func ListUsersHandler(us user.Service) users.ListUsersHandlerFunc {
 	}
 }
 
+// GetUserMeHandler gets the currently authenticated user
+func GetUserMeHandler(us user.Service) users.GetUserMeHandlerFunc {
+	return func(params users.GetUserMeParams) middleware.Responder {
+		sessUser := session.GetSessionUser(params.HTTPRequest.Context())
+
+		u, err := us.FindByUsername(params.HTTPRequest.Context(), sessUser.Username)
+		if err != nil {
+			return users.NewGetUserMeDefault(http.StatusInternalServerError)
+		}
+
+		return users.NewGetUserMeOK().WithPayload(convertUser(u))
+	}
+}
+
 // GetUserHandler gets a user from the user.Service and returns a API response
 func GetUserHandler(us user.Service) users.GetUserHandlerFunc {
 	return func(params users.GetUserParams) middleware.Responder {
@@ -97,7 +113,7 @@ func UpdateUserHandler(us user.Service) users.UpdateUserHandlerFunc {
 			return users.NewUpdateUserDefault(http.StatusInternalServerError)
 		}
 
-		old.Name = *params.Body.Name
+		old.Name = *params.UpdatedUser.Name
 
 		updated, err := us.Update(params.HTTPRequest.Context(), old)
 		if err != nil {

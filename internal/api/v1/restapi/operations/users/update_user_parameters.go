@@ -32,11 +32,11 @@ type UpdateUserParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*
+	/*The updated user
 	  Required: true
 	  In: body
 	*/
-	Body UpdateUserBody
+	UpdatedUser UpdateUserBody
 	/*The username of the user to update
 	  Required: true
 	  In: path
@@ -58,9 +58,9 @@ func (o *UpdateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 		var body UpdateUserBody
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			if err == io.EOF {
-				res = append(res, errors.Required("body", "body"))
+				res = append(res, errors.Required("updatedUser", "body"))
 			} else {
-				res = append(res, errors.NewParseError("body", "body", "", err))
+				res = append(res, errors.NewParseError("updatedUser", "body", "", err))
 			}
 		} else {
 			// validate body object
@@ -69,11 +69,11 @@ func (o *UpdateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 			}
 
 			if len(res) == 0 {
-				o.Body = body
+				o.UpdatedUser = body
 			}
 		}
 	} else {
-		res = append(res, errors.Required("body", "body"))
+		res = append(res, errors.Required("updatedUser", "body"))
 	}
 	rUsername, rhkUsername, _ := route.Params.GetOK("username")
 	if err := o.bindUsername(rUsername, rhkUsername, route.Formats); err != nil {

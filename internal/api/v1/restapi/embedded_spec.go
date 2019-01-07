@@ -66,6 +66,29 @@ func init() {
         }
       }
     },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get the current authenticated user",
+        "operationId": "getUserMe",
+        "responses": {
+          "200": {
+            "description": "The current authenticated user",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/users/{username}": {
       "get": {
         "tags": [
@@ -118,11 +141,11 @@ func init() {
             "required": true
           },
           {
-            "name": "body",
+            "description": "The updated user",
+            "name": "updatedUser",
             "in": "body",
             "required": true,
             "schema": {
-              "description": "Update to make to the user",
               "type": "object",
               "required": [
                 "name"
@@ -284,6 +307,29 @@ func init() {
         }
       }
     },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get the current authenticated user",
+        "operationId": "getUserMe",
+        "responses": {
+          "200": {
+            "description": "The current authenticated user",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/users/{username}": {
       "get": {
         "tags": [
@@ -336,11 +382,11 @@ func init() {
             "required": true
           },
           {
-            "name": "body",
+            "description": "The updated user",
+            "name": "updatedUser",
             "in": "body",
             "required": true,
             "schema": {
-              "description": "Update to make to the user",
               "type": "object",
               "required": [
                 "name"

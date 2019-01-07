@@ -42,6 +42,9 @@ func NewGitpodsAPI(spec *loads.Document) *GitpodsAPI {
 		UsersGetUserHandler: users.GetUserHandlerFunc(func(params users.GetUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUser has not yet been implemented")
 		}),
+		UsersGetUserMeHandler: users.GetUserMeHandlerFunc(func(params users.GetUserMeParams) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUserMe has not yet been implemented")
+		}),
 		UsersListUsersHandler: users.ListUsersHandlerFunc(func(params users.ListUsersParams) middleware.Responder {
 			return middleware.NotImplemented("operation UsersListUsers has not yet been implemented")
 		}),
@@ -81,6 +84,8 @@ type GitpodsAPI struct {
 
 	// UsersGetUserHandler sets the operation handler for the get user operation
 	UsersGetUserHandler users.GetUserHandler
+	// UsersGetUserMeHandler sets the operation handler for the get user me operation
+	UsersGetUserMeHandler users.GetUserMeHandler
 	// UsersListUsersHandler sets the operation handler for the list users operation
 	UsersListUsersHandler users.ListUsersHandler
 	// UsersUpdateUserHandler sets the operation handler for the update user operation
@@ -150,6 +155,10 @@ func (o *GitpodsAPI) Validate() error {
 
 	if o.UsersGetUserHandler == nil {
 		unregistered = append(unregistered, "users.GetUserHandler")
+	}
+
+	if o.UsersGetUserMeHandler == nil {
+		unregistered = append(unregistered, "users.GetUserMeHandler")
 	}
 
 	if o.UsersListUsersHandler == nil {
@@ -262,6 +271,11 @@ func (o *GitpodsAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{username}"] = users.NewGetUser(o.context, o.UsersGetUserHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/me"] = users.NewGetUserMe(o.context, o.UsersGetUserMeHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
