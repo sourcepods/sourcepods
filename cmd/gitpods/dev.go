@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/gitpods/gitpods/cmd"
 	"github.com/oklog/run"
 	"github.com/urfave/cli"
@@ -138,7 +138,6 @@ func devAction(c *cli.Context) error {
 	{
 		stop := make(chan os.Signal, 1)
 		g.Add(func() error {
-			log.Println("waiting for interrupt")
 			signal.Notify(stop, os.Interrupt)
 			<-stop
 			return nil
@@ -148,39 +147,39 @@ func devAction(c *cli.Context) error {
 	}
 	{
 		g.Add(func() error {
-			log.Println("starting api")
+			color.Green("starting api")
 			return apiRunner.Run()
 		}, func(err error) {
-			log.Println("stopping api")
+			color.HiYellow("stopping api")
 			apiRunner.Shutdown()
 		})
 	}
 	{
 		g.Add(func() error {
-			log.Println("starting storage")
+			color.Green("starting storage")
 			return storageRunner.Run()
 		}, func(err error) {
-			log.Println("stopping storage")
+			color.HiYellow("stopping storage")
 			storageRunner.Shutdown()
 		})
 	}
 	{
 		if uiModeFlag == "binary" {
 			g.Add(func() error {
-				log.Println("starting ui")
+				color.Green("starting ui")
 				return uiRunner.Run()
 			}, func(err error) {
-				log.Println("stopping ui")
+				color.HiYellow("stopping ui")
 				uiRunner.Shutdown()
 			})
 		}
 	}
 	{
 		g.Add(func() error {
-			log.Println("starting caddy")
+			color.Green("starting caddy")
 			return caddy.Run()
 		}, func(err error) {
-			log.Println("stopping caddy")
+			color.HiYellow("stopping caddy")
 			caddy.Stop()
 		})
 	}
@@ -292,6 +291,8 @@ func ensureContainer(name string, args []string) error {
 		return nil
 	}
 
+	color.Blue("docker %s", strings.Join(args, " "))
+
 	cmd = exec.Command(docker, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -299,8 +300,6 @@ func ensureContainer(name string, args []string) error {
 	if err = cmd.Run(); err != nil {
 		return err
 	}
-
-	log.Printf("waiting for container %s to start", name)
 
 	return nil
 }

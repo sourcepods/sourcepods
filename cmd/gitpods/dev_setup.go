@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -16,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
@@ -33,17 +33,16 @@ const (
 )
 
 func devSetupAction(c *cli.Context) error {
-	log.Println("Create ./dev/")
+	color.Blue("Create ./dev/")
 	if err := os.MkdirAll("./dev", 0755); err != nil {
 		return errors.Wrap(err, "failed to create ./dev/ for development")
 	}
 
-	log.Println("Creating docker container: gitpods-cockroach")
 	if err := setupCockroach(); err != nil {
 		return err
 	}
 
-	log.Println("Running pub get...")
+	color.Blue("Running pub get...")
 	if err := setupPub(); err != nil {
 		return err
 	}
@@ -71,6 +70,8 @@ func setupCockroach() error {
 		return err
 	}
 
+	color.Blue("waiting for container cockroach to start")
+
 	db, err := sql.Open("postgres", "postgresql://root@localhost:26257?sslmode=disable")
 	if err != nil {
 		return err
@@ -83,7 +84,7 @@ func setupCockroach() error {
 		return err
 	}
 
-	log.Println("creating gitpods database if not exists")
+	color.Blue("creating gitpods database if not exists")
 	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS gitpods;")
 	if err != nil {
 		return err
@@ -117,22 +118,22 @@ func setupCaddy() error {
 		archive = "./dev/caddy.tar.gz"
 	}
 
-	log.Printf("Download %s\n", url)
+	color.Blue("Download %s\n", url)
 	if err := downloadCaddy(url, archive); err != nil {
 		return errors.Wrap(err, "failed to download caddy")
 	}
-	log.Println("Downloaded ./dev/caddy.zip")
+	color.Blue("Downloaded ./dev/caddy.zip")
 
 	if err := extractCaddy(archive); err != nil {
 		return errors.Wrap(err, "failed to extract caddy")
 	}
-	log.Println("Extracted ./dev/caddy.zip to ./dev/caddy")
+	color.Blue("Extracted ./dev/caddy.zip to ./dev/caddy")
 
 	// Create Caddyfile with contents if it not exist
 	if err := createCaddyfile(); err != nil {
 		return errors.Wrap(err, "failed to create ./dev/Caddyfile")
 	}
-	log.Println("Created ./dev/Caddyfile")
+	color.Blue("Created ./dev/Caddyfile")
 
 	return nil
 }
@@ -163,7 +164,7 @@ func downloadCaddy(url, archive string) error {
 	}
 	defer out.Close()
 
-	log.Println("Downloading", url)
+	color.Blue("Downloading %s", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
