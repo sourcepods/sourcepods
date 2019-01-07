@@ -19,48 +19,20 @@ import (
 
 var (
 	devFlags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "ui-addr",
-			Usage: "The address to run the UI on",
-			Value: ":3010",
-		},
-		cli.StringFlag{
-			Name:  "api-addr",
-			Usage: "The address to run the API on",
-			Value: ":3020",
-		},
-		cli.BoolFlag{
-			Name:  "dart",
-			Usage: "Run pub serve as a development server for dart",
-		},
-		cli.StringFlag{
-			Name:  "database-driver",
-			Usage: "The database driver to use: memory & postgres",
-			Value: "postgres",
-		},
+		// Global
 		cli.StringFlag{
 			Name:  "database-dsn",
 			Usage: "The database connection data",
 			Value: "postgres://root@localhost:26257/gitpods?sslmode=disable",
-		},
-		cli.StringFlag{
-			Name:  "log-level",
-			Usage: "The log level to filter logs with before printing",
-			Value: "debug",
 		},
 		cli.BoolFlag{
 			Name:  "log-json",
 			Usage: "Log json instead of key-value pairs",
 		},
 		cli.StringFlag{
-			Name:  "root",
-			Usage: "Storage's root to write to",
-			Value: "./dev/storage-data",
-		},
-		cli.StringFlag{
-			Name:  "storage-addr",
-			Usage: "The address to run the storage on",
-			Value: ":3030",
+			Name:  "log-level",
+			Usage: "The log level to filter logs with before printing",
+			Value: "debug",
 		},
 		cli.BoolTFlag{
 			Name:  "tracing",
@@ -70,21 +42,55 @@ var (
 			Name:  "watch,w",
 			Usage: "Watch files in this project and rebuild binaries if something changes",
 		},
+		// API
+		cli.StringFlag{
+			Name:  "api-addr",
+			Usage: "The address to run the API on",
+			Value: ":3020",
+		},
+		// Storage
+		cli.StringFlag{
+			Name:  "storage-addr",
+			Usage: "The address to run the storage on",
+			Value: ":3030",
+		},
+		cli.StringFlag{
+			Name:  "storage-root",
+			Usage: "Storage's root to write to",
+			Value: "./dev/storage-data",
+		},
+		// UI
+		cli.StringFlag{
+			Name:  "ui",
+			Usage: "How to run the UI. Run docker container or compile and run a binary. Run Dart Dev server",
+			Value: "docker",
+		},
+		cli.StringFlag{
+			Name:  "ui-addr",
+			Usage: "The address to run the UI on",
+			Value: ":3010",
+		},
 	}
 )
 
 func devAction(c *cli.Context) error {
-	apiAddrFlag := c.String("api-addr")
-	dart := c.Bool("dart")
-	databaseDriver := c.String("database-driver")
-	databaseDSN := c.String("database-dsn")
+	// Global
+	databaseDSNFlag := c.String("database-dsn")
 	logJSONFlag := c.Bool("log-json")
 	loglevelFlag := c.String("log-level")
-	rootFlag := c.String("root")
-	storageAddrFlag := c.String("storage-addr")
 	tracingFlag := c.BoolT("tracing")
+	watchFlag := c.Bool("watch")
+
+	// API
+	apiAddrFlag := c.String("api-addr")
+
+	// Storage
+	storageAddrFlag := c.String("storage-addr")
+	storageRootFlag := c.String("storage-root")
+
+	// UI
+	uiModeFlag := c.String("ui")
 	uiAddrFlag := c.String("ui-addr")
-	watch := c.Bool("watch")
 
 	tracingURL := ""
 	if tracingFlag {
@@ -101,8 +107,7 @@ func devAction(c *cli.Context) error {
 
 	apiRunner := NewGitPodsRunner("api", []string{
 		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, apiAddrFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDriver, databaseDriver),
-		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSN),
+		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSNFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvMigrationsPath, "./schema/postgres"),
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
@@ -116,13 +121,13 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, storageAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvRoot, rootFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvRoot, storageRootFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
 	})
 
 	caddy := CaddyRunner{}
 
-	if watch {
+	if watchFlag {
 		watcher := &FileWatcher{}
 		watcher.Add(uiRunner, apiRunner, storageRunner)
 
@@ -160,6 +165,17 @@ func devAction(c *cli.Context) error {
 		})
 	}
 	{
+		if uiModeFlag == "binary" {
+			g.Add(func() error {
+				log.Println("starting ui")
+				return uiRunner.Run()
+			}, func(err error) {
+				log.Println("stopping ui")
+				uiRunner.Shutdown()
+			})
+		}
+	}
+	{
 		g.Add(func() error {
 			log.Println("starting caddy")
 			return caddy.Run()
@@ -169,7 +185,6 @@ func devAction(c *cli.Context) error {
 		})
 	}
 
-	if dart {
 		{
 			c := exec.Command("webdev", "serve", "--hot-reload", "web:3011")
 			g.Add(func() error {
@@ -235,16 +250,6 @@ func devAction(c *cli.Context) error {
 				ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 				defer cancel()
 				server.Shutdown(ctx)
-			})
-		}
-	} else {
-		{
-			g.Add(func() error {
-				log.Println("starting ui")
-				return uiRunner.Run()
-			}, func(err error) {
-				log.Println("stopping ui")
-				uiRunner.Shutdown()
 			})
 		}
 	}
