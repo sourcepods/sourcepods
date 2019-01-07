@@ -185,6 +185,14 @@ func devAction(c *cli.Context) error {
 		})
 	}
 
+	if uiModeFlag == "docker" {
+		err := ensureUIContainer()
+		if err != nil {
+			return fmt.Errorf("failed to start UI container: %v", err)
+		}
+	}
+
+	if uiModeFlag == "dart" {
 		{
 			c := exec.Command("webdev", "serve", "--hot-reload", "web:3011")
 			g.Add(func() error {
@@ -255,4 +263,44 @@ func devAction(c *cli.Context) error {
 	}
 
 	return g.Run()
+}
+
+func ensureUIContainer() error {
+	name := "gitpods-ui"
+	args := []string{"run", "-d", "-p=3010:3010", "--name=" + name, "gitpods/ui:latest"}
+	return ensureContainer(name, args)
+}
+
+func ensureContainer(name string, args []string) error {
+	docker, err := exec.LookPath("docker")
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command(docker, []string{
+		"ps",
+		"--filter", "name=" + name,
+	}...)
+	output, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+
+	// If more than 2 lines, container exists
+	lines := strings.Split(string(output), "\n")
+	if len(lines) > 2 {
+		return nil
+	}
+
+	cmd = exec.Command(docker, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err = cmd.Run(); err != nil {
+		return err
+	}
+
+	log.Printf("waiting for container %s to start", name)
+
+	return nil
 }

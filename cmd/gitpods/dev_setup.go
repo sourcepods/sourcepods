@@ -56,47 +56,20 @@ func devSetupAction(c *cli.Context) error {
 }
 
 func setupCockroach() error {
-	docker, err := exec.LookPath("docker")
-	if err != nil {
-		return err
-	}
-
+	name := "gitpods-cockroach"
 	args := []string{
-		"ps",
-		"--filter", "name=gitpods-cockroach",
-	}
-
-	cmd := exec.Command(docker, args...)
-	output, err := cmd.Output()
-	if err != nil {
-		return err
-	}
-
-	// If more than 2 lines, container exists
-	lines := strings.Split(string(output), "\n")
-	if len(lines) > 2 {
-		return nil
-	}
-
-	args = []string{
 		"run", "-d",
-		"--name", "gitpods-cockroach",
+		"--name", name,
 		"--publish", "8080:8080",
 		"--publish", "26257:26257",
 		"--restart", "always",
 		"cockroachdb/cockroach:v2.1.3",
 		"start", "--insecure",
 	}
-
-	cmd = exec.Command(docker, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err = cmd.Run(); err != nil {
+	err := ensureContainer(name, args)
+	if err != nil {
 		return err
 	}
-
-	log.Println("waiting for cockroach to start")
 
 	db, err := sql.Open("postgres", "postgresql://root@localhost:26257?sslmode=disable")
 	if err != nil {
