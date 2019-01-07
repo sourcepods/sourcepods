@@ -22,7 +22,7 @@ func NewPostgresStore(db *sql.DB) *Postgres {
 
 // FindAll users.
 func (s *Postgres) FindAll(ctx context.Context) ([]*User, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.FinAll")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.FindAll")
 	defer span.Finish()
 
 	findAll := `
