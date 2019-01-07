@@ -16,32 +16,16 @@ class UserService {
   final API _api;
 
   Future<User> me() async {
-    final userMe = '''
-query me {
-  me {
-    id
-    email
-    username
-    name
-    createdAt
-    updatedAt
-  }
-}
-''';
+    api.User apiUser = await _api.users.getUserMe();
 
-    String payload = json.encode({
-      'query': userMe,
-    });
-
-    Response resp = await _http.post('/api/query', body: payload);
-
-    if (resp.statusCode != 200) {
-      var body = json.decode(resp.body);
-      throw new UnauthorizedError(body['errors'][0]['detail']);
-    }
-
-    var body = json.decode(resp.body);
-    return new User.fromJSON(body['data']['me']);
+    return User(
+      id: apiUser.id,
+      email: apiUser.email,
+      username: apiUser.username,
+      name: apiUser.name,
+      created: apiUser.createdAt,
+      updated: apiUser.updatedAt,
+    );
   }
 
   Future<List<User>> list() async {
