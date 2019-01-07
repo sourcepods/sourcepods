@@ -66,6 +66,29 @@ func init() {
         }
       }
     },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get the current authenticated user",
+        "operationId": "getUserMe",
+        "responses": {
+          "200": {
+            "description": "The current authenticated user",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/users/{username}": {
       "get": {
         "tags": [
@@ -273,6 +296,29 @@ func init() {
               "items": {
                 "$ref": "#/definitions/user"
               }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get the current authenticated user",
+        "operationId": "getUserMe",
+        "responses": {
+          "200": {
+            "description": "The current authenticated user",
+            "schema": {
+              "$ref": "#/definitions/user"
             }
           },
           "default": {

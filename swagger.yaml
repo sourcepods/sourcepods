@@ -36,6 +36,21 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/error'
+  /users/me:
+    get:
+      summary: Get the current authenticated user
+      operationId: getUserMe
+      tags:
+        - users
+      responses:
+        200:
+          description: The current authenticated user
+          schema:
+            $ref: '#/definitions/user'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
   /users/{username}:
     get:
       summary: Get a user by their username
