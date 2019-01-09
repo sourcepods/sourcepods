@@ -6,7 +6,9 @@ import (
 	"github.com/gitpods/gitpods/internal/api/v1/models"
 	"github.com/gitpods/gitpods/internal/api/v1/restapi"
 	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations"
+	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations/repositories"
 	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations/users"
+	"github.com/gitpods/gitpods/repository"
 	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/user"
 	"github.com/go-openapi/loads"
@@ -20,7 +22,7 @@ type API struct {
 }
 
 // New creates a new API that adds our own Handler implementations
-func New(us user.Service) (*API, error) {
+func New(rs repository.Service, us user.Service) (*API, error) {
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
 		return nil, err
@@ -28,6 +30,8 @@ func New(us user.Service) (*API, error) {
 
 	gitpodsAPI := operations.NewGitpodsAPI(swaggerSpec)
 
+	gitpodsAPI.RepositoriesGetOwnerRepositoriesHandler = GetOwnerRepositoriesHandler(rs)
+	gitpodsAPI.RepositoriesGetRepositoryHandler = GetRepositoryHandler(rs)
 	gitpodsAPI.UsersListUsersHandler = ListUsersHandler(us)
 	gitpodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
 	gitpodsAPI.UsersGetUserHandler = GetUserHandler(us)
@@ -36,6 +40,44 @@ func New(us user.Service) (*API, error) {
 	return &API{
 		Handler: gitpodsAPI.Serve(nil),
 	}, nil
+}
+
+func convertRepository(r *repository.Repository) *models.Repository {
+	return &models.Repository{
+		ID:            strfmt.UUID(r.ID),
+		Name:          &r.Name,
+		Description:   r.Description,
+		DefaultBranch: r.DefaultBranch,
+		Website:       r.Website,
+		CreatedAt:     strfmt.DateTime(r.Created),
+		UpdatedAt:     strfmt.DateTime(r.Updated),
+		//Owner: nil,
+	}
+}
+
+func GetOwnerRepositoriesHandler(rs repository.Service) repositories.GetOwnerRepositoriesHandlerFunc {
+	return func(params repositories.GetOwnerRepositoriesParams) middleware.Responder {
+		list, _, err := rs.List(params.HTTPRequest.Context(), params.Owner)
+		if err != nil {
+			//if err == repository.ErrOwnerNotFound {
+			//	return repositories.NewGetUserNotFound()
+			//}
+			return nil
+		}
+
+		var payload []*models.Repository
+		for _, r := range list {
+			payload = append(payload, convertRepository(r))
+		}
+
+		return repositories.NewGetOwnerRepositoriesOK().WithPayload(payload)
+	}
+}
+
+func GetRepositoryHandler(rs repository.Service) repositories.GetRepositoryHandlerFunc {
+	return func(params repositories.GetRepositoryParams) middleware.Responder {
+		return repositories.NewGetRepositoryOK()
+	}
 }
 
 func convertUser(u *user.User) *models.User {

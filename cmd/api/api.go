@@ -227,7 +227,7 @@ func apiAction(c *cli.Context) error {
 	//
 	// OpenAPI
 	//
-	openapi, err := apiv1.New(us)
+	openapi, err := apiv1.New(rs, us)
 	if err != nil {
 		return err
 	}
