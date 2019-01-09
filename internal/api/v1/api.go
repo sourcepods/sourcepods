@@ -59,10 +59,13 @@ func GetOwnerRepositoriesHandler(rs repository.Service) repositories.GetOwnerRep
 	return func(params repositories.GetOwnerRepositoriesParams) middleware.Responder {
 		list, _, err := rs.List(params.HTTPRequest.Context(), params.Owner)
 		if err != nil {
-			//if err == repository.ErrOwnerNotFound {
-			//	return repositories.NewGetUserNotFound()
-			//}
-			return nil
+			if err == repository.ErrOwnerNotFound {
+				message := "owner not found"
+				return repositories.NewGetOwnerRepositoriesNotFound().WithPayload(&models.Error{
+					Message: &message,
+				})
+			}
+			return repositories.NewGetOwnerRepositoriesDefault(http.StatusInternalServerError)
 		}
 
 		var payload []*models.Repository
@@ -76,7 +79,18 @@ func GetOwnerRepositoriesHandler(rs repository.Service) repositories.GetOwnerRep
 
 func GetRepositoryHandler(rs repository.Service) repositories.GetRepositoryHandlerFunc {
 	return func(params repositories.GetRepositoryParams) middleware.Responder {
-		return repositories.NewGetRepositoryOK()
+		r, _, err := rs.Find(params.HTTPRequest.Context(), params.Owner, params.Name)
+		if err != nil {
+			if err == repository.ErrRepositoryNotFound {
+				message := "repository not found"
+				return repositories.NewGetRepositoryNotFound().WithPayload(&models.Error{
+					Message: &message,
+				})
+			}
+			return repositories.NewGetRepositoryDefault(http.StatusInternalServerError)
+		}
+
+		return repositories.NewGetRepositoryOK().WithPayload(convertRepository(r))
 	}
 }
 
