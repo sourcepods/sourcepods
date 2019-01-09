@@ -56,3 +56,105 @@ func (o *GetRepositoryOK) WriteResponse(rw http.ResponseWriter, producer runtime
 		}
 	}
 }
+
+// GetRepositoryNotFoundCode is the HTTP code returned for type GetRepositoryNotFound
+const GetRepositoryNotFoundCode int = 404
+
+/*GetRepositoryNotFound The owner and name combination could not be found
+
+swagger:response getRepositoryNotFound
+*/
+type GetRepositoryNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetRepositoryNotFound creates GetRepositoryNotFound with default headers values
+func NewGetRepositoryNotFound() *GetRepositoryNotFound {
+
+	return &GetRepositoryNotFound{}
+}
+
+// WithPayload adds the payload to the get repository not found response
+func (o *GetRepositoryNotFound) WithPayload(payload *models.Error) *GetRepositoryNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get repository not found response
+func (o *GetRepositoryNotFound) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetRepositoryNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+/*GetRepositoryDefault unexpected error
+
+swagger:response getRepositoryDefault
+*/
+type GetRepositoryDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetRepositoryDefault creates GetRepositoryDefault with default headers values
+func NewGetRepositoryDefault(code int) *GetRepositoryDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &GetRepositoryDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the get repository default response
+func (o *GetRepositoryDefault) WithStatusCode(code int) *GetRepositoryDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the get repository default response
+func (o *GetRepositoryDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the get repository default response
+func (o *GetRepositoryDefault) WithPayload(payload *models.Error) *GetRepositoryDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get repository default response
+func (o *GetRepositoryDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetRepositoryDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

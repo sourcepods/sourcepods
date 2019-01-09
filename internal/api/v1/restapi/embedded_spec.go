@@ -65,6 +65,18 @@ func init() {
                 "$ref": "#/definitions/repository"
               }
             }
+          },
+          "404": {
+            "description": "The owner could not be found by this username",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
           }
         }
       }
@@ -97,6 +109,18 @@ func init() {
             "description": "The repository found by its owner and name",
             "schema": {
               "$ref": "#/definitions/repository"
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -406,6 +430,18 @@ func init() {
                 "$ref": "#/definitions/repository"
               }
             }
+          },
+          "404": {
+            "description": "The owner could not be found by this username",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
           }
         }
       }
@@ -438,6 +474,18 @@ func init() {
             "description": "The repository found by its owner and name",
             "schema": {
               "$ref": "#/definitions/repository"
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
             }
           }
         }
