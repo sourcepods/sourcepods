@@ -40,6 +40,68 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/repositories/{owner}": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get a owner's repositories",
+        "operationId": "getOwnerRepositories",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repositories found by its owner name",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/repository"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/repositories/{owner}/{name}": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get a repository by owner name and its name",
+        "operationId": "getRepository",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository found by its owner and name",
+            "schema": {
+              "$ref": "#/definitions/repository"
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": [
@@ -195,6 +257,44 @@ func init() {
       ],
       "properties": {
         "message": {
+          "type": "string"
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "default_branch": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "object",
+          "$ref": "#/definitions/user"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "website": {
           "type": "string"
         }
       }
@@ -281,6 +381,68 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/repositories/{owner}": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get a owner's repositories",
+        "operationId": "getOwnerRepositories",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repositories found by its owner name",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/repository"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/repositories/{owner}/{name}": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get a repository by owner name and its name",
+        "operationId": "getRepository",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository found by its owner and name",
+            "schema": {
+              "$ref": "#/definitions/repository"
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": [
@@ -436,6 +598,44 @@ func init() {
       ],
       "properties": {
         "message": {
+          "type": "string"
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "default_branch": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "object",
+          "$ref": "#/definitions/user"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "website": {
           "type": "string"
         }
       }
