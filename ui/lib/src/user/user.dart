@@ -1,3 +1,4 @@
+import 'package:gitpods/src/api/api.dart' as api;
 import 'package:gitpods/src/repository/repository.dart';
 
 class User {
@@ -18,6 +19,17 @@ class User {
     this.created,
     this.updated,
   });
+
+  factory User.fromAPI(api.User user) {
+    return User(
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      name: user.name,
+      created: user.createdAt,
+      updated: user.updatedAt,
+    );
+  }
 
   factory User.fromJSON(Map<String, dynamic> data) {
     User user = new User(
