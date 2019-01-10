@@ -44,15 +44,7 @@ class UserService {
     updated.name = user.name;
 
     api.User apiUser = await _api.users.updateUser(user.username, updated);
-
-    return User(
-      id: apiUser.id,
-      email: apiUser.email,
-      username: apiUser.username,
-      name: apiUser.name,
-      created: apiUser.createdAt,
-      updated: apiUser.updatedAt,
-    );
+    return User.fromAPI(apiUser);
   }
 }
 

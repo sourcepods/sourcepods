@@ -2,47 +2,23 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:angular/angular.dart';
+import 'package:gitpods/api.dart';
+import 'package:gitpods/src/api/api.dart' as api;
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/repository/repository_component.dart';
 import 'package:gitpods/src/validation_exception.dart';
 import 'package:http/http.dart';
 
-
 @Injectable()
 class RepositoryService {
-  RepositoryService(this._http);
+  RepositoryService(this._http, this._api);
 
   final Client _http;
+  final API _api;
 
   Future<RepositoryPage> get(String owner, String name) async {
-    const repositoryGet = '''
-query (\$owner: String!, \$name: String!) {
-  repository(owner: \$owner, name: \$name) {
-    id
-    name
-    description
-    website
-  }
-}
-''';
-
-    var payload = json.encode({
-      'query': repositoryGet,
-      'variables': {
-        'owner': owner,
-        'name': name,
-      },
-    });
-
-    Response resp = await this._http.post('/api/query', body: payload);
-    var body = json.decode(resp.body);
-
-    if (body['errors'] != null) {
-      throw new Exception(body['errors'][0]['message']);
-    }
-
-    Repository repository = new Repository.fromJSON(body['data']['repository']);
-    return new RepositoryPage(repository);
+    api.Repository r = await _api.repositories.getRepository(owner, name);
+    return RepositoryPage(Repository.fromAPI(r));
   }
 
   Future<Repository> create(Repository repository) async {
