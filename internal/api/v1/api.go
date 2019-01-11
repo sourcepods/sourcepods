@@ -30,11 +30,12 @@ func New(rs repository.Service, us user.Service) (*API, error) {
 
 	gitpodsAPI := operations.NewGitpodsAPI(swaggerSpec)
 
+	gitpodsAPI.RepositoriesCreateRepositoryHandler = CreateRepositoryHandler(rs)
 	gitpodsAPI.RepositoriesGetOwnerRepositoriesHandler = GetOwnerRepositoriesHandler(rs)
 	gitpodsAPI.RepositoriesGetRepositoryHandler = GetRepositoryHandler(rs)
-	gitpodsAPI.UsersListUsersHandler = ListUsersHandler(us)
-	gitpodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
 	gitpodsAPI.UsersGetUserHandler = GetUserHandler(us)
+	gitpodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
+	gitpodsAPI.UsersListUsersHandler = ListUsersHandler(us)
 	gitpodsAPI.UsersUpdateUserHandler = UpdateUserHandler(us)
 
 	return &API{
@@ -51,7 +52,40 @@ func convertRepository(r *repository.Repository) *models.Repository {
 		Website:       r.Website,
 		CreatedAt:     strfmt.DateTime(r.Created),
 		UpdatedAt:     strfmt.DateTime(r.Updated),
-		//Owner: nil,
+
+		//Owner: nil, // TODO: Include via query parameter if wanted
+	}
+}
+
+func CreateRepositoryHandler(rs repository.Service) repositories.CreateRepositoryHandlerFunc {
+	return func(params repositories.CreateRepositoryParams) middleware.Responder {
+		ctx := params.HTTPRequest.Context()
+		owner := session.GetSessionUser(ctx)
+
+		r, err := rs.Create(ctx, owner.Username, &repository.Repository{
+			Name:        *params.NewRepository.Name,
+			Description: params.NewRepository.Description,
+			Website:     params.NewRepository.Website,
+		})
+		if err != nil {
+			if v, ok := err.(repository.ValidationErrors); ok {
+				message := "The given repository input is invalid"
+				payload := &models.ValidationError{
+					Message: &message,
+				}
+				for _, verr := range v.Errors {
+					payload.Errors = append(payload.Errors, &models.ValidationErrorErrorsItems0{
+						Field:   verr.Field,
+						Message: verr.Error.Error(),
+					})
+				}
+				return repositories.NewCreateRepositoryUnprocessableEntity().WithPayload(payload)
+			}
+
+			return repositories.NewCreateRepositoryDefault(http.StatusInternalServerError)
+		}
+
+		return repositories.NewCreateRepositoryOK().WithPayload(convertRepository(r))
 	}
 }
 
