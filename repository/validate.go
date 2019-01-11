@@ -6,27 +6,49 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
+type (
+	ValidationErrors struct {
+		Errors []ValidationError
+	}
+	ValidationError struct {
+		Field string
+		Error error
+	}
+)
+
+func (e ValidationErrors) Error() string {
+	return fmt.Sprintf("there are %d validation errors", len(e.Errors))
+}
+
 // ValidateCreate takes a Repository and validates its fields.
 func ValidateCreate(r *Repository) error {
+	var errs ValidationErrors
+
 	if err := validateName(r.Name); err != nil {
-		return err
+		errs.Errors = append(errs.Errors, ValidationError{
+			Field: "name",
+			Error: err,
+		})
 	}
 
 	if err := validateDescription(r.Description); err != nil {
-		return err
+		errs.Errors = append(errs.Errors, ValidationError{
+			Field: "description",
+			Error: err,
+		})
 	}
 
 	if err := validateWebsite(r.Website); err != nil {
-		return err
+		errs.Errors = append(errs.Errors, ValidationError{
+			Field: "website",
+			Error: err,
+		})
 	}
 
-	return nil
-}
-
-func validateID(id string) error {
-	if ok := govalidator.IsUUIDv4(id); !ok {
-		return fmt.Errorf("id is not a valid uuid v4")
+	if len(errs.Errors) > 0 {
+		return errs
 	}
+
 	return nil
 }
 
