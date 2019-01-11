@@ -57,6 +57,7 @@ func convertRepository(r *repository.Repository) *models.Repository {
 	}
 }
 
+//CreateRepositoryHandler creates a new repository from given input
 func CreateRepositoryHandler(rs repository.Service) repositories.CreateRepositoryHandlerFunc {
 	return func(params repositories.CreateRepositoryParams) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
@@ -89,6 +90,7 @@ func CreateRepositoryHandler(rs repository.Service) repositories.CreateRepositor
 	}
 }
 
+//GetOwnerRepositoriesHandler gets a repository by the owner's username
 func GetOwnerRepositoriesHandler(rs repository.Service) repositories.GetOwnerRepositoriesHandlerFunc {
 	return func(params repositories.GetOwnerRepositoriesParams) middleware.Responder {
 		list, _, err := rs.List(params.HTTPRequest.Context(), params.Owner)
@@ -111,6 +113,7 @@ func GetOwnerRepositoriesHandler(rs repository.Service) repositories.GetOwnerRep
 	}
 }
 
+//GetRepositoryHandler gets a repository by name and the owner's username
 func GetRepositoryHandler(rs repository.Service) repositories.GetRepositoryHandlerFunc {
 	return func(params repositories.GetRepositoryParams) middleware.Responder {
 		r, _, err := rs.Find(params.HTTPRequest.Context(), params.Owner, params.Name)

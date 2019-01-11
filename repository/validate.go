@@ -7,9 +7,11 @@ import (
 )
 
 type (
+	//ValidationErrors are returned with a slice of all invalid fields
 	ValidationErrors struct {
 		Errors []ValidationError
 	}
+	//ValidationError knows for a given field the error
 	ValidationError struct {
 		Field string
 		Error error
