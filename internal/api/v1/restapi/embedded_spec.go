@@ -40,6 +40,60 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/repositories": {
+      "post": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Create a new repository",
+        "operationId": "createRepository",
+        "parameters": [
+          {
+            "description": "The repository to create",
+            "name": "newRepository",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "website": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository has been created and is returned to you",
+            "schema": {
+              "$ref": "#/definitions/repository"
+            }
+          },
+          "422": {
+            "description": "The new repository has not been created due to invalid input",
+            "schema": {
+              "$ref": "#/definitions/validationError"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/repositories/{owner}": {
       "get": {
         "tags": [
@@ -405,6 +459,60 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/repositories": {
+      "post": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Create a new repository",
+        "operationId": "createRepository",
+        "parameters": [
+          {
+            "description": "The repository to create",
+            "name": "newRepository",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "website": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository has been created and is returned to you",
+            "schema": {
+              "$ref": "#/definitions/repository"
+            }
+          },
+          "422": {
+            "description": "The new repository has not been created due to invalid input",
+            "schema": {
+              "$ref": "#/definitions/validationError"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/repositories/{owner}": {
       "get": {
         "tags": [

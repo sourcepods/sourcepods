@@ -19,6 +19,41 @@ schemes:
 basePath: '/v1'
 
 paths:
+  /repositories:
+    post:
+      summary: Create a new repository
+      operationId: createRepository
+      tags:
+        - repositories
+      parameters:
+        - in: body
+          name: newRepository
+          required: true
+          description: The repository to create
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              website:
+                type: string
+      responses:
+        200:
+          description: The repository has been created and is returned to you
+          schema:
+            $ref: '#/definitions/repository'
+        422:
+          description: The new repository has not been created due to invalid input
+          schema:
+            $ref: '#/definitions/validationError'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
   /repositories/{owner}:
     get:
       summary: Get a owner's repositories

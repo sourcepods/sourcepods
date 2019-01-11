@@ -35,6 +35,9 @@ func configureAPI(api *operations.GitpodsAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
+	api.RepositoriesCreateRepositoryHandler = repositories.CreateRepositoryHandlerFunc(func(params repositories.CreateRepositoryParams) middleware.Responder {
+		return middleware.NotImplemented("operation repositories.CreateRepository has not yet been implemented")
+	})
 	api.RepositoriesGetOwnerRepositoriesHandler = repositories.GetOwnerRepositoriesHandlerFunc(func(params repositories.GetOwnerRepositoriesParams) middleware.Responder {
 		return middleware.NotImplemented("operation repositories.GetOwnerRepositories has not yet been implemented")
 	})
