@@ -11,6 +11,9 @@ var (
 	// ErrOwnerNotFound returned if a owner for a repository is not found.
 	ErrOwnerNotFound = errors.New("owner not found")
 
+	// ErrRepositoryNotFound returned if a repository is not found.
+	ErrRepositoryNotFound = errors.New("repository not found")
+
 	// ErrAlreadyExists returned if a repository with the same name for that owner already exists.
 	ErrAlreadyExists = errors.New("repository already exists")
 )

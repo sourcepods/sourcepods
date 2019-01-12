@@ -1,29 +1,85 @@
 package repository
 
 import (
+	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateCreate(t *testing.T) {
-	assert.Error(t, ValidateCreate(&Repository{}))
-	assert.Error(t, ValidateCreate(&Repository{
-		Name: "foo",
-	}))
-	assert.Error(t, ValidateCreate(&Repository{
-		Name:    "foobar",
-		Website: "bar",
-	}))
+	testcases := []struct {
+		Name       string
+		Repository *Repository
+		Errors     []ValidationError
+	}{
+		{
+			Name:       "NoInput",
+			Repository: &Repository{},
+			Errors: []ValidationError{{
+				Field: "name",
+				Error: errors.New("name is not between 4 and 32 characters long"),
+			}},
+		},
+		{
+			Name:       "NameTooShort",
+			Repository: &Repository{Name: "foo"},
+			Errors: []ValidationError{{
+				Field: "name",
+				Error: errors.New("name is not between 4 and 32 characters long"),
+			}},
+		},
+		{
+			Name:       "NameTooLong",
+			Repository: &Repository{Name: "thisnameiswaytolongtobeadecentusername"},
+			Errors: []ValidationError{{
+				Field: "name",
+				Error: errors.New("name is not between 4 and 32 characters long"),
+			}},
+		},
+		{
+			Name:       "InvalidWebsite",
+			Repository: &Repository{Name: "username", Website: "example"},
+			Errors: []ValidationError{{
+				Field: "website",
+				Error: errors.New("example is not a url"),
+			}},
+		},
+		{
+			Name: "Valid",
+			Repository: &Repository{
+				Name:        "username",
+				Website:     "http://example.com",
+				Description: "Awesome repository!",
+			},
+			Errors: nil,
+		},
+	}
 
-	assert.Nil(t, ValidateCreate(&Repository{
-		Name: "foobar",
-	}))
-	assert.Nil(t, ValidateCreate(&Repository{
-		Name:        "foobar",
-		Description: "example",
-		Website:     "http://example.com",
-	}))
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+
+			err := ValidateCreate(tc.Repository)
+
+			if len(tc.Errors) > 0 {
+				assert.Error(t, err)
+				assert.Equal(t, fmt.Sprintf("there are %d validation errors", len(tc.Errors)), err.Error())
+				assert.IsType(t, ValidationErrors{}, err)
+				if verr, ok := err.(ValidationErrors); ok {
+					assert.Len(t, verr.Errors, len(tc.Errors))
+					for i, expected := range tc.Errors {
+						assert.Equal(t, expected, verr.Errors[i])
+					}
+				}
+			} else {
+				assert.Nil(t, err)
+			}
+
+		})
+	}
 }
 
 func TestValidateName(t *testing.T) {

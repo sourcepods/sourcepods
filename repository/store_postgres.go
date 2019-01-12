@@ -43,6 +43,10 @@ ORDER BY updated_at DESC;
 
 	rows, err := s.db.QueryContext(ctx, listByOwnerID, owner)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, "", ErrOwnerNotFound
+		}
+
 		return nil, "", err
 	}
 	defer rows.Close()
@@ -126,6 +130,10 @@ WHERE
 		&updated,
 		&ownerID,
 	); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, "", ErrRepositoryNotFound
+		}
+
 		return nil, "", err
 	}
 

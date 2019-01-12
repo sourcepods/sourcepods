@@ -2,87 +2,43 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:angular/angular.dart';
+import 'package:gitpods/api.dart';
+import 'package:gitpods/src/api/api.dart' as api;
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/repository/repository_component.dart';
-import 'package:gitpods/src/validation_exception.dart';
-import 'package:http/http.dart';
-
+import 'package:gitpods/src/repository/repository_create_component.dart';
 
 @Injectable()
 class RepositoryService {
-  RepositoryService(this._http);
+  RepositoryService(this._api);
 
-  final Client _http;
+  final API _api;
 
   Future<RepositoryPage> get(String owner, String name) async {
-    const repositoryGet = '''
-query (\$owner: String!, \$name: String!) {
-  repository(owner: \$owner, name: \$name) {
-    id
-    name
-    description
-    website
-  }
-}
-''';
-
-    var payload = json.encode({
-      'query': repositoryGet,
-      'variables': {
-        'owner': owner,
-        'name': name,
-      },
-    });
-
-    Response resp = await this._http.post('/api/query', body: payload);
-    var body = json.decode(resp.body);
-
-    if (body['errors'] != null) {
-      throw new Exception(body['errors'][0]['message']);
-    }
-
-    Repository repository = new Repository.fromJSON(body['data']['repository']);
-    return new RepositoryPage(repository);
+    api.Repository r = await _api.repositories.getRepository(owner, name);
+    return RepositoryPage(Repository.fromAPI(r));
   }
 
-  Future<Repository> create(Repository repository) async {
-    const repositoryCreate = '''
-mutation (\$repository: newRepository!) {
-  createRepository(repository: \$repository) {
-    id
-    name
-    description
-    website
-    createdAt
-    updatedAt
-    owner {
-      id
-      username
-      name
-      email
+  Future<Repository> create(
+    String name,
+    String description,
+    String website,
+  ) async {
+    api.NewRepository newRepository = api.NewRepository();
+    newRepository.name = name;
+    newRepository.description = description;
+    newRepository.website = website;
+
+    try {
+      api.Repository apiRepository =
+          await _api.repositories.createRepository(newRepository);
+      return Repository.fromAPI(apiRepository);
+    } on api.ApiException catch (e) {
+      if (e.code == 422) {
+        throw new ValidationException.fromJSON(json.decode(e.message));
+      } else {
+        throw e;
+      }
     }
-  }
-}
-''';
-
-    var payload = json.encode({
-      'query': repositoryCreate,
-      'variables': {
-        'repository': {
-          'name': repository.name,
-          'description': repository.description,
-          'website': repository.website,
-        },
-      },
-    });
-
-    Response resp = await this._http.post('/api/query', body: payload);
-    var body = json.decode(resp.body);
-
-    if (body['errors'] != null) {
-      throw new ValidationException(body['errors'][0]['message']);
-    }
-
-    return new Repository.fromJSON(body['data']['createRepository']);
   }
 }

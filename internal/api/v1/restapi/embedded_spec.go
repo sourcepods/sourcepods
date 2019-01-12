@@ -40,6 +40,146 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/repositories": {
+      "post": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Create a new repository",
+        "operationId": "createRepository",
+        "parameters": [
+          {
+            "description": "The repository to create",
+            "name": "newRepository",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "website": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository has been created and is returned to you",
+            "schema": {
+              "$ref": "#/definitions/repository"
+            }
+          },
+          "422": {
+            "description": "The new repository has not been created due to invalid input",
+            "schema": {
+              "$ref": "#/definitions/validationError"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/repositories/{owner}": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get a owner's repositories",
+        "operationId": "getOwnerRepositories",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repositories found by its owner name",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/repository"
+              }
+            }
+          },
+          "404": {
+            "description": "The owner could not be found by this username",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/repositories/{owner}/{name}": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get a repository by owner name and its name",
+        "operationId": "getRepository",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository found by its owner and name",
+            "schema": {
+              "$ref": "#/definitions/repository"
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": [
@@ -195,6 +335,44 @@ func init() {
       ],
       "properties": {
         "message": {
+          "type": "string"
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "default_branch": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "object",
+          "$ref": "#/definitions/user"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "website": {
           "type": "string"
         }
       }
@@ -281,6 +459,146 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/repositories": {
+      "post": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Create a new repository",
+        "operationId": "createRepository",
+        "parameters": [
+          {
+            "description": "The repository to create",
+            "name": "newRepository",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "website": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository has been created and is returned to you",
+            "schema": {
+              "$ref": "#/definitions/repository"
+            }
+          },
+          "422": {
+            "description": "The new repository has not been created due to invalid input",
+            "schema": {
+              "$ref": "#/definitions/validationError"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/repositories/{owner}": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get a owner's repositories",
+        "operationId": "getOwnerRepositories",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repositories found by its owner name",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/repository"
+              }
+            }
+          },
+          "404": {
+            "description": "The owner could not be found by this username",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/repositories/{owner}/{name}": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get a repository by owner name and its name",
+        "operationId": "getRepository",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository found by its owner and name",
+            "schema": {
+              "$ref": "#/definitions/repository"
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": [
@@ -436,6 +754,44 @@ func init() {
       ],
       "properties": {
         "message": {
+          "type": "string"
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "default_branch": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "object",
+          "$ref": "#/definitions/user"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "website": {
           "type": "string"
         }
       }

@@ -11,27 +11,39 @@
         <div class="uk-margin">
             <label class="uk-form-label" for="name">Name</label>
             <div class="uk-form-controls">
-                <input class="uk-input" id="name" type="text" autofocus required [(ngModel)]="repository.name">
+                <input class="uk-input" id="name" type="text"
+                       autofocus required
+                       [(ngModel)]="name"
+                       [class.uk-form-danger]="nameError != null">
             </div>
+            <span class="uk-text-small uk-text-danger">{{ nameError }}</span>
+            <span>&nbsp;</span>
         </div>
 
         <div class="uk-margin">
             <label class="uk-form-label" for="description">Description</label>
             <div class="uk-form-controls">
-                <input class="uk-input" id="description" type="text" [(ngModel)]="repository.description">
+                <input class="uk-input" id="description" type="text"
+                       [(ngModel)]="description"
+                       [class.uk-form-danger]="descriptionError != null">
+                <span class="uk-text-small uk-text-danger">{{ descriptionError }}</span>
+                <span>&nbsp;</span>
             </div>
         </div>
 
         <div class="uk-margin">
             <label class="uk-form-label" for="website">Website</label>
             <div class="uk-form-controls">
-                <input class="uk-input" id="website" type="text" [(ngModel)]="repository.website">
+                <input class="uk-input" id="website" type="text"
+                       [(ngModel)]="website"
+                       [class.uk-form-danger]="websiteError != null">
+                <span class="uk-text-small uk-text-danger">{{ websiteError }}</span>
+                <span>&nbsp;</span>
             </div>
         </div>
 
         <div class="uk-margin">
-            <button class="uk-button uk-button-primary" type="submit">Create Repository</button>
-            <!--:disabled="loading"-->
+            <gitpods-loading-button text="Create Repository" [loading]="loading"></gitpods-loading-button>
         </div>
     </form>
 </div>

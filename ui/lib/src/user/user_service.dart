@@ -1,89 +1,41 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:angular/angular.dart';
 import 'package:gitpods/api.dart';
 import 'package:gitpods/src/api/api.dart' as api;
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/user/user.dart';
-import 'package:http/http.dart';
 
 @Injectable()
 class UserService {
-  UserService(this._http, this._api);
+  UserService(this._api);
 
-  final Client _http;
   final API _api;
 
   Future<User> me() async {
     api.User apiUser = await _api.users.getUserMe();
-
-    return User(
-      id: apiUser.id,
-      email: apiUser.email,
-      username: apiUser.username,
-      name: apiUser.name,
-      created: apiUser.createdAt,
-      updated: apiUser.updatedAt,
-    );
+    return User.fromAPI(apiUser);
   }
 
   Future<List<User>> list() async {
     List<api.User> list = await _api.users.listUsers();
-
-    List<User> users = list.map((api.User user) {
-      return User(
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        name: user.name,
-        created: user.createdAt,
-        updated: user.updatedAt,
-      );
-    }).toList();
-
-    return users;
+    return list.map((api.User apiUser) => User.fromAPI(apiUser)).toList();
   }
 
   Future<UserProfile> profile(String username) async {
-    final userProfile = '''
-query userProfile(\$username: String!) {
-  user(username: \$username) {
-    id
-    username
-    name
-    email
-    createdAt
-    updatedAt
-  }
-  repositories(owner: \$username) {
-    id
-    name
-    description
-  }
-}
-''';
+    List responses = await Future.wait([
+      _api.users.getUser(username),
+      _api.repositories.getOwnerRepositories(username),
+    ]);
 
-    var payload = json.encode({
-      'query': userProfile,
-      'variables': {
-        'username': username,
-      }
-    });
+    api.User user = responses[0];
+    List<api.Repository> repositories = responses[1];
 
-    Response resp = await this._http.post('/api/query', body: payload);
-
-    var body = json.decode(resp.body);
-
-    User user = new User.fromJSON(body['data']['user']);
-
-    List<Repository> repositories = (body['data']['repositories'] as List)
-        .map((json) => new Repository.fromJSON(json))
-        .toList();
-
-    return new UserProfile(
-      user: user,
-      repositories: repositories,
+    return UserProfile(
+      user: User.fromAPI(user),
+      repositories: (repositories)
+          .map((api.Repository r) => Repository.fromAPI(r))
+          .toList(),
     );
   }
 
@@ -92,15 +44,7 @@ query userProfile(\$username: String!) {
     updated.name = user.name;
 
     api.User apiUser = await _api.users.updateUser(user.username, updated);
-
-    return User(
-      id: apiUser.id,
-      email: apiUser.email,
-      username: apiUser.username,
-      name: apiUser.name,
-      created: apiUser.createdAt,
-      updated: apiUser.updatedAt,
-    );
+    return User.fromAPI(apiUser);
   }
 }
 

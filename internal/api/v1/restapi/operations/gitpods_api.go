@@ -19,6 +19,7 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations/repositories"
 	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations/users"
 )
 
@@ -39,6 +40,15 @@ func NewGitpodsAPI(spec *loads.Document) *GitpodsAPI {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		RepositoriesCreateRepositoryHandler: repositories.CreateRepositoryHandlerFunc(func(params repositories.CreateRepositoryParams) middleware.Responder {
+			return middleware.NotImplemented("operation RepositoriesCreateRepository has not yet been implemented")
+		}),
+		RepositoriesGetOwnerRepositoriesHandler: repositories.GetOwnerRepositoriesHandlerFunc(func(params repositories.GetOwnerRepositoriesParams) middleware.Responder {
+			return middleware.NotImplemented("operation RepositoriesGetOwnerRepositories has not yet been implemented")
+		}),
+		RepositoriesGetRepositoryHandler: repositories.GetRepositoryHandlerFunc(func(params repositories.GetRepositoryParams) middleware.Responder {
+			return middleware.NotImplemented("operation RepositoriesGetRepository has not yet been implemented")
+		}),
 		UsersGetUserHandler: users.GetUserHandlerFunc(func(params users.GetUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUser has not yet been implemented")
 		}),
@@ -82,6 +92,12 @@ type GitpodsAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
 
+	// RepositoriesCreateRepositoryHandler sets the operation handler for the create repository operation
+	RepositoriesCreateRepositoryHandler repositories.CreateRepositoryHandler
+	// RepositoriesGetOwnerRepositoriesHandler sets the operation handler for the get owner repositories operation
+	RepositoriesGetOwnerRepositoriesHandler repositories.GetOwnerRepositoriesHandler
+	// RepositoriesGetRepositoryHandler sets the operation handler for the get repository operation
+	RepositoriesGetRepositoryHandler repositories.GetRepositoryHandler
 	// UsersGetUserHandler sets the operation handler for the get user operation
 	UsersGetUserHandler users.GetUserHandler
 	// UsersGetUserMeHandler sets the operation handler for the get user me operation
@@ -151,6 +167,18 @@ func (o *GitpodsAPI) Validate() error {
 
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
+	}
+
+	if o.RepositoriesCreateRepositoryHandler == nil {
+		unregistered = append(unregistered, "repositories.CreateRepositoryHandler")
+	}
+
+	if o.RepositoriesGetOwnerRepositoriesHandler == nil {
+		unregistered = append(unregistered, "repositories.GetOwnerRepositoriesHandler")
+	}
+
+	if o.RepositoriesGetRepositoryHandler == nil {
+		unregistered = append(unregistered, "repositories.GetRepositoryHandler")
 	}
 
 	if o.UsersGetUserHandler == nil {
@@ -266,6 +294,21 @@ func (o *GitpodsAPI) initHandlerCache() {
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/repositories"] = repositories.NewCreateRepository(o.context, o.RepositoriesCreateRepositoryHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/repositories/{owner}"] = repositories.NewGetOwnerRepositories(o.context, o.RepositoriesGetOwnerRepositoriesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/repositories/{owner}/{name}"] = repositories.NewGetRepository(o.context, o.RepositoriesGetRepositoryHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

@@ -19,6 +19,98 @@ schemes:
 basePath: '/v1'
 
 paths:
+  /repositories:
+    post:
+      summary: Create a new repository
+      operationId: createRepository
+      tags:
+        - repositories
+      parameters:
+        - in: body
+          name: newRepository
+          required: true
+          description: The repository to create
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              website:
+                type: string
+      responses:
+        200:
+          description: The repository has been created and is returned to you
+          schema:
+            $ref: '#/definitions/repository'
+        422:
+          description: The new repository has not been created due to invalid input
+          schema:
+            $ref: '#/definitions/validationError'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+  /repositories/{owner}:
+    get:
+      summary: Get a owner's repositories
+      operationId: getOwnerRepositories
+      tags:
+        - repositories
+      parameters:
+        - in: path
+          name: owner
+          type: string
+          required: true
+          description: The owner's username
+      responses:
+        200:
+          description: The repositories found by its owner name
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/repository'
+        404:
+          description: The owner could not be found by this username
+          schema:
+            $ref: '#/definitions/error'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+  /repositories/{owner}/{name}:
+    get:
+      summary: Get a repository by owner name and its name
+      operationId: getRepository
+      tags:
+        - repositories
+      parameters:
+        - in: path
+          name: owner
+          type: string
+          required: true
+          description: The owner's username
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: The repository's name
+      responses:
+        200:
+          description: The repository found by its owner and name
+          schema:
+            $ref: '#/definitions/repository'
+        404:
+          description: The owner and name combination could not be found
+          schema:
+            $ref: '#/definitions/error'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
   /users:
     get:
       summary: List all users
@@ -116,6 +208,33 @@ paths:
           schema:
             $ref: '#/definitions/error'
 definitions:
+  repository:
+    type: object
+    required:
+      - id
+      - name
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      name:
+        type: string
+      description:
+        type: string
+      website:
+        type: string
+      default_branch:
+        type: string
+      created_at:
+        type: string
+        format: 'date-time'
+      updated_at:
+        type: string
+        format: 'date-time'
+      owner:
+        type: object
+        $ref: '#/definitions/user'
   user:
     type: object
     required:

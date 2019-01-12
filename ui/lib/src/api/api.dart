@@ -13,9 +13,12 @@ part 'auth/api_key_auth.dart';
 part 'auth/oauth.dart';
 part 'auth/http_basic_auth.dart';
 
+part 'api/repositories_api.dart';
 part 'api/users_api.dart';
 
 part 'model/error.dart';
+part 'model/new_repository.dart';
+part 'model/repository.dart';
 part 'model/updated_user.dart';
 part 'model/user.dart';
 part 'model/validation_error.dart';

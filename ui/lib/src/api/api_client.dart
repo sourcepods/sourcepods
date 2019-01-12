@@ -39,6 +39,10 @@ class ApiClient {
           return value is double ? value : double.parse('$value');
         case 'Error':
           return new Error.fromJson(value);
+        case 'NewRepository':
+          return new NewRepository.fromJson(value);
+        case 'Repository':
+          return new Repository.fromJson(value);
         case 'UpdatedUser':
           return new UpdatedUser.fromJson(value);
         case 'User':
