@@ -32,10 +32,6 @@
   version = "1.0.0"
 
 [[constraint]]
-  name = "github.com/graphql-go/graphql"
-  version = "~0.7.4"
-
-[[constraint]]
   branch = "master"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
 
