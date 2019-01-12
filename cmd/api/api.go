@@ -15,7 +15,6 @@ import (
 	"github.com/gitpods/gitpods/cmd"
 	apiv1 "github.com/gitpods/gitpods/internal/api/v1"
 	"github.com/gitpods/gitpods/repository"
-	"github.com/gitpods/gitpods/resolver"
 	"github.com/gitpods/gitpods/session"
 	"github.com/gitpods/gitpods/storage"
 	"github.com/gitpods/gitpods/user"
@@ -28,7 +27,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/oklog/run"
 	prom "github.com/prometheus/client_golang/prometheus"
-	jaeger "github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
 	"github.com/urfave/cli"
 )
@@ -220,11 +219,6 @@ func apiAction(c *cli.Context) error {
 	rs = repository.NewTracingService(rs)
 
 	//
-	// GraphQL Resolvers
-	//
-	res := resolver.Handler(rs, us)
-
-	//
 	// OpenAPI
 	//
 	openapi, err := apiv1.New(rs, us)
@@ -250,9 +244,8 @@ func apiAction(c *cli.Context) error {
 
 			router.Group(func(router chi.Router) {
 				router.Use(session.Authorized(ss))
-				router.Mount("/query", middleware.NoCache(res))
 				router.Mount("/sessions", session.NewHandler(ss))
-				router.Mount("/v1", openapi.Handler)
+				router.Mount("/v1", middleware.NoCache(openapi.Handler))
 			})
 
 			router.Mount("/{owner}/{name}.git", githttp)

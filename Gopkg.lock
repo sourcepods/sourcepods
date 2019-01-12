@@ -256,26 +256,6 @@
   version = "1.0.0"
 
 [[projects]]
-  digest = "1:a646778cd3eed23be9283daa58a78a230dd9100d055f219fc14ecac1891fa4a4"
-  name = "github.com/graphql-go/graphql"
-  packages = [
-    ".",
-    "gqlerrors",
-    "language/ast",
-    "language/kinds",
-    "language/lexer",
-    "language/location",
-    "language/parser",
-    "language/printer",
-    "language/source",
-    "language/typeInfo",
-    "language/visitor",
-  ]
-  pruneopts = "NUT"
-  revision = "5e7dd4fc3e87341229fa03d8f79d2ab5455963fb"
-  version = "v0.7.4"
-
-[[projects]]
   branch = "master"
   digest = "1:b550525fe2f9f946878d089606187262eddd156697c34358378b13d91f231efe"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -630,7 +610,6 @@
     "github.com/gobuffalo/packr",
     "github.com/golang/protobuf/proto",
     "github.com/google/jsonapi",
-    "github.com/graphql-go/graphql",
     "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing",
     "github.com/jessevdk/go-flags",
     "github.com/lib/pq",
