@@ -97,6 +97,15 @@ func devAction(c *cli.Context) error {
 		tracingURL = "localhost:6831"
 	}
 
+	exists, err := exists("./dev")
+	if err != nil {
+		return err
+	}
+	if !exists {
+		color.HiRed("Development folder ./dev doesn't exists. Run gitpods dev setup first")
+		return nil
+	}
+
 	uiRunner := NewGitPodsRunner("ui", []string{
 		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, uiAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvAPIURL, "http://localhost:3000/api"), // TODO
@@ -147,7 +156,7 @@ func devAction(c *cli.Context) error {
 	}
 	{
 		g.Add(func() error {
-			color.Green("starting api")
+			color.HiGreen("starting api")
 			return apiRunner.Run()
 		}, func(err error) {
 			color.HiYellow("stopping api")
@@ -156,7 +165,7 @@ func devAction(c *cli.Context) error {
 	}
 	{
 		g.Add(func() error {
-			color.Green("starting storage")
+			color.HiGreen("starting storage")
 			return storageRunner.Run()
 		}, func(err error) {
 			color.HiYellow("stopping storage")
@@ -166,7 +175,7 @@ func devAction(c *cli.Context) error {
 	{
 		if uiModeFlag == "binary" {
 			g.Add(func() error {
-				color.Green("starting ui")
+				color.HiGreen("starting ui")
 				return uiRunner.Run()
 			}, func(err error) {
 				color.HiYellow("stopping ui")
@@ -176,7 +185,7 @@ func devAction(c *cli.Context) error {
 	}
 	{
 		g.Add(func() error {
-			color.Green("starting caddy")
+			color.HiGreen("starting caddy")
 			return caddy.Run()
 		}, func(err error) {
 			color.HiYellow("stopping caddy")
