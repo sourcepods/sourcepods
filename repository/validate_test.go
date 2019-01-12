@@ -39,14 +39,6 @@ func TestValidateCreate(t *testing.T) {
 			}},
 		},
 		{
-			Name:       "NameTooLong",
-			Repository: &Repository{Name: "thisnameiswaytolongtobeadecentusername"},
-			Errors: []ValidationError{{
-				Field: "name",
-				Error: errors.New("name is not between 4 and 32 characters long"),
-			}},
-		},
-		{
 			Name:       "InvalidWebsite",
 			Repository: &Repository{Name: "username", Website: "example"},
 			Errors: []ValidationError{{
