@@ -6,6 +6,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 )
 
+//TracingRequestID returns the request ID as string for tracing
 type TracingRequestID func(context.Context) string
 
 type tracingService struct {

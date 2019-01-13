@@ -11,8 +11,11 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-const contextReqID = "request_id"
+type contextValue string
 
+const contextReqID contextValue = "request_id"
+
+//NewRequestID creates a middleware that passes X-Request-ID via contenxt or creates a new ID
 func NewRequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := r.Header.Get("X-Request-ID")
@@ -26,6 +29,7 @@ func NewRequestID(next http.Handler) http.Handler {
 	})
 }
 
+//GetRequestID returns the request ID from context.Context
 func GetRequestID(ctx context.Context) string {
 	value := ctx.Value(contextReqID)
 	if reqID, ok := value.(string); ok {
@@ -34,6 +38,7 @@ func GetRequestID(ctx context.Context) string {
 	return ""
 }
 
+//NewRequestLogger creates a middleware that logs all HTTP request information
 func NewRequestLogger(logger log.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

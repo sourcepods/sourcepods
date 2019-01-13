@@ -8,6 +8,7 @@ import (
 	"github.com/go-kit/kit/log/level"
 )
 
+//LoggingRequestID returns the request ID as string for logging
 type LoggingRequestID func(context.Context) string
 
 type loggingService struct {
