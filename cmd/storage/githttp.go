@@ -17,11 +17,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gitpods/gitpods/cmd"
+	"github.com/gitpods/gitpods/pkg/api"
 	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 )
 
 type GitHTTP struct {
@@ -40,7 +40,7 @@ func NewGitHTTP(root string) *GitHTTP {
 
 func (gh *GitHTTP) Handler() *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(cmd.NewRequestLogger(gh.Logger))
+	r.Use(api.NewRequestLogger(gh.Logger))
 
 	r.Get("/{owner}/{name}/HEAD", noCaching(gh.headHandler))
 	r.Get("/{owner}/{name}/info/refs", noCaching(gh.infoRefsHandler))

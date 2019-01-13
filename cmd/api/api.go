@@ -233,7 +233,7 @@ func apiAction(c *cli.Context) error {
 	router := chi.NewRouter()
 	{
 		router.Use(api.NewRequestID)
-		router.Use(cmd.NewRequestLogger(logger))
+		router.Use(api.NewRequestLogger(logger))
 
 		// Wrap the router inside a Router handler to make it possible to listen on / or on /api.
 		// Change via APIPrefix.

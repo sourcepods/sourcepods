@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/gitpods/gitpods/pkg/api"
+
 	"github.com/gitpods/gitpods/cmd"
 	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
@@ -66,7 +68,8 @@ func ActionUI(c *cli.Context) error {
 	})
 
 	r := chi.NewRouter()
-	r.Use(cmd.NewRequestLogger(logger))
+	r.Use(api.NewRequestID)
+	r.Use(api.NewRequestLogger(logger))
 
 	r.Get("/", homeHandler)
 	r.NotFound(homeHandler)
