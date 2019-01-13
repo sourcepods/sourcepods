@@ -236,10 +236,6 @@ func apiAction(c *cli.Context) error {
 		// Wrap the router inside a Router handler to make it possible to listen on / or on /api.
 		// Change via APIPrefix.
 		router.Route(apiConfig.APIPrefix, func(router chi.Router) {
-			router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-				w.Write(page)
-			})
-
 			router.Mount("/authorize", authorization.NewHandler(as))
 
 			router.Group(func(router chi.Router) {
@@ -372,45 +368,6 @@ func apiMetrics() *APIMetrics {
 		}, []string{}),
 	}
 }
-
-var page = []byte(`
-<!DOCTYPE html>
-<html>
-	<head>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.11.11/graphiql.css" />
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/1.0.0/fetch.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.11.11/graphiql.js"></script>
-	</head>
-	<body style="width: 100%; height: 100%; margin: 0; overflow: hidden;">
-		<div id="graphiql" style="height: 100vh;">Loading...</div>
-		<script>
-			function graphQLFetcher(graphQLParams) {
-				graphQLParams.variables = graphQLParams.variables ? JSON.parse(graphQLParams.variables) : null;
-				return fetch("/api/query", {
-					method: "post",
-					body: JSON.stringify(graphQLParams),
-					credentials: "include",
-				}).then(function (response) {
-					return response.text();
-				}).then(function (responseBody) {
-					try {
-						return JSON.parse(responseBody);
-					} catch (error) {
-						return responseBody;
-					}
-				});
-			}
-
-			ReactDOM.render(
-				React.createElement(GraphiQL, {fetcher: graphQLFetcher}),
-				document.getElementById("graphiql")
-			);
-		</script>
-	</body>
-</html>
-`)
 
 func NewGitHTTPProxy(storageURL string) (*httputil.ReverseProxy, error) {
 	backend, err := url.Parse(storageURL)
