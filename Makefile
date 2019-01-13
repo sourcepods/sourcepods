@@ -26,6 +26,10 @@ ui/lib/src/api: swagger.yaml
 	mv tmp/dart/lib ui/lib/src/api
 	-rm -rf tmp/
 
+.PHONY: lint
+lint:
+	golint $(shell go list ./pkg/gitpods/...)
+
 .PHONY: test
 test:
 	go test -coverprofile coverage.out -race -v ./... # -race needs Cgo
