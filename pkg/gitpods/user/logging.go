@@ -8,22 +8,26 @@ import (
 	"github.com/go-kit/kit/log/level"
 )
 
+type LoggingRequestID func(context.Context) string
+
 type loggingService struct {
-	logger log.Logger
-	Service
+	service   Service
+	requestID LoggingRequestID
+	logger    log.Logger
 }
 
 // NewLoggingService wraps the Service and provides logging for its methods.
-func NewLoggingService(logger log.Logger, s Service) Service {
-	return &loggingService{logger, s}
+func NewLoggingService(s Service, requestID LoggingRequestID, logger log.Logger) Service {
+	return &loggingService{service: s, requestID: requestID, logger: logger}
 }
 
 func (s *loggingService) FindAll(ctx context.Context) ([]*User, error) {
 	start := time.Now()
 
-	users, err := s.Service.FindAll(ctx)
+	users, err := s.service.FindAll(ctx)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "FindAll",
 		"duration", time.Since(start),
 	)
@@ -37,12 +41,17 @@ func (s *loggingService) FindAll(ctx context.Context) ([]*User, error) {
 	return users, err
 }
 
+func (s *loggingService) Find(context.Context, string) (*User, error) {
+	panic("implement me")
+}
+
 func (s *loggingService) FindByUsername(ctx context.Context, username string) (*User, error) {
 	start := time.Now()
 
-	user, err := s.Service.FindByUsername(ctx, username)
+	user, err := s.service.FindByUsername(ctx, username)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "FindByUsername",
 		"duration", time.Since(start),
 		"username", username,
@@ -57,12 +66,17 @@ func (s *loggingService) FindByUsername(ctx context.Context, username string) (*
 	return user, err
 }
 
+func (s *loggingService) FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error) {
+	panic("implement me")
+}
+
 func (s *loggingService) Create(ctx context.Context, user *User) (*User, error) {
 	start := time.Now()
 
-	user, err := s.Service.Create(ctx, user)
+	user, err := s.service.Create(ctx, user)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "Create",
 		"duration", time.Since(start),
 		"username", user.Username,
@@ -80,9 +94,10 @@ func (s *loggingService) Create(ctx context.Context, user *User) (*User, error) 
 func (s *loggingService) Update(ctx context.Context, user *User) (*User, error) {
 	start := time.Now()
 
-	user, err := s.Service.Update(ctx, user)
+	user, err := s.service.Update(ctx, user)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "Update",
 		"duration", time.Since(start),
 		"username", user.Username,
@@ -100,9 +115,10 @@ func (s *loggingService) Update(ctx context.Context, user *User) (*User, error) 
 func (s *loggingService) Delete(ctx context.Context, username string) error {
 	start := time.Now()
 
-	err := s.Service.Delete(ctx, username)
+	err := s.service.Delete(ctx, username)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "Delete",
 		"duration", time.Since(start),
 		"username", username,
