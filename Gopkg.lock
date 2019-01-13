@@ -374,6 +374,17 @@
   version = "v1.0.2"
 
 [[projects]]
+  digest = "1:b677221f7a16b06ce4303adf381af182ef0f83b8e5e8eb4a023f36bab41eca86"
+  name = "github.com/ory/hydra"
+  packages = [
+    "sdk/go/hydra",
+    "sdk/go/hydra/swagger",
+  ]
+  pruneopts = "NUT"
+  revision = "bdb6634e3d870918b0914f4210d95ae1872e2f51"
+  version = "v1.0.0-rc.6+oryOS.10"
+
+[[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -489,20 +500,34 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7a63ac364f430a614d797b772694f4344c6003ad44953facc730b666706f96fc"
+  digest = "1:5f8a8df87730a5c53d13ed31f608194592bceb1b384e5853b93d8ed5c52483e5"
   name = "golang.org/x/net"
   packages = [
     "context",
+    "context/ctxhttp",
     "http2",
     "http2/hpack",
     "idna",
     "internal/timeseries",
     "lex/httplex",
     "netutil",
+    "publicsuffix",
     "trace",
   ]
   pruneopts = "NUT"
   revision = "cbe0f9307d0156177f9dd5dc85da1a31abc5f2fb"
+
+[[projects]]
+  branch = "master"
+  digest = "1:5a74fa95e990c7c7a037b556413e5ea284906a20020878d4e4806d2bfe04de0e"
+  name = "golang.org/x/oauth2"
+  packages = [
+    ".",
+    "clientcredentials",
+    "internal",
+  ]
+  pruneopts = "NUT"
+  revision = "36a7019397c4c86cf59eeab3bc0d188bac444277"
 
 [[projects]]
   branch = "master"
@@ -535,6 +560,22 @@
   pruneopts = "NUT"
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
+
+[[projects]]
+  digest = "1:34c10243da5972105edd1b4b883e2bd918fbb3f73fbe14d6af6929e547173494"
+  name = "google.golang.org/appengine"
+  packages = [
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch",
+  ]
+  pruneopts = "NUT"
+  revision = "e9657d882bb81064595ca3b56cbe2546bbabf7b1"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "master"
@@ -575,6 +616,14 @@
   pruneopts = "NUT"
   revision = "8e4536a86ab602859c20df5ebfd0bd4228d08655"
   version = "v1.10.0"
+
+[[projects]]
+  digest = "1:5e3a62455328b4902b011e84d6c05a5f09e325cc1705bac7269723050e50a0f5"
+  name = "gopkg.in/resty.v1"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "03c09fa32a21b7b27b8dbb3877826c1ab3d2daa2"
+  version = "v1.11.0"
 
 [[projects]]
   digest = "1:18108594151654e9e696b27b181b953f9a90b16bf14d253dd1b397b025a1487f"
@@ -618,6 +667,7 @@
     "github.com/mattes/migrate/source/file",
     "github.com/oklog/run",
     "github.com/opentracing/opentracing-go",
+    "github.com/ory/hydra/sdk/go/hydra",
     "github.com/pkg/errors",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/stretchr/testify/assert",

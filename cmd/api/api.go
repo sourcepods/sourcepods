@@ -159,6 +159,17 @@ func apiAction(c *cli.Context) error {
 		level.Info(logger).Log("msg", "tracing is disabled, no url given")
 	}
 
+	//_, err := hydra.NewSDK(&hydra.Configuration{
+	//	AdminURL:     "https://hydra.localhost:4445",
+	//	PublicURL:    "https://hydra.localhost:4444",
+	//	ClientID:     "foo",
+	//	ClientSecret: "bar",
+	//	//Scopes:       []string{"..."},
+	//})
+	//if err != nil {
+	//	return err
+	//}
+
 	//
 	// Stores
 	//
