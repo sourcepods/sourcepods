@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gitpods/gitpods/session"
+	"github.com/gitpods/gitpods/pkg/session"
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
 	"github.com/opentracing/opentracing-go"

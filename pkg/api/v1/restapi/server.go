@@ -25,7 +25,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/net/netutil"
 
-	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations"
+	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations"
 )
 
 const (

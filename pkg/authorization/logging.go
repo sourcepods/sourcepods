@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/gitpods/gitpods/session"
-	"github.com/gitpods/gitpods/user"
+	"github.com/gitpods/gitpods/pkg/gitpods/user"
+	"github.com/gitpods/gitpods/pkg/session"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 )

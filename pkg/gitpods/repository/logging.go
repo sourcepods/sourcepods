@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/gitpods/gitpods/storage"
+	"github.com/gitpods/gitpods/pkg/storage"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 )

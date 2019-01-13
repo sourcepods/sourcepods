@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gitpods/gitpods/storage"
+	"github.com/gitpods/gitpods/pkg/storage"
 )
 
 var (

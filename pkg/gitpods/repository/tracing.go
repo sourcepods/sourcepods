@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/gitpods/gitpods/storage"
+	"github.com/gitpods/gitpods/pkg/storage"
 	"github.com/opentracing/opentracing-go"
 )
 

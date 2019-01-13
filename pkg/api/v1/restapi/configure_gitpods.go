@@ -10,9 +10,9 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations"
-	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations/repositories"
-	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations/users"
+	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations"
+	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/repositories"
+	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/users"
 )
 
 //go:generate swagger generate server --target ../../v1 --name Gitpods --spec ../../../../swagger.yaml --exclude-main

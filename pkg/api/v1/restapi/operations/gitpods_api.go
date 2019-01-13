@@ -19,8 +19,8 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations/repositories"
-	"github.com/gitpods/gitpods/internal/api/v1/restapi/operations/users"
+	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/repositories"
+	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/users"
 )
 
 // NewGitpodsAPI creates a new Gitpods instance
