@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gitpods/gitpods/cmd"
+	"github.com/gitpods/gitpods/pkg/api"
 	apiv1 "github.com/gitpods/gitpods/pkg/api/v1"
 	"github.com/gitpods/gitpods/pkg/authorization"
 	"github.com/gitpods/gitpods/pkg/gitpods/repository"
@@ -231,6 +232,7 @@ func apiAction(c *cli.Context) error {
 	//
 	router := chi.NewRouter()
 	{
+		router.Use(api.NewRequestID)
 		router.Use(cmd.NewRequestLogger(logger))
 
 		// Wrap the router inside a Router handler to make it possible to listen on / or on /api.
