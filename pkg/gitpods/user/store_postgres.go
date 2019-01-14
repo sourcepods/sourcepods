@@ -198,6 +198,7 @@ LIMIT 1;
 	}, nil
 }
 
+//FindRepositoryOwner returns the repository's owner on matching repository ID
 func (s *Postgres) FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.FindRepositoryOwner")
 	span.SetTag("repository", repositoryID)
