@@ -180,6 +180,54 @@ func init() {
         }
       }
     },
+    "/repositories/{owner}/{name}/branches": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get all branches of a repository",
+        "operationId": "getRepositoryBranches",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository's branches",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/branch"
+              }
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": [
@@ -328,6 +376,20 @@ func init() {
     }
   },
   "definitions": {
+    "branch": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "sha1": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
     "error": {
       "type": "object",
       "required": [
@@ -599,6 +661,54 @@ func init() {
         }
       }
     },
+    "/repositories/{owner}/{name}/branches": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get all branches of a repository",
+        "operationId": "getRepositoryBranches",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository's branches",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/branch"
+              }
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": [
@@ -747,6 +857,20 @@ func init() {
     }
   },
   "definitions": {
+    "branch": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "sha1": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
     "error": {
       "type": "object",
       "required": [
