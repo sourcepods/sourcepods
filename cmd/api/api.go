@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gitpods/gitpods/cmd"
+	"github.com/gitpods/gitpods/pkg/api"
 	apiv1 "github.com/gitpods/gitpods/pkg/api/v1"
 	"github.com/gitpods/gitpods/pkg/authorization"
 	"github.com/gitpods/gitpods/pkg/gitpods/repository"
@@ -210,13 +211,13 @@ func apiAction(c *cli.Context) error {
 
 	var us user.Service
 	us = user.NewService(users)
-	us = user.NewLoggingService(log.WithPrefix(logger, "service", "user"), us)
-	us = user.NewTracingService(us)
+	us = user.NewLoggingService(us, api.GetRequestID, log.WithPrefix(logger, "service", "user"))
+	us = user.NewTracingService(us, api.GetRequestID)
 
 	var rs repository.Service
 	rs = repository.NewService(repositories, storageClient)
-	rs = repository.NewLoggingService(log.WithPrefix(logger, "service", "repository"), rs)
-	rs = repository.NewTracingService(rs)
+	rs = repository.NewLoggingService(rs, api.GetRequestID, log.WithPrefix(logger, "service", "repository"))
+	rs = repository.NewTracingService(rs, api.GetRequestID)
 
 	//
 	// OpenAPI
@@ -231,7 +232,8 @@ func apiAction(c *cli.Context) error {
 	//
 	router := chi.NewRouter()
 	{
-		router.Use(cmd.NewRequestLogger(logger))
+		router.Use(api.NewRequestID)
+		router.Use(api.NewRequestLogger(logger))
 
 		// Wrap the router inside a Router handler to make it possible to listen on / or on /api.
 		// Change via APIPrefix.

@@ -431,6 +431,14 @@
   revision = "282c8707aa210456a825798969cc27edda34992a"
 
 [[projects]]
+  digest = "1:6bc0652ea6e39e22ccd522458b8bdd8665bf23bdc5a20eec90056e4dc7e273ca"
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
+
+[[projects]]
   branch = "master"
   digest = "1:ea81f81a99dcb2303dc72b64b8284684c43ef6a8a459d1a56e339df69890d24f"
   name = "github.com/stretchr/testify"
@@ -620,6 +628,7 @@
     "github.com/opentracing/opentracing-go",
     "github.com/pkg/errors",
     "github.com/prometheus/client_golang/prometheus",
+    "github.com/satori/go.uuid",
     "github.com/stretchr/testify/assert",
     "github.com/uber/jaeger-client-go",
     "github.com/uber/jaeger-client-go/config",

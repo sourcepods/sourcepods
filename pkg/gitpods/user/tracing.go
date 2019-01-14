@@ -6,17 +6,22 @@ import (
 	"github.com/opentracing/opentracing-go"
 )
 
+//TracingRequestID returns the request ID as string for tracing
+type TracingRequestID func(context.Context) string
+
 type tracingService struct {
-	service Service
+	service   Service
+	requestID TracingRequestID
 }
 
 // NewTracingService wraps the Service and provides tracing for its methods.
-func NewTracingService(s Service) Service {
-	return &tracingService{s}
+func NewTracingService(s Service, requestID TracingRequestID) Service {
+	return &tracingService{s, requestID}
 }
 
 func (s *tracingService) FindAll(ctx context.Context) ([]*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Service.FindAll")
+	span.SetTag("request", s.requestID(ctx))
 	defer span.Finish()
 
 	return s.service.FindAll(ctx)
@@ -24,6 +29,7 @@ func (s *tracingService) FindAll(ctx context.Context) ([]*User, error) {
 
 func (s *tracingService) Find(ctx context.Context, id string) (*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Service.Find")
+	span.SetTag("request", s.requestID(ctx))
 	span.SetTag("id", id)
 	defer span.Finish()
 
@@ -32,6 +38,7 @@ func (s *tracingService) Find(ctx context.Context, id string) (*User, error) {
 
 func (s *tracingService) FindByUsername(ctx context.Context, username string) (*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Service.FindByUsername")
+	span.SetTag("request", s.requestID(ctx))
 	span.SetTag("username", username)
 	defer span.Finish()
 
@@ -40,6 +47,7 @@ func (s *tracingService) FindByUsername(ctx context.Context, username string) (*
 
 func (s *tracingService) FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Service.FindRepositoryOwner")
+	span.SetTag("request", s.requestID(ctx))
 	span.SetTag("repository", repositoryID)
 	defer span.Finish()
 
@@ -48,6 +56,7 @@ func (s *tracingService) FindRepositoryOwner(ctx context.Context, repositoryID s
 
 func (s *tracingService) Create(ctx context.Context, user *User) (*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Service.Create")
+	span.SetTag("request", s.requestID(ctx))
 	span.SetTag("username", user.Username)
 	defer span.Finish()
 
@@ -56,6 +65,7 @@ func (s *tracingService) Create(ctx context.Context, user *User) (*User, error) 
 
 func (s *tracingService) Update(ctx context.Context, user *User) (*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Service.Update")
+	span.SetTag("request", s.requestID(ctx))
 	span.SetTag("id", user.ID)
 	span.SetTag("username", user.Username)
 	defer span.Finish()
@@ -65,6 +75,7 @@ func (s *tracingService) Update(ctx context.Context, user *User) (*User, error) 
 
 func (s *tracingService) Delete(ctx context.Context, username string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Service.Delete")
+	span.SetTag("request", s.requestID(ctx))
 	span.SetTag("username", username)
 	defer span.Finish()
 

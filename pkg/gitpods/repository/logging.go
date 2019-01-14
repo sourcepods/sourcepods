@@ -9,14 +9,18 @@ import (
 	"github.com/go-kit/kit/log/level"
 )
 
+//LoggingRequestID returns the request ID as string for logging
+type LoggingRequestID func(context.Context) string
+
 type loggingService struct {
-	logger  log.Logger
-	service Service
+	service   Service
+	requestID LoggingRequestID
+	logger    log.Logger
 }
 
 // NewLoggingService wraps the Service and provides logging for its methods.
-func NewLoggingService(logger log.Logger, s Service) Service {
-	return &loggingService{logger: logger, service: s}
+func NewLoggingService(s Service, requestID LoggingRequestID, logger log.Logger) Service {
+	return &loggingService{service: s, requestID: requestID, logger: logger}
 }
 
 func (s *loggingService) List(ctx context.Context, owner string) ([]*Repository, string, error) {
@@ -25,6 +29,7 @@ func (s *loggingService) List(ctx context.Context, owner string) ([]*Repository,
 	repositories, owner, err := s.service.List(ctx, owner)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "List",
 		"duration", time.Since(start),
 	)
@@ -48,6 +53,7 @@ func (s *loggingService) Find(ctx context.Context, owner string, name string) (*
 	repository, owner, err := s.service.Find(ctx, owner, name)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "Find",
 		"duration", time.Since(start),
 	)
@@ -70,6 +76,7 @@ func (s *loggingService) Create(ctx context.Context, owner string, repository *R
 	repository, err := s.service.Create(ctx, owner, repository)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "Create",
 		"duration", time.Since(start),
 	)
@@ -96,6 +103,7 @@ func (s *loggingService) Branches(ctx context.Context, owner string, name string
 	branches, err := s.service.Branches(ctx, owner, name)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "Branches",
 		"duration", time.Since(start),
 	)
@@ -123,6 +131,7 @@ func (s *loggingService) Commit(ctx context.Context, owner string, name string, 
 	commit, err := s.service.Commit(ctx, owner, name, rev)
 
 	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
 		"method", "Commit",
 		"owner", owner,
 		"name", name,
