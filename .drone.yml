@@ -24,12 +24,11 @@ steps:
   commands:
   - make test
 
-# - name: codacy
-#   image: plugins/codacy:1
-#   pull: always
-#   settings:
-#     token:
-#       from_secret: codacy
+- name: codecov
+  image: plugins/codecov
+  settings:
+    token:
+      from_secret: codecov
 
 ---
 kind: pipeline
