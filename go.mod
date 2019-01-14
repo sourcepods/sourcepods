@@ -32,6 +32,7 @@ require (
 	github.com/prometheus/client_model v0.0.0-20190109181635-f287a105a20e // indirect
 	github.com/prometheus/common v0.0.0-20190107103113-2998b132700a // indirect
 	github.com/prometheus/procfs v0.0.0-20190104112138-b1a0a9a36d74 // indirect
+	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.2.2
 	github.com/uber/jaeger-client-go v2.15.0+incompatible
 	github.com/uber/jaeger-lib v1.5.0 // indirect
