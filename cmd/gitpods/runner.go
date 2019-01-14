@@ -63,7 +63,7 @@ func (r *GitPodsRunner) Stop() {
 }
 
 func (r *GitPodsRunner) Build() error {
-	cmd := exec.Command("go", "build", "-v", "-i", "-o", "./dev/"+r.name, "./cmd/"+r.name)
+	cmd := exec.Command("go", "build", "-v", "-ldflags", "-w -extldflags '-static'", "-o", "./dev/"+r.name, "./cmd/"+r.name)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
