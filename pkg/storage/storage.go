@@ -62,13 +62,14 @@ func (s *storage) SetDescription(ctx context.Context, owner, name, description s
 	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
 }
 
-// Branches
+//Branch of a repository
 type Branch struct {
 	Name string
 	Sha1 string
 	Type string
 }
 
+//Branches returns all branches of a given repository
 func (s *storage) Branches(ctx context.Context, owner string, name string) ([]Branch, error) {
 	args := []string{"for-each-ref", "--format=%(objectname) %(objecttype) %(refname)", "refs/heads"}
 	cmd := exec.CommandContext(ctx, s.git, args...)

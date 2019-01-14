@@ -111,5 +111,6 @@ func (s *service) Branches(ctx context.Context, owner string, name string) ([]*B
 }
 
 func (s *service) Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error) {
+	// TODO: Check repository exists first
 	return s.storage.Commit(ctx, owner, name, rev)
 }
