@@ -40,7 +40,7 @@ func (s *store) Find(ctx context.Context, id string) (*User, error) {
 			return u, nil
 		}
 	}
-	return nil, NotFoundError
+	return nil, ErrNotFound
 }
 
 func (s *store) FindByUsername(ctx context.Context, username string) (*User, error) {
@@ -49,7 +49,7 @@ func (s *store) FindByUsername(ctx context.Context, username string) (*User, err
 			return u, nil
 		}
 	}
-	return nil, NotFoundError
+	return nil, ErrNotFound
 }
 
 func (s *store) FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error) {
@@ -91,7 +91,7 @@ func TestService_Find(t *testing.T) {
 
 	_, err = service.Find(context.Background(), "foobar")
 	assert.Error(t, err)
-	assert.Equal(t, NotFoundError, err)
+	assert.Equal(t, ErrNotFound, err)
 }
 
 func TestService_FindByUsername(t *testing.T) {
@@ -107,7 +107,7 @@ func TestService_FindByUsername(t *testing.T) {
 
 	_, err = service.FindByUsername(context.Background(), "foobar")
 	assert.Error(t, err)
-	assert.Equal(t, NotFoundError, err)
+	assert.Equal(t, ErrNotFound, err)
 }
 
 func TestService_Update(t *testing.T) {

@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	NotFoundError = errors.New("user not found")
+	//ErrNotFound is returned when a user was not found
+	ErrNotFound = errors.New("user not found")
 )
 
 // Service handles all interactions with users.

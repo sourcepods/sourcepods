@@ -6,6 +6,7 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
+//ValidateCreate for a new User
 func ValidateCreate(u *User) []error {
 	var errs []error
 
@@ -28,6 +29,7 @@ func ValidateCreate(u *User) []error {
 	return errs
 }
 
+//ValidateUpdate for an updated User
 func ValidateUpdate(u *User) []error {
 	var errs []error
 

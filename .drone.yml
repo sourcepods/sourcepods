@@ -11,6 +11,13 @@ workspace:
   path: src/github.com/gitpods/gitpods
 
 steps:
+- name: lint
+  image: golang:1.10
+  pull: always
+  commands:
+  - go get -u golang.org/x/lint/golint
+  - make lint
+
 - name: test
   image: golang:1.10
   pull: always

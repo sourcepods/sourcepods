@@ -48,7 +48,7 @@ func (s *loggingService) FindByUsername(ctx context.Context, username string) (*
 		"username", username,
 	)
 
-	if err != nil && err != NotFoundError {
+	if err != nil && err != ErrNotFound {
 		level.Warn(logger).Log("msg", "failed to find user by username", "err", err)
 	} else {
 		level.Debug(logger).Log()
@@ -68,7 +68,7 @@ func (s *loggingService) Create(ctx context.Context, user *User) (*User, error) 
 		"username", user.Username,
 	)
 
-	if err != nil && err != NotFoundError {
+	if err != nil && err != ErrNotFound {
 		level.Warn(logger).Log("msg", "failed to create user", "err", err)
 	} else {
 		level.Debug(logger).Log()

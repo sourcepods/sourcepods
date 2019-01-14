@@ -179,7 +179,7 @@ func GetUserHandler(us user.Service) users.GetUserHandlerFunc {
 	return func(params users.GetUserParams) middleware.Responder {
 		u, err := us.FindByUsername(params.HTTPRequest.Context(), params.Username)
 		if err != nil {
-			if err == user.NotFoundError {
+			if err == user.ErrNotFound {
 				message := "user not found"
 				return users.NewGetUserNotFound().WithPayload(&models.Error{
 					Message: &message,
@@ -197,7 +197,7 @@ func UpdateUserHandler(us user.Service) users.UpdateUserHandlerFunc {
 	return func(params users.UpdateUserParams) middleware.Responder {
 		old, err := us.FindByUsername(params.HTTPRequest.Context(), params.Username)
 		if err != nil {
-			if err == user.NotFoundError {
+			if err == user.ErrNotFound {
 				message := "user not found"
 				return users.NewUpdateUserNotFound().WithPayload(&models.Error{
 					Message: &message,

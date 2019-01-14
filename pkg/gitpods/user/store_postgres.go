@@ -95,7 +95,7 @@ LIMIT 1;
 	var updated time.Time
 	if err := row.Scan(&username, &email, &name, &password, &created, &updated); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, NotFoundError
+			return nil, ErrNotFound
 		}
 		return nil, err
 	}
@@ -140,7 +140,7 @@ LIMIT 1;
 	var updated time.Time
 	if err := row.Scan(&id, &email, &name, &password, &created, &updated); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, NotFoundError
+			return nil, ErrNotFound
 		}
 		return nil, err
 	}
@@ -198,6 +198,7 @@ LIMIT 1;
 	}, nil
 }
 
+//FindRepositoryOwner returns the repository's owner on matching repository ID
 func (s *Postgres) FindRepositoryOwner(ctx context.Context, repositoryID string) (*User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Postgres.FindRepositoryOwner")
 	span.SetTag("repository", repositoryID)
