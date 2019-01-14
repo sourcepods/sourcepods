@@ -12,15 +12,13 @@ workspace:
 
 steps:
 - name: lint
-  image: golang:1.10
-  pull: always
+  image: golang:1.11.4
   commands:
   - go get -u golang.org/x/lint/golint
   - make lint
 
 - name: test
-  image: golang:1.10
-  pull: always
+  image: golang:1.11.4
   commands:
   - make test
 
@@ -44,8 +42,7 @@ workspace:
 
 steps:
 - name: binary
-  image: golang:1.10
-  pull: always
+  image: golang:1.11.4
   commands:
   - make dev/gitpods
 
@@ -66,8 +63,7 @@ workspace:
 
 steps:
 - name: binary
-  image: golang:1.10
-  pull: always
+  image: golang:1.11.4
   commands:
   - make dev/api
 
@@ -106,8 +102,7 @@ workspace:
 
 steps:
 - name: binary
-  image: golang:1.10
-  pull: always
+  image: golang:1.11.4
   commands:
   - make dev/storage
 
@@ -160,8 +155,7 @@ steps:
     path: /root/.pub-cache
 
 - name: binary
-  image: golang:1.10
-  pull: always
+  image: golang:1.11.4
   commands:
   - make dev/ui
 
