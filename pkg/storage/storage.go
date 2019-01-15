@@ -11,6 +11,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -32,6 +34,7 @@ type (
 		SetDescription(ctx context.Context, description string) error
 		ListBranches(ctx context.Context) ([]Branch, error)
 		GetCommit(ctx context.Context, rev string) (Commit, error)
+		Tree(ctx context.Context, owner string, name string, rev string, path string) ([]TreeEntry, error)
 	}
 
 	// LocalRepository implements Repository for Local disk-access
@@ -246,4 +249,49 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 
 	// skip any excessive header-lines
 	return false, nil
+}
+
+//TreeEntry is a file or folder at a given path in a repository
+type TreeEntry struct {
+	Mode   string
+	Type   string
+	Object string
+	Path   string
+}
+
+//Tree returns the files and folders at a given rev at a path in a repository
+func (s *storage) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]TreeEntry, error) {
+	args := []string{"ls-tree", rev, path}
+	cmd := exec.CommandContext(ctx, s.git, args...)
+	cmd.Dir = filepath.Join(s.root, owner, name)
+	out, err := cmd.Output()
+	if err != nil {
+		println(string(out))
+		return nil, errors.Wrap(err, "failed to run git ls-tree")
+	}
+
+	var treeEntries []TreeEntry
+	scanner := bufio.NewScanner(bytes.NewBuffer(out))
+	for scanner.Scan() {
+		line := scanner.Text()
+		te, err := parseTreeEntry(line)
+		if err != nil {
+			return treeEntries, errors.Wrap(err, "unable to parse tree entry line")
+		}
+		treeEntries = append(treeEntries, te)
+	}
+
+	return treeEntries, nil
+}
+
+func parseTreeEntry(s string) (TreeEntry, error) {
+	tabs := strings.Split(s, "	")
+	spaces := strings.Split(tabs[0], " ")
+
+	return TreeEntry{
+		Mode:   spaces[0],
+		Type:   spaces[1],
+		Object: spaces[2],
+		Path:   tabs[1],
+	}, nil
 }

@@ -45,3 +45,23 @@ body`
 	assert.NoError(t, err)
 	assert.Equal(t, expected, commit)
 }
+
+func TestParseTreeEntry(t *testing.T) {
+	te, err := parseTreeEntry("100644 blob dc2a1e6aeb5b1cf6f71666e4beb410457bdc114b	Gopkg.lock")
+	assert.Nil(t, err)
+	assert.Equal(t, TreeEntry{
+		Mode:   "100644",
+		Type:   "blob",
+		Object: "dc2a1e6aeb5b1cf6f71666e4beb410457bdc114b",
+		Path:   "Gopkg.lock",
+	}, te)
+
+	te, err = parseTreeEntry("040000 tree da792716f0b647e79fbfbff6c2462308791a7ea7	vendor")
+	assert.Nil(t, err)
+	assert.Equal(t, TreeEntry{
+		Mode:   "040000",
+		Type:   "tree",
+		Object: "da792716f0b647e79fbfbff6c2462308791a7ea7",
+		Path:   "vendor",
+	}, te)
+}
