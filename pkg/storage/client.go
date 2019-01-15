@@ -118,3 +118,29 @@ func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, e
 		},
 	}, nil
 }
+
+func (c *Client) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]TreeEntry, error) {
+	req := &TreeRequest{
+		Owner: owner,
+		Name:  name,
+		Rev:   rev,
+		Path:  path,
+	}
+
+	res, err := c.client.Tree(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	var treeEntries []TreeEntry
+	for _, te := range res.TreeEntries {
+		treeEntries = append(treeEntries, TreeEntry{
+			Mode:   te.Mode,
+			Type:   te.Type,
+			Object: te.Object,
+			Path:   te.Path,
+		})
+	}
+
+	return treeEntries, nil
+}

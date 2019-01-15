@@ -93,3 +93,22 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 		CommitterDate:  c.Committer.Date.Unix(),
 	}, nil
 }
+
+func (s *storageServer) Tree(ctx context.Context, req *TreeRequest) (*TreeResponse, error) {
+	entries, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetRev(), req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	var treeEntryRes []*TreeEntryResponse
+	for _, e := range entries {
+		treeEntryRes = append(treeEntryRes, &TreeEntryResponse{
+			Mode:   e.Mode,
+			Type:   e.Type,
+			Object: e.Object,
+			Path:   e.Path,
+		})
+	}
+
+	return &TreeResponse{TreeEntries: treeEntryRes}, nil
+}
