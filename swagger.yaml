@@ -143,6 +143,38 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/error'
+  /repositories/{owner}/{name}/tree:
+    get:
+      summary: Get the tree including folders (tree) and files (blob) for a repository
+      operationId: getRepositoryTree
+      tags:
+        - repositories
+      parameters: # TODO: Needs query parameters like ref,path,limit
+        - in: path
+          name: owner
+          type: string
+          required: true
+          description: The owner's username
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: The repository's name
+      responses:
+        200:
+          description: The repository's tree
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/treeEntry'
+        404:
+          description: The owner and name combination could not be found
+          schema:
+            $ref: '#/definitions/error'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
   /users:
     get:
       summary: List all users
@@ -276,6 +308,22 @@ definitions:
       owner:
         type: object
         $ref: '#/definitions/user'
+  treeEntry:
+    type: object
+    required:
+      - mode
+      - type
+      - object
+      - path
+    properties:
+      mode:
+        type: string
+      type:
+        type: string
+      object:
+        type: string
+      path:
+        type: string
   user:
     type: object
     required:
