@@ -11,10 +11,14 @@ import (
 
 //go:generate protoc storage.proto --go_out=plugins=grpc:.
 
+// Client holds the gRPC-connection to the storage-server
 type Client struct {
-	client StorageClient
+	repos    RepositoryClient
+	branches BranchClient
+	commits  CommitClient
 }
 
+// NewClient returns a new Storage client.
 func NewClient(storageAddr string) (*Client, error) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
@@ -26,31 +30,35 @@ func NewClient(storageAddr string) (*Client, error) {
 	}
 
 	return &Client{
-		client: NewStorageClient(conn),
+		repos:    NewRepositoryClient(conn),
+		branches: NewBranchClient(conn),
+		commits:  NewCommitClient(conn),
 	}, nil
 }
 
-func (c *Client) Create(ctx context.Context, owner string, name string) error {
+// Create a repository
+func (c *Client) Create(ctx context.Context, owner, name string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Create")
 	span.SetTag("owner", owner)
 	span.SetTag("name", name)
 	defer span.Finish()
 
-	_, err := c.client.Create(ctx, &CreateRequest{
+	_, err := c.repos.Create(ctx, &CreateRequest{
 		Owner: owner,
 		Name:  name,
 	})
 	return err
 }
 
-func (c *Client) SetDescription(ctx context.Context, owner string, name string, description string) error {
+// SetDescription of a repository
+func (c *Client) SetDescription(ctx context.Context, owner, name, description string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Description")
 	span.SetTag("owner", owner)
 	span.SetTag("name", name)
 	span.SetTag("description", description)
 	defer span.Finish()
 
-	_, err := c.client.SetDescriptions(ctx, &SetDescriptionRequest{
+	_, err := c.repos.SetDescriptions(ctx, &SetDescriptionRequest{
 		Owner:       owner,
 		Name:        name,
 		Description: description,
@@ -58,13 +66,14 @@ func (c *Client) SetDescription(ctx context.Context, owner string, name string, 
 	return err
 }
 
-func (c *Client) Branches(ctx context.Context, owner string, name string) ([]Branch, error) {
+// Branches returns all branches of a repository
+func (c *Client) Branches(ctx context.Context, owner, name string) ([]Branch, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Branches")
 	span.SetTag("owner", owner)
 	span.SetTag("name", name)
 	defer span.Finish()
 
-	res, err := c.client.Branches(ctx, &BranchesRequest{
+	res, err := c.branches.List(ctx, &BranchesRequest{
 		Owner: owner,
 		Name:  name,
 	})
@@ -81,14 +90,15 @@ func (c *Client) Branches(ctx context.Context, owner string, name string) ([]Bra
 	return branches, err
 }
 
-func (c *Client) Commit(ctx context.Context, owner string, name string, rev string) (Commit, error) {
+// Commit returns a single commit from a given repository
+func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, error) {
 	req := &CommitRequest{
 		Owner: owner,
 		Name:  name,
 		Rev:   rev,
 	}
 
-	res, err := c.client.Commit(ctx, req)
+	res, err := c.commits.Create(ctx, req)
 	if err != nil {
 		return Commit{}, err
 	}

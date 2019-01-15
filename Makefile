@@ -5,7 +5,7 @@ GO_PKG_FILES := $(shell find ./pkg/ -name "*.go" -type f ! -name "*_test.go")
 DARTFILES := $(shell find ./ui/lib/ -name "*.dart" -type f)
 
 .PHONY: generate
-generate: apiv1
+generate: apiv1 pkg/storage/storage.pb.go
 
 .PHONY: apiv1
 apiv1: pkg/api/v1/models pkg/api/v1/restapi ui/lib/src/api
@@ -14,6 +14,9 @@ GOSWAGGER ?= docker run --rm \
 	--user=$(shell id -u $(USER)):$(shell id -g $(USER)) \
 	-v $(shell pwd):/go/src/github.com/sourcepods/sourcepods \
 	-w /go/src/github.com/sourcepods/sourcepods quay.io/goswagger/swagger:v0.18.0
+
+pkg/storage/storage.pb.go: pkg/storage/storage.proto
+	go generate ./pkg/storage/...
 
 pkg/api/v1/models pkg/api/v1/restapi: swagger.yaml
 	-rm -r pkg/api/v1/{models,restapi}

@@ -3,33 +3,42 @@ package storage
 import (
 	"context"
 
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"google.golang.org/grpc"
 )
 
-type storageServer struct {
-	storage Storage
-}
-
+// NewStorageServer returns a grpc.Server serving Storage
 func NewStorageServer(storage Storage) *grpc.Server {
 	var opts []grpc.ServerOption
 	opts = append(opts, grpc.UnaryInterceptor(grpcopentracing.UnaryServerInterceptor()))
 
 	s := grpc.NewServer(opts...)
 
-	RegisterStorageServer(s, &storageServer{storage: storage})
+	RegisterRepositoryServer(s, &repositoryServer{storage: storage})
+	RegisterBranchServer(s, &branchesServer{storage: storage})
+	RegisterCommitServer(s, &commitServer{storage: storage})
+
 	return s
 }
 
-func (s *storageServer) Create(ctx context.Context, req *CreateRequest) (*EmptyResponse, error) {
-	return &EmptyResponse{}, s.storage.Create(ctx, req.GetOwner(), req.GetName())
+type repositoryServer struct {
+	storage Storage
 }
 
-func (s *storageServer) SetDescriptions(ctx context.Context, req *SetDescriptionRequest) (*EmptyResponse, error) {
-	return &EmptyResponse{}, s.storage.SetDescription(ctx, req.GetOwner(), req.GetName(), req.GetDescription())
+func (s *repositoryServer) Create(ctx context.Context, req *CreateRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, s.storage.Create(ctx, req.GetOwner(), req.GetName())
 }
 
-func (s *storageServer) Branches(ctx context.Context, req *BranchesRequest) (*BranchesResponse, error) {
+func (s *repositoryServer) SetDescriptions(ctx context.Context, req *SetDescriptionRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, s.storage.SetDescription(ctx, req.GetOwner(), req.GetName(), req.GetDescription())
+}
+
+type branchesServer struct {
+	storage Storage
+}
+
+func (s *branchesServer) List(ctx context.Context, req *BranchesRequest) (*BranchesResponse, error) {
 	branches, err := s.storage.Branches(ctx, req.GetOwner(), req.GetName())
 	if err != nil {
 		return nil, err
@@ -47,7 +56,11 @@ func (s *storageServer) Branches(ctx context.Context, req *BranchesRequest) (*Br
 	return res, nil
 }
 
-func (s *storageServer) Commit(ctx context.Context, req *CommitRequest) (*CommitResponse, error) {
+type commitServer struct {
+	storage Storage
+}
+
+func (s *commitServer) Create(ctx context.Context, req *CommitRequest) (*CommitResponse, error) {
 	c, err := s.storage.Commit(ctx, req.GetOwner(), req.GetName(), req.GetRev())
 	if err != nil {
 		return nil, err
