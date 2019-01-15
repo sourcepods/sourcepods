@@ -38,6 +38,7 @@ func New(rs repository.Service, us user.Service) (*API, error) {
 	sourcepodsAPI.RepositoriesGetOwnerRepositoriesHandler = GetOwnerRepositoriesHandler(rs)
 	sourcepodsAPI.RepositoriesGetRepositoryBranchesHandler = GetRepositoryBranchesHandler(rs)
 	sourcepodsAPI.RepositoriesGetRepositoryHandler = GetRepositoryHandler(rs)
+	sourcepodsAPI.RepositoriesGetRepositoryTreeHandler = GetRepositoryTreeHandler(rs)
 	sourcepodsAPI.UsersGetUserHandler = GetUserHandler(us)
 	sourcepodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
 	sourcepodsAPI.UsersListUsersHandler = ListUsersHandler(us)
@@ -162,6 +163,14 @@ func GetRepositoryHandler(rs repository.Service) repositories.GetRepositoryHandl
 		}
 
 		return repositories.NewGetRepositoryOK().WithPayload(convertRepository(r))
+	}
+}
+
+func GetRepositoryTreeHandler(rs repository.Service) repositories.GetRepositoryTreeHandlerFunc {
+	return func(params repositories.GetRepositoryTreeParams) middleware.Responder {
+		// TODO: rs.Tree(...)
+		panic("implement me")
+		return nil
 	}
 }
 
