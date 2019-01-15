@@ -5,11 +5,9 @@ import (
 	"time"
 
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 )
-
-//go:generate protoc storage.proto --go_out=plugins=grpc:.
 
 // Client holds the gRPC-connection to the storage-server
 type Client struct {

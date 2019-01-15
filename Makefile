@@ -33,6 +33,9 @@ ui/lib/src/api: swagger.yaml
 	mv tmp/dart/lib ui/lib/src/api
 	-rm -rf tmp/
 
+pkg/storage/storage.pb.go: pkg/storage/storage.proto
+	protoc pkg/storage/storage.proto --go_out=plugins=grpc:.
+
 .PHONY: lint
 lint:
 	golint $(shell $(GO) list ./pkg/sourcepods/...)
