@@ -61,7 +61,7 @@ dev/api: cmd/api $(GO_PKG_FILES)
 dev/sourcepods-dev: cmd/sourcepods-dev $(GO_PKG_FILES)
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/sourcepods-dev ./cmd/sourcepods-dev
 
-dev/storage: cmd/storage $(GO_PKG_FILES)
+dev/storage: cmd/storage $(GO_PKG_FILES) pkg/storage/storage.pb.go
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/storage ./cmd/storage
 
 dev/ui: cmd/ui $(GO_PKG_FILES) ui/build dev/packr

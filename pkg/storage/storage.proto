@@ -7,6 +7,7 @@ import "google/protobuf/empty.proto";
 service Repository {
     rpc Create (CreateRequest) returns (google.protobuf.Empty);
     rpc SetDescriptions (SetDescriptionRequest) returns (google.protobuf.Empty);
+    rpc Tree (TreeRequest) returns (TreeResponse);
 }
 
 service Branch {
@@ -60,4 +61,22 @@ message CommitResponse {
     string Committer = 8;
     string CommitterEmail = 9;
     int64 CommitterDate = 10;
+}
+
+message TreeRequest {
+    string owner = 1;
+    string name = 2;
+    string rev = 3;
+    string path = 4;
+}
+
+message TreeEntryResponse {
+    string mode = 1;
+    string type = 2;
+    string object = 3;
+    string path = 4;
+}
+
+message TreeResponse {
+    repeated TreeEntryResponse treeEntries = 1;
 }
