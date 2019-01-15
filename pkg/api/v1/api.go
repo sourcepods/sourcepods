@@ -32,6 +32,7 @@ func New(rs repository.Service, us user.Service) (*API, error) {
 
 	gitpodsAPI.RepositoriesCreateRepositoryHandler = CreateRepositoryHandler(rs)
 	gitpodsAPI.RepositoriesGetOwnerRepositoriesHandler = GetOwnerRepositoriesHandler(rs)
+	gitpodsAPI.RepositoriesGetRepositoryBranchesHandler = GetRepositoryBranchesHandler(rs)
 	gitpodsAPI.RepositoriesGetRepositoryHandler = GetRepositoryHandler(rs)
 	gitpodsAPI.UsersGetUserHandler = GetUserHandler(us)
 	gitpodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
@@ -110,6 +111,35 @@ func GetOwnerRepositoriesHandler(rs repository.Service) repositories.GetOwnerRep
 		}
 
 		return repositories.NewGetOwnerRepositoriesOK().WithPayload(payload)
+	}
+}
+
+//GetRepositoryBranchesHandler gets all branches of a repository
+func GetRepositoryBranchesHandler(rs repository.Service) repositories.GetRepositoryBranchesHandlerFunc {
+	return func(params repositories.GetRepositoryBranchesParams) middleware.Responder {
+		branches, err := rs.Branches(params.HTTPRequest.Context(), params.Owner, params.Name)
+		if err != nil {
+			if err == repository.ErrRepositoryNotFound {
+				message := "repository not found"
+				return repositories.NewGetRepositoryBranchesNotFound().WithPayload(&models.Error{
+					Message: &message,
+				})
+			}
+
+			return repositories.NewGetRepositoryBranchesDefault(http.StatusInternalServerError)
+		}
+
+		var payload []*models.Branch
+
+		for _, b := range branches {
+			payload = append(payload, &models.Branch{
+				Name: b.Name,
+				Sha1: b.Sha1,
+				Type: b.Type,
+			})
+		}
+
+		return repositories.NewGetRepositoryBranchesOK().WithPayload(payload)
 	}
 }
 

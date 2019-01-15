@@ -37,6 +37,8 @@ class ApiClient {
           return value is bool ? value : '$value'.toLowerCase() == 'true';
         case 'double':
           return value is double ? value : double.parse('$value');
+        case 'Branch':
+          return new Branch.fromJson(value);
         case 'Error':
           return new Error.fromJson(value);
         case 'NewRepository':

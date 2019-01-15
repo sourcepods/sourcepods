@@ -111,6 +111,38 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/error'
+  /repositories/{owner}/{name}/branches:
+    get:
+      summary: Get all branches of a repository
+      operationId: getRepositoryBranches
+      tags:
+        - repositories
+      parameters:
+        - in: path
+          name: owner
+          type: string
+          required: true
+          description: The owner's username
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: The repository's name
+      responses:
+        200:
+          description: The repository's branches
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/branch'
+        404:
+          description: The owner and name combination could not be found
+          schema:
+            $ref: '#/definitions/error'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
   /users:
     get:
       summary: List all users
@@ -208,6 +240,15 @@ paths:
           schema:
             $ref: '#/definitions/error'
 definitions:
+  branch:
+    type: object
+    properties:
+      name:
+        type: string
+      sha1:
+        type: string
+      type:
+        type: string
   repository:
     type: object
     required:

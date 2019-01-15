@@ -5,7 +5,6 @@ import 'package:angular/angular.dart';
 import 'package:gitpods/api.dart';
 import 'package:gitpods/src/api/api.dart' as api;
 import 'package:gitpods/src/repository/repository.dart';
-import 'package:gitpods/src/repository/repository_component.dart';
 import 'package:gitpods/src/repository/repository_create_component.dart';
 
 @Injectable()
@@ -14,9 +13,14 @@ class RepositoryService {
 
   final API _api;
 
-  Future<RepositoryPage> get(String owner, String name) async {
+  Future<Repository> get(String owner, String name) async {
     api.Repository r = await _api.repositories.getRepository(owner, name);
-    return RepositoryPage(Repository.fromAPI(r));
+    return Repository.fromAPI(r);
+  }
+
+  Future<List<String>> getBranches (String owner, String name) async{
+    List<api.Branch> branches = await _api.repositories.getRepositoryBranches(owner, name);
+    return branches.map((b) => b.name).toList();
   }
 
   Future<Repository> create(

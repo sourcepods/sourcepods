@@ -87,6 +87,12 @@ func (s *service) Create(ctx context.Context, owner string, repository *Reposito
 }
 
 func (s *service) Branches(ctx context.Context, owner string, name string) ([]*Branch, error) {
+	// Check if the repository exists before requesting storage
+	_, _, err := s.repositories.Find(ctx, owner, name)
+	if err != nil { // This includes ErrRepositoryNotFound
+		return nil, err
+	}
+
 	bs, err := s.storage.Branches(ctx, owner, name)
 	if err != nil {
 		return nil, err
@@ -105,5 +111,6 @@ func (s *service) Branches(ctx context.Context, owner string, name string) ([]*B
 }
 
 func (s *service) Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error) {
+	// TODO: Check repository exists first
 	return s.storage.Commit(ctx, owner, name, rev)
 }

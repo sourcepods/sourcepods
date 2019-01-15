@@ -44,6 +44,9 @@ func configureAPI(api *operations.GitpodsAPI) http.Handler {
 	api.RepositoriesGetRepositoryHandler = repositories.GetRepositoryHandlerFunc(func(params repositories.GetRepositoryParams) middleware.Responder {
 		return middleware.NotImplemented("operation repositories.GetRepository has not yet been implemented")
 	})
+	api.RepositoriesGetRepositoryBranchesHandler = repositories.GetRepositoryBranchesHandlerFunc(func(params repositories.GetRepositoryBranchesParams) middleware.Responder {
+		return middleware.NotImplemented("operation repositories.GetRepositoryBranches has not yet been implemented")
+	})
 	api.UsersGetUserHandler = users.GetUserHandlerFunc(func(params users.GetUserParams) middleware.Responder {
 		return middleware.NotImplemented("operation users.GetUser has not yet been implemented")
 	})
