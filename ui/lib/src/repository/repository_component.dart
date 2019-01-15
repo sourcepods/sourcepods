@@ -5,7 +5,6 @@ import 'package:gitpods/src/gravatar_component.dart';
 import 'package:gitpods/src/loading_component.dart';
 import 'package:gitpods/src/repository/repository.dart';
 import 'package:gitpods/src/repository/repository_service.dart';
-import 'package:gitpods/src/repository/repository_tree.dart';
 import 'package:gitpods/src/repository/routes.dart';
 
 @Component(
@@ -31,16 +30,13 @@ class RepositoryComponent implements OnActivate {
 
   String ownerName;
   Repository repository;
-  List<RepositoryTree> tree;
 
   @override
   void onActivate(RouterState previous, RouterState current) {
     ownerName = current.parameters['owner'];
     String name = current.parameters['name'];
 
-    this._repositoryService.get(ownerName, name).then((RepositoryPage page) {
-      this.repository = page.repository;
-    });
+    _repositoryService.get(ownerName, name).then((r) => this.repository = r);
   }
 
   String userProfileUrl() =>
@@ -59,10 +55,4 @@ class RepositoryComponent implements OnActivate {
   String commitsUrl() => RoutePaths.commits.toUrl(parameters: _parameters());
 
   String settingsUrl() => RoutePaths.settings.toUrl(parameters: _parameters());
-}
-
-class RepositoryPage {
-  RepositoryPage(this.repository);
-
-  Repository repository;
 }

@@ -1,13 +1,13 @@
 <gitpods-loading *ngIf="loading"></gitpods-loading>
 
-<div class="uk-container">
+<div class="uk-container" *ngIf="loading == false">
     <div class="uk-flex-middle" uk-grid>
         <div class="uk-width-auto">
             <div class="uk-margin">
                 <div *ngIf="branches != null">
                     <select class="uk-select">
-                        <option *ngFor="let branch of branches" [selected]="defaultBranch == branch.name">
-                            {{branch.name}}
+                        <option *ngFor="let branch of branches" [selected]="defaultBranch == branch">
+                            {{branch}}
                         </option>
                     </select>
                 </div>

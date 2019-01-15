@@ -1,5 +1,7 @@
 import 'package:angular/angular.dart';
+import 'package:angular_router/angular_router.dart';
 import 'package:gitpods/src/loading_component.dart';
+import 'package:gitpods/src/repository/repository_service.dart';
 
 @Component(
   selector: 'repository-files',
@@ -8,19 +10,27 @@ import 'package:gitpods/src/loading_component.dart';
     coreDirectives,
     LoadingComponent,
   ],
+  providers: [
+    ClassProvider(RepositoryService),
+  ],
 )
-class FilesComponent {
-  String defaultBranch = 'master'; // TODO: needs to be @Input()
+class FilesComponent implements OnActivate {
+  FilesComponent(this._repositoryService);
+
+  RepositoryService _repositoryService;
 
   bool loading;
-  List<Branch> branches = [
-    new Branch('master'),
-    new Branch('develop'),
-  ];
-}
+  String defaultBranch = 'master'; // TODO: needs to be @Input()
+  List<String> branches;
 
-class Branch {
-  Branch(this.name);
+  @override
+  void onActivate(RouterState previous, RouterState current) {
+    String ownerName = current.parameters['owner'];
+    String name = current.parameters['name'];
 
-  String name;
+    _repositoryService
+        .getBranches(ownerName, name)
+        .then((branches) => this.branches = branches)
+        .whenComplete(() => this.loading = false);
+  }
 }
