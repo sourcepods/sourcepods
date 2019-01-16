@@ -17,8 +17,7 @@ import (
 )
 
 var (
-	authorLine    = regexp.MustCompile(`(.*)\s\<(.*)\>\s(\d*)`)
-	committerLine = authorLine
+	authorLine = regexp.MustCompile(`(.*)\s\<(.*)\>\s(\d*)`)
 )
 
 type (
@@ -99,6 +98,7 @@ type Commit struct {
 	Tree    string
 	Parent  string
 	Message string
+	Body    string
 
 	Author      string
 	AuthorEmail string
@@ -134,50 +134,90 @@ func parseCommit(r io.Reader, hash string) (Commit, error) {
 	}
 
 	// if true then the following lines are the subject
-	subject := false
+	hasHeader := false
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if line == "" {
-			subject = true
+		if !hasHeader {
+			var err error
+			hasHeader, err = parseHeader(&c, line)
+			if err != nil {
+				return c, err
+			}
 			continue
 		}
 
-		if subject {
+		if c.Message == "" {
 			c.Message = line
+		} else {
+			// TODO: use a string.Builder instead?
+			// TODO: handle commit signatures
+			c.Body = fmt.Sprintf("%s\n%s", c.Body, line)
 		}
+		continue
 
-		if strings.HasPrefix(line, "tree ") {
-			c.Tree = strings.TrimPrefix(line, "tree ")
-		} else if strings.HasPrefix(line, "parent ") {
-			c.Parent = strings.TrimPrefix(line, "parent ")
-		} else if strings.HasPrefix(line, "author ") {
-			line := strings.TrimPrefix(line, "author ")
-			author := authorLine.FindStringSubmatch(line)
-
-			t, err := strconv.ParseInt(author[3], 10, 64)
-			if err != nil {
-				return c, err
-			}
-
-			c.Author = author[1]
-			c.AuthorEmail = author[2]
-			c.AuthorDate = time.Unix(t, 0)
-		} else if strings.HasPrefix(line, "committer ") {
-			line := strings.TrimPrefix(line, "committer ")
-			committer := committerLine.FindStringSubmatch(line)
-
-			t, err := strconv.ParseInt(committer[3], 10, 64)
-			if err != nil {
-				return c, err
-			}
-
-			c.Committer = committer[1]
-			c.CommitterEmail = committer[2]
-			c.CommitterDate = time.Unix(t, 0)
-		}
 	}
 
 	return c, nil
+}
+
+// returns true when it's passed the header
+func parseHeader(c *Commit, line string) (bool, error) {
+	const (
+		treePrefix      = "tree "
+		parentPrefix    = "parent "
+		authorPrefix    = "author "
+		committerPrefix = "committer "
+	)
+
+	if line == "" {
+		return true, nil
+	}
+	if strings.HasPrefix(line, treePrefix) {
+		c.Tree = strings.TrimPrefix(line, treePrefix)
+		return false, nil
+	}
+
+	if strings.HasPrefix(line, parentPrefix) {
+		c.Parent = strings.TrimPrefix(line, parentPrefix)
+		return false, nil
+	}
+
+	if strings.HasPrefix(line, authorPrefix) {
+		var err error
+		line := strings.TrimPrefix(line, authorPrefix)
+
+		c.Author, c.AuthorEmail, c.AuthorDate, err = splitAuthorLine(line)
+		if err != nil {
+			// This should probably just error out, and not return a partial commit...
+			return false, err
+		}
+		return false, nil
+	}
+
+	if strings.HasPrefix(line, committerPrefix) {
+		var err error
+		line := strings.TrimPrefix(line, committerPrefix)
+		c.Committer, c.CommitterEmail, c.CommitterDate, err = splitAuthorLine(line)
+		if err != nil {
+			// This should probably just error out, and not return a partial commit...
+			return false, err
+		}
+
+		return false, nil
+	}
+
+	return false, nil
+}
+
+func splitAuthorLine(line string) (string, string, time.Time, error) {
+	committer := authorLine.FindStringSubmatch(line)
+
+	t, err := strconv.ParseInt(committer[3], 10, 64)
+	if err != nil {
+		return "", "", time.Unix(0, 0), err
+	}
+
+	return committer[1], committer[2], time.Unix(t, 0), nil
 }

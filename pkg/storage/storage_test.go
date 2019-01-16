@@ -13,7 +13,12 @@ parent ae51e9d1b987f9086cbc65e694f06759bc62e743
 author First Lastname <first.lastname@example.com> 1505935797 -0700
 committer First Lastname <first.lastname@example.com> 1505935797 -0700
 
-do something very useful to conquer the world`
+do something very useful to conquer the world
+
+my
+awesome
+
+body`
 
 	commit, err := parseCommit(bytes.NewBufferString(foo), "99cc2f794893815dfc69ab1ba3370ef3e7a9fed2")
 	assert.NoError(t, err)
@@ -24,4 +29,8 @@ do something very useful to conquer the world`
 	assert.Equal(t, "first.lastname@example.com", commit.AuthorEmail)
 	assert.Equal(t, int64(1505935797), commit.AuthorDate.Unix())
 	assert.Equal(t, "do something very useful to conquer the world", commit.Message)
+	assert.Equal(t, "First Lastname", commit.Committer)
+	assert.Equal(t, "first.lastname@example.com", commit.CommitterEmail)
+	assert.Equal(t, int64(1505935797), commit.CommitterDate.Unix())
+	assert.Equal(t, "\n\nmy\nawesome\n\nbody", commit.Body)
 }
