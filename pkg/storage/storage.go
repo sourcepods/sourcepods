@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	authorLine = regexp.MustCompile(`(.*)\s\<(.*)\>\s(\d*)`)
+	authorLine = regexp.MustCompile(`(.*)\s\<(.*)\>\s(\d*)\s([\+-]\d*)`)
 )
 
 type (
@@ -93,6 +93,7 @@ func (s *storage) Branches(ctx context.Context, owner string, name string) ([]Br
 	return bs, nil
 }
 
+// Author holds the information given
 type Author struct {
 	Name  string
 	Email string
@@ -104,13 +105,30 @@ func parseAuthor(line string) (Author, error) {
 
 	t, err := strconv.ParseInt(committer[3], 10, 64)
 	if err != nil {
-		return Author{}, nil
+		return Author{}, err
+	}
+
+	tu := time.Unix(t, 0).In(time.UTC)
+
+	// Gracefully stolen from https://github.com/src-d/go-git/blob/434611b74cb54538088c6aeed4ed27d3044064fa/plumbing/object/object.go#L141-L149
+	//
+	// Include a dummy year in this time.Parse() call to avoid a bug in Go:
+	// https://github.com/golang/go/issues/19750
+	//
+	// Parsing the timezone with no other details causes the tl.Location() call
+	// below to return time.Local instead of the parsed zone in some cases
+	if len(committer) >= 5 {
+		tl, err := time.Parse("2006 -0700", "1970 "+committer[4])
+		if err != nil {
+			return Author{}, err
+		}
+		tu = tu.In(tl.Location())
 	}
 
 	return Author{
 		Name:  committer[1],
 		Email: committer[2],
-		Date:  time.Unix(t, 0),
+		Date:  tu,
 	}, nil
 }
 

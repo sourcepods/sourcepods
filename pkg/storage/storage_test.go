@@ -28,12 +28,12 @@ body`
 		Author: Author{
 			Name:  "First Lastname",
 			Email: "first.lastname@example.com",
-			Date:  time.Unix(1505935797, 0),
+			Date:  time.Unix(1505935797, 0).In(time.FixedZone("", -25200)),
 		},
 		Committer: Author{
 			Name:  "Second Lastname",
 			Email: "second.lastname@example.com",
-			Date:  time.Unix(1505935797, 0),
+			Date:  time.Unix(1505935797, 0).In(time.FixedZone("", -25200)),
 		},
 		Message: "do something very useful to conquer the world",
 		Body:    "my\nawesome\n\nbody",
