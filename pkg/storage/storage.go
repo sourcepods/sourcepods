@@ -93,6 +93,27 @@ func (s *storage) Branches(ctx context.Context, owner string, name string) ([]Br
 	return bs, nil
 }
 
+type Author struct {
+	Name  string
+	Email string
+	Date  time.Time
+}
+
+func parseAuthor(line string) (Author, error) {
+	committer := authorLine.FindStringSubmatch(line)
+
+	t, err := strconv.ParseInt(committer[3], 10, 64)
+	if err != nil {
+		return Author{}, nil
+	}
+
+	return Author{
+		Name:  committer[1],
+		Email: committer[2],
+		Date:  time.Unix(t, 0),
+	}, nil
+}
+
 type Commit struct {
 	Hash    string
 	Tree    string
@@ -100,13 +121,9 @@ type Commit struct {
 	Message string
 	Body    string
 
-	Author      string
-	AuthorEmail string
-	AuthorDate  time.Time
+	Author Author
 
-	Committer      string
-	CommitterEmail string
-	CommitterDate  time.Time
+	Committer Author
 }
 
 func (s *storage) Commit(ctx context.Context, owner string, name string, rev string) (Commit, error) {
@@ -188,7 +205,7 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 		var err error
 		line := strings.TrimPrefix(line, authorPrefix)
 
-		c.Author, c.AuthorEmail, c.AuthorDate, err = splitAuthorLine(line)
+		c.Author, err = parseAuthor(line)
 		if err != nil {
 			// This should probably just error out, and not return a partial commit...
 			return false, err
@@ -199,7 +216,8 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 	if strings.HasPrefix(line, committerPrefix) {
 		var err error
 		line := strings.TrimPrefix(line, committerPrefix)
-		c.Committer, c.CommitterEmail, c.CommitterDate, err = splitAuthorLine(line)
+
+		c.Committer, err = parseAuthor(line)
 		if err != nil {
 			// This should probably just error out, and not return a partial commit...
 			return false, err
@@ -209,15 +227,4 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 	}
 
 	return false, nil
-}
-
-func splitAuthorLine(line string) (string, string, time.Time, error) {
-	committer := authorLine.FindStringSubmatch(line)
-
-	t, err := strconv.ParseInt(committer[3], 10, 64)
-	if err != nil {
-		return "", "", time.Unix(0, 0), err
-	}
-
-	return committer[1], committer[2], time.Unix(t, 0), nil
 }

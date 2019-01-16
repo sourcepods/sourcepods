@@ -94,15 +94,19 @@ func (c *Client) Commit(ctx context.Context, owner string, name string, rev stri
 	}
 
 	return Commit{
-		Hash:           res.GetHash(),
-		Tree:           res.GetTree(),
-		Parent:         res.GetParent(),
-		Message:        res.GetMessage(),
-		Author:         res.GetAuthor(),
-		AuthorEmail:    res.GetAuthorEmail(),
-		AuthorDate:     time.Unix(res.GetAuthorDate(), 0),
-		Committer:      res.GetCommitter(),
-		CommitterEmail: res.GetCommitterEmail(),
-		CommitterDate:  time.Unix(res.GetCommitterDate(), 0),
+		Hash:    res.GetHash(),
+		Tree:    res.GetTree(),
+		Parent:  res.GetParent(),
+		Message: res.GetMessage(),
+		Author: Author{
+			Name:  res.GetAuthor(),
+			Email: res.GetAuthorEmail(),
+			Date:  time.Unix(res.GetAuthorDate(), 0),
+		},
+		Committer: Author{
+			Name:  res.GetCommitter(),
+			Email: res.GetCommitterEmail(),
+			Date:  time.Unix(res.GetCommitterDate(), 0),
+		},
 	}, nil
 }
