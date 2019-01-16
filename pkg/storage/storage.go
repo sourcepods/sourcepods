@@ -141,7 +141,7 @@ func parseCommit(r io.Reader, hash string) (Commit, error) {
 
 		if !hasHeader {
 			var err error
-			hasHeader, err = parseHeader(&c, line)
+			hasHeader, err = parseCommitHeader(&c, line)
 			if err != nil {
 				return c, err
 			}
@@ -163,7 +163,7 @@ func parseCommit(r io.Reader, hash string) (Commit, error) {
 }
 
 // returns true when it's passed the header
-func parseHeader(c *Commit, line string) (bool, error) {
+func parseCommitHeader(c *Commit, line string) (bool, error) {
 	const (
 		treePrefix      = "tree "
 		parentPrefix    = "parent "
