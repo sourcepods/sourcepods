@@ -13,6 +13,7 @@ func TestParseCommit(t *testing.T) {
 parent ae51e9d1b987f9086cbc65e694f06759bc62e743
 author First Lastname <first.lastname@example.com> 1505935797 -0700
 committer Second Lastname <second.lastname@example.com> 1505935797 -0700
+something Foobar
 
 do something very useful to conquer the world
 

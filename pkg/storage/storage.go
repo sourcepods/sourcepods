@@ -228,5 +228,6 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 		return false, nil
 	}
 
+	// skip any excessive header-lines
 	return false, nil
 }
