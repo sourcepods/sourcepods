@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -19,18 +20,24 @@ my
 awesome
 
 body`
-
+	expected := Commit{
+		Hash:   "99cc2f794893815dfc69ab1ba3370ef3e7a9fed2",
+		Tree:   "40279100b292dd26bfda150adf1c4fd5a4e52ffe",
+		Parent: "ae51e9d1b987f9086cbc65e694f06759bc62e743",
+		Author: Author{
+			Name:  "First Lastname",
+			Email: "first.lastname@example.com",
+			Date:  time.Unix(1505935797, 0),
+		},
+		Committer: Author{
+			Name:  "Second Lastname",
+			Email: "second.lastname@example.com",
+			Date:  time.Unix(1505935797, 0),
+		},
+		Message: "do something very useful to conquer the world",
+		Body:    "my\nawesome\n\nbody",
+	}
 	commit, err := parseCommit(bytes.NewBufferString(foo), "99cc2f794893815dfc69ab1ba3370ef3e7a9fed2")
 	assert.NoError(t, err)
-	assert.Equal(t, "99cc2f794893815dfc69ab1ba3370ef3e7a9fed2", commit.Hash)
-	assert.Equal(t, "40279100b292dd26bfda150adf1c4fd5a4e52ffe", commit.Tree)
-	assert.Equal(t, "ae51e9d1b987f9086cbc65e694f06759bc62e743", commit.Parent)
-	assert.Equal(t, "First Lastname", commit.Author.Name)
-	assert.Equal(t, "first.lastname@example.com", commit.Author.Email)
-	assert.Equal(t, int64(1505935797), commit.Author.Date.Unix())
-	assert.Equal(t, "Second Lastname", commit.Committer.Name)
-	assert.Equal(t, "second.lastname@example.com", commit.Committer.Email)
-	assert.Equal(t, int64(1505935797), commit.Committer.Date.Unix())
-	assert.Equal(t, "do something very useful to conquer the world", commit.Message)
-	assert.Equal(t, "my\nawesome\n\nbody", commit.Body)
+	assert.Equal(t, expected, commit)
 }
