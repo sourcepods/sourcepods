@@ -167,14 +167,16 @@ func parseCommit(r io.Reader, hash string) (Commit, error) {
 
 		if c.Message == "" {
 			c.Message = line
-		} else {
-			// TODO: use a string.Builder instead?
-			// TODO: handle commit signatures
-			c.Body = fmt.Sprintf("%s\n%s", c.Body, line)
+			continue
 		}
-		continue
 
+		// TODO: use a string.Builder instead?
+		// TODO: handle commit signatures
+		c.Body = fmt.Sprintf("%s\n%s", c.Body, line)
 	}
+
+	// Trim excessive stringing new lines
+	c.Body = strings.TrimLeft(c.Body, "\n")
 
 	return c, nil
 }

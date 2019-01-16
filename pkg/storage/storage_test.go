@@ -32,5 +32,5 @@ body`
 	assert.Equal(t, "second.lastname@example.com", commit.Committer.Email)
 	assert.Equal(t, int64(1505935797), commit.Committer.Date.Unix())
 	assert.Equal(t, "do something very useful to conquer the world", commit.Message)
-	assert.Equal(t, "\n\nmy\nawesome\n\nbody", commit.Body)
+	assert.Equal(t, "my\nawesome\n\nbody", commit.Body)
 }
