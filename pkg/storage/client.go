@@ -119,6 +119,7 @@ func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, e
 	}, nil
 }
 
+//Tree returns the files and folders at a given rev at a path in a repository
 func (c *Client) Tree(ctx context.Context, owner, name, rev, path string) ([]TreeEntry, error) {
 	req := &TreeRequest{
 		Owner: owner,
