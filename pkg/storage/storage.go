@@ -289,8 +289,14 @@ func (s *storage) Tree(ctx context.Context, owner, name, rev, path string) ([]Tr
 }
 
 func parseTreeEntry(s string) (TreeEntry, error) {
-	tabs := strings.Split(s, "	")
+	tabs := strings.Split(s, "\t")
+	if len(tabs) != 2 {
+		return TreeEntry{}, errors.New("expected 2 tab separated inputs")
+	}
 	spaces := strings.Split(tabs[0], " ")
+	if len(spaces) != 3 {
+		return TreeEntry{}, errors.New("expected 3 space separated inputs")
+	}
 
 	return TreeEntry{
 		Mode:   spaces[0],
