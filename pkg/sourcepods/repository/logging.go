@@ -150,3 +150,30 @@ func (s *loggingService) Commit(ctx context.Context, owner string, name string, 
 
 	return commit, err
 }
+
+func (s *loggingService) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error) {
+	start := time.Now()
+
+	tree, err := s.service.Tree(ctx, owner, name, rev, path)
+
+	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
+		"method", "Tree",
+		"owner", owner,
+		"name", name,
+		"rev", rev,
+		"path", path,
+		"duration", time.Since(start),
+	)
+
+	if err != nil && err != ErrRepositoryNotFound {
+		level.Warn(logger).Log(
+			"msg", "failed to get the tree for repository",
+			"err", err,
+		)
+	} else {
+		level.Debug(logger).Log()
+	}
+
+	return tree, err
+}

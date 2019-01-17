@@ -168,9 +168,35 @@ func GetRepositoryHandler(rs repository.Service) repositories.GetRepositoryHandl
 
 func GetRepositoryTreeHandler(rs repository.Service) repositories.GetRepositoryTreeHandlerFunc {
 	return func(params repositories.GetRepositoryTreeParams) middleware.Responder {
-		// TODO: rs.Tree(...)
-		panic("implement me")
-		return nil
+		tree, err := rs.Tree(
+			params.HTTPRequest.Context(),
+			params.Owner,
+			params.Name,
+			"master", // TODO: Add query parameter with default
+			".",      // TODO: Add query parameter with default
+		)
+		if err != nil {
+			if err == repository.ErrRepositoryNotFound {
+				message := "repository not found"
+				return repositories.NewGetRepositoryTreeNotFound().WithPayload(&models.Error{
+					Message: &message,
+				})
+			}
+			return repositories.NewGetRepositoryTreeDefault(http.StatusInternalServerError)
+		}
+
+		var payload []*models.TreeEntry
+		for _, te := range tree {
+			te := te
+			payload = append(payload, &models.TreeEntry{
+				Mode:   &te.Mode,
+				Object: &te.Object,
+				Path:   &te.Path,
+				Type:   &te.Type,
+			})
+		}
+
+		return repositories.NewGetRepositoryTreeOK().WithPayload(payload)
 	}
 }
 

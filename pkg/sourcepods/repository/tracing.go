@@ -69,3 +69,15 @@ func (s *tracingService) Commit(ctx context.Context, owner string, name string, 
 
 	return s.service.Commit(ctx, owner, name, rev)
 }
+
+func (s *tracingService) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Service.Tree")
+	span.SetTag("request", s.requestID(ctx))
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("rev", rev)
+	span.SetTag("path", path)
+	defer span.Finish()
+
+	return s.service.Tree(ctx, owner, name, rev, path)
+}

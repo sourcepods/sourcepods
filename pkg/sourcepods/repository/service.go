@@ -32,6 +32,7 @@ type (
 		SetDescription(ctx context.Context, owner, name, description string) error
 		Branches(ctx context.Context, owner string, name string) ([]storage.Branch, error)
 		Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error)
+		Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error)
 	}
 
 	// Service to interact with repositories.
@@ -41,6 +42,7 @@ type (
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
 		Branches(ctx context.Context, owner string, name string) ([]*Branch, error)
 		Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error)
+		Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error)
 	}
 
 	service struct {
@@ -88,6 +90,7 @@ func (s *service) Create(ctx context.Context, owner string, repository *Reposito
 
 func (s *service) Branches(ctx context.Context, owner string, name string) ([]*Branch, error) {
 	// Check if the repository exists before requesting storage
+	// TODO: This should probably become a middleware implementation of the interface for all storage calls.
 	_, _, err := s.repositories.Find(ctx, owner, name)
 	if err != nil { // This includes ErrRepositoryNotFound
 		return nil, err
@@ -113,4 +116,15 @@ func (s *service) Branches(ctx context.Context, owner string, name string) ([]*B
 func (s *service) Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error) {
 	// TODO: Check repository exists first
 	return s.storage.Commit(ctx, owner, name, rev)
+}
+
+func (s *service) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error) {
+	// Check if the repository exists before requesting storage
+	// TODO: This should probably become a middleware implementation of the interface for all storage calls.
+	_, _, err := s.repositories.Find(ctx, owner, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.storage.Tree(ctx, owner, name, rev, path)
 }
