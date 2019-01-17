@@ -1,4 +1,6 @@
-GO := CGO_ENABLED=0 go
+GOFLAGS := -mod=vendor
+GO := GOFLAGS=$(GOFLAGS) GO111MODULE=on CGO_ENABLED=0 go
+GOTEST := GOFLAGS=$(GOFLAGS) GO111MODULE=on CGO_ENABLED=1 go # -race needs cgo
 
 .PHONY: generate
 generate: apiv1
@@ -28,11 +30,19 @@ ui/lib/src/api: swagger.yaml
 
 .PHONY: lint
 lint:
-	golint $(shell go list ./pkg/gitpods/...)
+	golint $(shell $(GO) list ./pkg/gitpods/...)
+
+.PHONY: check-vendor
+check-vendor:
+	$(GO) mod tidy
+	$(GO) mod vendor
+	git update-index --refresh
+	git diff-index --quiet HEAD
+
 
 .PHONY: test
 test:
-	go test -coverprofile coverage.out -race -v ./... # -race needs Cgo
+	$(GOTEST) test -coverprofile coverage.out -race -v ./...
 
 .PHONY: build
 build: dev/api dev/gitpods dev/storage dev/ui
