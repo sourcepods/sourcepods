@@ -30,11 +30,15 @@ ui/lib/src/api: swagger.yaml
 
 .PHONY: lint
 lint:
+	golint $(shell $(GO) list ./pkg/gitpods/...)
+
+.PHONY: check-vendor
+check-vendor:
 	$(GO) mod tidy
 	$(GO) mod vendor
 	git update-index --refresh
 	git diff-index --quiet HEAD
-	golint $(shell $(GO) list ./pkg/gitpods/...)
+
 
 .PHONY: test
 test:

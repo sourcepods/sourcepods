@@ -15,7 +15,7 @@ steps:
   image: golang:1.11.4
   commands:
   - go get -u golang.org/x/lint/golint
-  - make lint
+  - make check-vendor lint
 
 - name: test
   image: golang:1.11.4
