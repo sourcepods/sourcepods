@@ -47,7 +47,7 @@ message BranchesResponse {
 message CommitRequest {
     string owner = 1;
     string name = 2;
-    string rev = 3;
+    string ref = 3;
 }
 
 message CommitResponse {
@@ -66,7 +66,7 @@ message CommitResponse {
 message TreeRequest {
     string owner = 1;
     string name = 2;
-    string rev = 3;
+    string ref = 3;
     string path = 4;
 }
 

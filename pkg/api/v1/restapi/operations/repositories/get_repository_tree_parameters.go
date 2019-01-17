@@ -45,10 +45,10 @@ type GetRepositoryTreeParams struct {
 	  In: query
 	*/
 	Path *string
-	/*The rev for the tree
+	/*The ref for the tree
 	  In: query
 	*/
-	Rev *string
+	Ref *string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -77,8 +77,8 @@ func (o *GetRepositoryTreeParams) BindRequest(r *http.Request, route *middleware
 		res = append(res, err)
 	}
 
-	qRev, qhkRev, _ := qs.GetOK("rev")
-	if err := o.bindRev(qRev, qhkRev, route.Formats); err != nil {
+	qRef, qhkRef, _ := qs.GetOK("ref")
+	if err := o.bindRef(qRef, qhkRef, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -136,8 +136,8 @@ func (o *GetRepositoryTreeParams) bindPath(rawData []string, hasKey bool, format
 	return nil
 }
 
-// bindRev binds and validates parameter Rev from query.
-func (o *GetRepositoryTreeParams) bindRev(rawData []string, hasKey bool, formats strfmt.Registry) error {
+// bindRef binds and validates parameter Ref from query.
+func (o *GetRepositoryTreeParams) bindRef(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
@@ -149,7 +149,7 @@ func (o *GetRepositoryTreeParams) bindRev(rawData []string, hasKey bool, formats
 		return nil
 	}
 
-	o.Rev = &raw
+	o.Ref = &raw
 
 	return nil
 }

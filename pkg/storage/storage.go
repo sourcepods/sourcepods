@@ -34,7 +34,7 @@ type (
 		SetDescription(ctx context.Context, description string) error
 		ListBranches(ctx context.Context) ([]Branch, error)
 		GetCommit(ctx context.Context, rev string) (Commit, error)
-		Tree(ctx context.Context, owner string, name string, rev string, path string) ([]TreeEntry, error)
+		Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error)
 	}
 
 	// LocalRepository implements Repository for Local disk-access
@@ -145,8 +145,8 @@ type Commit struct {
 }
 
 // GetCommit returns a single Commit from a Repository
-func (r *LocalRepository) GetCommit(ctx context.Context, rev string) (Commit, error) {
-	args := []string{"cat-file", "-p", rev}
+func (r *LocalRepository) GetCommit(ctx context.Context, ref string) (Commit, error) {
+	args := []string{"cat-file", "-p", ref}
 	cmd := exec.CommandContext(ctx, r.git, args...)
 	cmd.Dir = r.path
 	out, err := cmd.Output()
@@ -154,7 +154,7 @@ func (r *LocalRepository) GetCommit(ctx context.Context, rev string) (Commit, er
 		return Commit{}, err
 	}
 
-	commit, err := parseCommit(bytes.NewBuffer(out), rev)
+	commit, err := parseCommit(bytes.NewBuffer(out), ref)
 	if err != nil {
 		return commit, err
 	}
@@ -259,9 +259,9 @@ type TreeEntry struct {
 	Path   string
 }
 
-//Tree returns the files and folders at a given rev at a path in a repository
-func (s *storage) Tree(ctx context.Context, owner, name, rev, path string) ([]TreeEntry, error) {
-	args := []string{"ls-tree", rev, path}
+//Tree returns the files and folders at a given ref at a path in a repository
+func (s *storage) Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
+	args := []string{"ls-tree", ref, path}
 	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = filepath.Join(s.root, owner, name)
 	out, err := cmd.StdoutPipe()

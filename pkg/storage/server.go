@@ -75,7 +75,7 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 	if err != nil {
 		return nil, grpc.Errorf(codes.NotFound, "%v", err)
 	}
-	c, err := repo.GetCommit(ctx, req.GetRev())
+	c, err := repo.GetCommit(ctx, req.GetRef())
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, "%v", err)
 	}
@@ -95,7 +95,7 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 }
 
 func (s *storageServer) Tree(ctx context.Context, req *TreeRequest) (*TreeResponse, error) {
-	entries, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetRev(), req.GetPath())
+	entries, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetRef(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}

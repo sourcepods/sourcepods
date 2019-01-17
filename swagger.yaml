@@ -161,9 +161,9 @@ paths:
           required: true
           description: The repository's name
         - in: query
-          name: rev
+          name: ref
           type: string
-          description: The rev for the tree
+          description: The ref for the tree
         - in: query
           name: path
           type: string

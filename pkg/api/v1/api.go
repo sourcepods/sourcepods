@@ -170,8 +170,8 @@ func GetRepositoryHandler(rs repository.Service) repositories.GetRepositoryHandl
 func GetRepositoryTreeHandler(rs repository.Service) repositories.GetRepositoryTreeHandlerFunc {
 	return func(params repositories.GetRepositoryTreeParams) middleware.Responder {
 		rev := "master" // TODO: lookup default branch in database
-		if params.Rev != nil {
-			rev = *params.Rev
+		if params.Ref != nil {
+			rev = *params.Ref
 		}
 
 		path := "." // Use root as path by default

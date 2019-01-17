@@ -18,7 +18,7 @@ type GetRepositoryTreeURL struct {
 	Owner string
 
 	Path *string
-	Rev  *string
+	Ref  *string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -76,12 +76,12 @@ func (o *GetRepositoryTreeURL) Build() (*url.URL, error) {
 		qs.Set("path", path)
 	}
 
-	var rev string
-	if o.Rev != nil {
-		rev = *o.Rev
+	var ref string
+	if o.Ref != nil {
+		ref = *o.Ref
 	}
-	if rev != "" {
-		qs.Set("rev", rev)
+	if ref != "" {
+		qs.Set("ref", ref)
 	}
 
 	_result.RawQuery = qs.Encode()

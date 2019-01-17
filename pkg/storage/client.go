@@ -89,11 +89,11 @@ func (c *Client) Branches(ctx context.Context, owner, name string) ([]Branch, er
 }
 
 // Commit returns a single commit from a given repository
-func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, error) {
+func (c *Client) Commit(ctx context.Context, owner string, name string, ref string) (Commit, error) {
 	req := &CommitRequest{
 		Owner: owner,
 		Name:  name,
-		Rev:   rev,
+		Ref:   ref,
 	}
 
 	res, err := c.commits.Get(ctx, req)
@@ -119,12 +119,12 @@ func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, e
 	}, nil
 }
 
-//Tree returns the files and folders at a given rev at a path in a repository
-func (c *Client) Tree(ctx context.Context, owner, name, rev, path string) ([]TreeEntry, error) {
+//Tree returns the files and folders at a given ref at a path in a repository
+func (c *Client) Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
 	req := &TreeRequest{
 		Owner: owner,
 		Name:  name,
-		Rev:   rev,
+		Ref:   ref,
 		Path:  path,
 	}
 

@@ -252,8 +252,8 @@ func init() {
           },
           {
             "type": "string",
-            "description": "The rev for the tree",
-            "name": "rev",
+            "description": "The ref for the tree",
+            "name": "ref",
             "in": "query"
           },
           {
@@ -816,8 +816,8 @@ func init() {
           },
           {
             "type": "string",
-            "description": "The rev for the tree",
-            "name": "rev",
+            "description": "The ref for the tree",
+            "name": "ref",
             "in": "query"
           },
           {
