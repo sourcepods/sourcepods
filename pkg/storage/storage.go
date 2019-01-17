@@ -264,14 +264,18 @@ func (s *storage) Tree(ctx context.Context, owner, name, rev, path string) ([]Tr
 	args := []string{"ls-tree", rev, path}
 	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = filepath.Join(s.root, owner, name)
-	out, err := cmd.Output()
+	out, err := cmd.StdoutPipe()
 	if err != nil {
-		println(string(out))
+		return nil, errors.Wrap(err, "failed to run git ls-tree")
+	}
+	if err = cmd.Start(); err != nil {
 		return nil, errors.Wrap(err, "failed to run git ls-tree")
 	}
 
+	// TODO: The scanner takes unbounded inputs. This could cause OOMs
+
 	var treeEntries []TreeEntry
-	scanner := bufio.NewScanner(bytes.NewBuffer(out))
+	scanner := bufio.NewScanner(out)
 	for scanner.Scan() {
 		line := scanner.Text()
 		te, err := parseTreeEntry(line)
