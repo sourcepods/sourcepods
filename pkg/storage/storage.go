@@ -260,7 +260,7 @@ type TreeEntry struct {
 }
 
 //Tree returns the files and folders at a given rev at a path in a repository
-func (s *storage) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]TreeEntry, error) {
+func (s *storage) Tree(ctx context.Context, owner, name, rev, path string) ([]TreeEntry, error) {
 	args := []string{"ls-tree", rev, path}
 	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = filepath.Join(s.root, owner, name)

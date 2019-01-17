@@ -151,7 +151,7 @@ func (s *loggingService) Commit(ctx context.Context, owner string, name string, 
 	return commit, err
 }
 
-func (s *loggingService) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error) {
+func (s *loggingService) Tree(ctx context.Context, owner, name, rev, path string) ([]storage.TreeEntry, error) {
 	start := time.Now()
 
 	tree, err := s.service.Tree(ctx, owner, name, rev, path)

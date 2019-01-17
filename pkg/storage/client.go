@@ -119,7 +119,7 @@ func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, e
 	}, nil
 }
 
-func (c *Client) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]TreeEntry, error) {
+func (c *Client) Tree(ctx context.Context, owner, name, rev, path string) ([]TreeEntry, error) {
 	req := &TreeRequest{
 		Owner: owner,
 		Name:  name,

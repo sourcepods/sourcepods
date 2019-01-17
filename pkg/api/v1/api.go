@@ -166,6 +166,7 @@ func GetRepositoryHandler(rs repository.Service) repositories.GetRepositoryHandl
 	}
 }
 
+//GetRepositoryTreeHandler gets a repository's tree for a given rev and path
 func GetRepositoryTreeHandler(rs repository.Service) repositories.GetRepositoryTreeHandlerFunc {
 	return func(params repositories.GetRepositoryTreeParams) middleware.Responder {
 		rev := "master" // TODO: lookup default branch in database

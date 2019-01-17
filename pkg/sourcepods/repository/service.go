@@ -118,6 +118,7 @@ func (s *service) Commit(ctx context.Context, owner string, name string, rev str
 	return s.storage.Commit(ctx, owner, name, rev)
 }
 
+//Tree returns the git tree for the repository at a given rev and path
 func (s *service) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error) {
 	// Check if the repository exists before requesting storage
 	// TODO: This should probably become a middleware implementation of the interface for all storage calls.
