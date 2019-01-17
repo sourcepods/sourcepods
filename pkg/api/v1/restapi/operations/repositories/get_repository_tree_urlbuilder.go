@@ -17,6 +17,9 @@ type GetRepositoryTreeURL struct {
 	Name  string
 	Owner string
 
+	Path *string
+	Rev  *string
+
 	_basePath string
 	// avoid unkeyed usage
 	_ struct{}
@@ -62,6 +65,26 @@ func (o *GetRepositoryTreeURL) Build() (*url.URL, error) {
 		_basePath = "/v1"
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	var path string
+	if o.Path != nil {
+		path = *o.Path
+	}
+	if path != "" {
+		qs.Set("path", path)
+	}
+
+	var rev string
+	if o.Rev != nil {
+		rev = *o.Rev
+	}
+	if rev != "" {
+		qs.Set("rev", rev)
+	}
+
+	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }

@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -40,6 +41,14 @@ type GetRepositoryTreeParams struct {
 	  In: path
 	*/
 	Owner string
+	/*The path for the tree
+	  In: query
+	*/
+	Path *string
+	/*The rev for the tree
+	  In: query
+	*/
+	Rev *string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -51,6 +60,8 @@ func (o *GetRepositoryTreeParams) BindRequest(r *http.Request, route *middleware
 
 	o.HTTPRequest = r
 
+	qs := runtime.Values(r.URL.Query())
+
 	rName, rhkName, _ := route.Params.GetOK("name")
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
@@ -58,6 +69,16 @@ func (o *GetRepositoryTreeParams) BindRequest(r *http.Request, route *middleware
 
 	rOwner, rhkOwner, _ := route.Params.GetOK("owner")
 	if err := o.bindOwner(rOwner, rhkOwner, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qPath, qhkPath, _ := qs.GetOK("path")
+	if err := o.bindPath(qPath, qhkPath, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qRev, qhkRev, _ := qs.GetOK("rev")
+	if err := o.bindRev(qRev, qhkRev, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -93,6 +114,42 @@ func (o *GetRepositoryTreeParams) bindOwner(rawData []string, hasKey bool, forma
 	// Parameter is provided by construction from the route
 
 	o.Owner = raw
+
+	return nil
+}
+
+// bindPath binds and validates parameter Path from query.
+func (o *GetRepositoryTreeParams) bindPath(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Path = &raw
+
+	return nil
+}
+
+// bindRev binds and validates parameter Rev from query.
+func (o *GetRepositoryTreeParams) bindRev(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Rev = &raw
 
 	return nil
 }

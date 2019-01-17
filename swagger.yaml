@@ -160,6 +160,14 @@ paths:
           type: string
           required: true
           description: The repository's name
+        - in: query
+          name: rev
+          type: string
+          description: The rev for the tree
+        - in: query
+          name: path
+          type: string
+          description: The path for the tree
       responses:
         200:
           description: The repository's tree

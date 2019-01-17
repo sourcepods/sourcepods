@@ -249,6 +249,18 @@ func init() {
             "name": "name",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "description": "The rev for the tree",
+            "name": "rev",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The path for the tree",
+            "name": "path",
+            "in": "query"
           }
         ],
         "responses": {
@@ -801,6 +813,18 @@ func init() {
             "name": "name",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "description": "The rev for the tree",
+            "name": "rev",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The path for the tree",
+            "name": "path",
+            "in": "query"
           }
         ],
         "responses": {

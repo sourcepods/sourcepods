@@ -224,7 +224,7 @@ class RepositoriesApi {
   /// Get the tree including folders (tree) and files (blob) for a repository
   ///
   /// 
-  Future<List<TreeEntry>> getRepositoryTree(String owner, String name) async {
+  Future<List<TreeEntry>> getRepositoryTree(String owner, String name, { String rev, String path }) async {
     Object postBody = null;
 
     // verify required params are set
@@ -242,6 +242,12 @@ class RepositoriesApi {
     List<QueryParam> queryParams = [];
     Map<String, String> headerParams = {};
     Map<String, String> formParams = {};
+    if(rev != null) {
+      queryParams.addAll(_convertParametersForCollectionFormat("", "rev", rev));
+    }
+    if(path != null) {
+      queryParams.addAll(_convertParametersForCollectionFormat("", "path", path));
+    }
     
     List<String> contentTypes = ["application/json"];
 
