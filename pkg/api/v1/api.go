@@ -30,6 +30,10 @@ func New(rs repository.Service, us user.Service) (*API, error) {
 
 	gitpodsAPI := operations.NewGitpodsAPI(swaggerSpec)
 
+	gitpodsAPI.Middleware = func(b middleware.Builder) http.Handler {
+		return middleware.Spec("", nil, gitpodsAPI.Context().RoutesHandler(b))
+	}
+
 	gitpodsAPI.RepositoriesCreateRepositoryHandler = CreateRepositoryHandler(rs)
 	gitpodsAPI.RepositoriesGetOwnerRepositoriesHandler = GetOwnerRepositoriesHandler(rs)
 	gitpodsAPI.RepositoriesGetRepositoryBranchesHandler = GetRepositoryBranchesHandler(rs)
