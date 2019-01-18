@@ -23,8 +23,10 @@ require (
 	github.com/gobuffalo/packr v1.10.4
 	github.com/golang/protobuf v1.2.0
 	github.com/google/jsonapi v0.0.0-20170708005851-46d3ced04344
+	github.com/gorilla/websocket v1.4.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v0.0.0-20180108155640-d0c54e68681e
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/koding/websocketproxy v0.0.0-20181220232114-7ed82d81a28c // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v0.0.0-20180201184707-88edab080323
 	github.com/mattes/migrate v3.0.1+incompatible

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gitpods/gitpods/cmd"
+	"github.com/koding/websocketproxy"
 	"github.com/oklog/run"
 	"github.com/urfave/cli"
 )
@@ -245,18 +247,26 @@ func devAction(c *cli.Context) error {
 				return true
 			}
 
+			addr := "localhost:3011"
+
 			director := func(r *http.Request) {
 				if redirect(r.URL.Path) {
 					r.URL.Path = "/"
 				}
 				r.URL.Scheme = "http"
-				r.URL.Host = "localhost:3011"
+				r.URL.Host = addr
 			}
+
+			wsURL, _ := url.Parse("ws://" + addr)
+			ws := websocketproxy.NewProxy(wsURL)
 
 			server := &http.Server{
 				Addr: ":3010",
-				Handler: &httputil.ReverseProxy{
-					Director: director,
+				Handler: proxy{
+					reverse: &httputil.ReverseProxy{
+						Director: director,
+					},
+					websocket: ws,
 				},
 			}
 
@@ -271,6 +281,21 @@ func devAction(c *cli.Context) error {
 	}
 
 	return g.Run()
+}
+
+type proxy struct {
+	reverse   *httputil.ReverseProxy
+	websocket *websocketproxy.WebsocketProxy
+}
+
+func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Upgrade") == "websocket" {
+		r.Header.Del("Origin")
+		p.websocket.ServeHTTP(w, r)
+		return
+	}
+
+	p.reverse.ServeHTTP(w, r)
 }
 
 func ensureUIContainer() error {
