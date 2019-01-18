@@ -5,7 +5,7 @@
         <div class="uk-width-auto">
             <div class="uk-margin">
                 <div *ngIf="branches != null">
-                    <select class="uk-select">
+                    <select class="uk-select" [(ngModel)]="currentBranch" (change)="changeBranch">
                         <option *ngFor="let branch of branches" [selected]="defaultBranch == branch">
                             {{branch}}
                         </option>
@@ -16,27 +16,31 @@
     </div>
 </div>
 
-<!--<div *ngIf="tree != null">-->
-    <!--<div class="uk-container">-->
-        <!--<div uk-grid>-->
-            <!--<div class="uk-width-1-4">-->
-                <!--<ul class="uk-list uk-list-divider" style="overflow: auto;">-->
-                    <!--<li *ngFor="let element of tree">-->
-                        <!--<span uk-icon="icon: chevron-right" *ngIf="element.type == 'tree'"></span>-->
-                        <!--{{ element.file }}-->
-                    <!--</li>-->
-                <!--</ul>-->
-            <!--</div>-->
-            <!--<div class="uk-width-3-4 uk-text-center" style="border: 1px solid #e5e5e5; padding-top: 64px">-->
-                <!--<span uk-icon="icon: git-branch; ratio: 5"></span>-->
-                <!--<h3>Open a file</h3>-->
-            <!--</div>-->
-        <!--</div>-->
-    <!--</div>-->
-<!--</div>-->
-
-<!--<div *ngIf="tree == null">-->
-    <!--<div class="uk-container">-->
-        <!--<h4>Please push something to the repository!</h4>-->
-    <!--</div>-->
-<!--</div>-->
+<div class="uk-container" style="margin-top: 20px;">
+    <table class="uk-table uk-table-small uk-table-divider uk-table-hover">
+        <thead>
+        <tr>
+            <th class="uk-table-shrink" style="width: 32px;"></th>
+            <th>Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let entry of folders">
+            <td>
+                <span uk-icon="icon: folder" class="folder"></span>
+            </td>
+            <td>
+                <a (click)="changePath">{{ entry.path }}</a>
+            </td>
+        </tr>
+        <tr *ngFor="let entry of files">
+            <td>
+                <span uk-icon="icon: file"></span>
+            </td>
+            <td>
+                <a (click)="changePath">{{ entry.path }}</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
