@@ -42,7 +42,7 @@ You can check migrated data in Cockroach Console on [localhost:8080](http://loca
 ## Creating user
 
 ```bash
-./dev/api users create --email admin@localhost.com --username admin --name Admin --password password
+./dev/api users create --email admin@localhost.com --username admin --name Admin --password password --database-dsn=postgres://root@localhost:26257/gitpods?sslmode=disable
 ```
 
 After running server application you can sign to UI via entered email and password.
