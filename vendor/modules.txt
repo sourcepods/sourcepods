@@ -68,6 +68,8 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/google/jsonapi v0.0.0-20170708005851-46d3ced04344
 github.com/google/jsonapi
+# github.com/gorilla/websocket v1.4.0
+github.com/gorilla/websocket
 # github.com/grpc-ecosystem/go-grpc-middleware v0.0.0-20180108155640-d0c54e68681e
 github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing
 github.com/grpc-ecosystem/go-grpc-middleware
@@ -75,6 +77,8 @@ github.com/grpc-ecosystem/go-grpc-middleware/tags
 github.com/grpc-ecosystem/go-grpc-middleware/util/metautils
 # github.com/jessevdk/go-flags v1.4.0
 github.com/jessevdk/go-flags
+# github.com/koding/websocketproxy v0.0.0-20181220232114-7ed82d81a28c
+github.com/koding/websocketproxy
 # github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
 github.com/kr/logfmt
 # github.com/lib/pq v0.0.0-20180201184707-88edab080323
