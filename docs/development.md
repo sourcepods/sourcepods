@@ -31,6 +31,22 @@ If you simply want to compile all binaries you can use:
 gitpods build
 ```
 
+## Installing migrations
+
+```bash
+./dev/api db migrate --migrations-path ./schema/cockroach/ --database-dsn=postgres://root@localhost:26257/gitpods?sslmode=disable
+```
+
+You can check migrated data in Cockroach Console on [localhost:8080](http://localhost:8080/).
+
+## Creating user
+
+```bash
+./dev/api users create --email admin@localhost.com --username admin --name Admin --password password
+```
+
+After running server application you can sign to UI via entered email and password.
+
 ## During Development
 
 We have created a wrapper to run all components of GitPods at once, and also shut them down at once.
@@ -38,7 +54,6 @@ We have created a wrapper to run all components of GitPods at once, and also shu
 ```bash
 gitpods dev
 ```
-
 
 This will start Caddy as a proxy on [localhost:3000](http://localhost:3000).
 It will proxy all requests to the UI component (or the dart development server if enabled)
