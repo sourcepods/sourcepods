@@ -285,6 +285,10 @@ func (s *storage) Tree(ctx context.Context, owner, name, ref, path string) ([]Tr
 		treeEntries = append(treeEntries, te)
 	}
 
+	if err := cmd.Wait(); err != nil {
+		return nil, errors.Wrap(err, "failed to wait for command to finish")
+	}
+
 	return treeEntries, nil
 }
 
