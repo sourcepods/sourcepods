@@ -92,7 +92,7 @@ wait a second and hit the endpoint again with the newest version of it running.
 
 #### Tracing
 
-GitPods has built-in support for OpenTracing and [Jeager](https://grpc.io/) is the default tracing backend.
+GitPods has built-in support for OpenTracing and [Jeager](https://www.jaegertracing.io/) is the default tracing backend.
 You can start a Jaeger all-in-one container for local development by following their guide:  
 https://www.jaegertracing.io/docs/1.8/getting-started/#all-in-one
 
