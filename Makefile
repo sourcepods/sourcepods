@@ -50,8 +50,8 @@ build: dev/api dev/gitpods dev/storage dev/ui
 dev/api: cmd/api pkg
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/api ./cmd/api
 
-dev/gitpods: cmd/gitpods-dev pkg
-	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/gitpods ./cmd/gitpods
+dev/gitpods-dev: cmd/gitpods-dev pkg
+	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/gitpods-dev ./cmd/gitpods-dev
 
 dev/storage: cmd/storage pkg
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/storage ./cmd/storage

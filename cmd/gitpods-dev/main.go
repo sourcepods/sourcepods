@@ -10,21 +10,15 @@ import (
 func main() {
 	app := cli.NewApp()
 
-	app.Name = "gitpods"
+	app.Name = "gitpods-dev"
+	app.Usage = "Runs gitpods on you local development machine"
+	app.Flags = devFlags
+	app.Action = devAction
 
 	app.Commands = []cli.Command{{
-		Name:   "build",
-		Action: buildAction,
-	}, {
-		Name:   "dev",
-		Usage:  "Runs gitpods on you local development machine",
-		Action: devAction,
-		Flags:  devFlags,
-		Subcommands: []cli.Command{{
-			Name:   "setup",
-			Usage:  "Sets up all the things necessary for developing gitpods",
-			Action: devSetupAction,
-		}},
+		Name:   "setup",
+		Usage:  "Sets up all the things necessary for developing gitpods",
+		Action: devSetupAction,
 	}}
 
 	if err := app.Run(os.Args); err != nil {
