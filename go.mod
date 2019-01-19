@@ -10,7 +10,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.7
-	github.com/go-chi/chi v3.3.2+incompatible
+	github.com/go-chi/chi v4.0.0+incompatible
 	github.com/go-kit/kit v0.8.0
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
 	github.com/go-openapi/errors v0.18.0
