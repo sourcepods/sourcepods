@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 // GitPodsRunner builds, runs, stops and restarts GitPods.
@@ -43,16 +47,35 @@ func (r *GitPodsRunner) Run() error {
 			go func() {
 				r.cmd = exec.Command("./dev/" + r.name)
 				r.cmd.Env = r.env
-				r.cmd.Stdin = os.Stdin
-				r.cmd.Stdout = os.Stdout
-				r.cmd.Stderr = os.Stderr
-				r.cmd.Run()
+				stdout, err := r.cmd.StdoutPipe()
+				if err != nil {
+					return
+				}
+				stderr, err := r.cmd.StderrPipe()
+				if err != nil {
+					return
+				}
+
+				multi := io.MultiReader(stdout, stderr)
+
+				if r.cmd.Start() != nil {
+					return
+				}
+
+				scanner := bufio.NewScanner(multi)
+
+				for scanner.Scan() {
+					fmt.Printf("%s\t%s\n", color.HiBlueString(r.name), scanner.Text())
+				}
+
+				if err = r.cmd.Wait(); err != nil {
+					return
+				}
 			}()
 		} else {
 			return nil
 		}
 	}
-	return nil
 }
 
 func (r *GitPodsRunner) Stop() {
@@ -89,11 +112,28 @@ type CaddyRunner struct {
 
 func (r *CaddyRunner) Run() error {
 	r.cmd = exec.Command(filepath.Join(".", "dev", "caddy"), "-conf", "./dev/Caddyfile")
-	r.cmd.Stdin = os.Stdin
-	r.cmd.Stdout = os.Stdout
-	r.cmd.Stderr = os.Stderr
+	stdout, err := r.cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	stderr, err := r.cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
 
-	return r.cmd.Run()
+	multi := io.MultiReader(stdout, stderr)
+
+	if err := r.cmd.Start(); err != nil {
+		return err
+	}
+
+	scanner := bufio.NewScanner(multi)
+
+	for scanner.Scan() {
+		fmt.Printf("%s\t%s\n", color.HiBlueString("caddy"), scanner.Text())
+	}
+
+	return r.cmd.Wait()
 }
 
 func (r *CaddyRunner) Stop() {

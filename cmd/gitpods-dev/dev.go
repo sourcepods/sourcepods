@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -206,14 +208,30 @@ func devAction(c *cli.Context) error {
 		{
 			c := exec.Command("webdev", "serve", "--hot-reload", "web:3011")
 			g.Add(func() error {
-				c.Dir = "ui"
-				c.Stdout = os.Stdout
-				c.Stderr = os.Stderr
-				c.Stdin = os.Stdin
-
 				color.HiGreen("starting dart")
 
-				return c.Run()
+				c.Dir = "ui"
+				stdout, err := c.StdoutPipe()
+				if err != nil {
+					return err
+				}
+				stderr, err := c.StderrPipe()
+				if err != nil {
+					return err
+				}
+
+				multi := io.MultiReader(stdout, stderr)
+
+				if err := c.Start(); err != nil {
+					return err
+				}
+
+				scanner := bufio.NewScanner(multi)
+				for scanner.Scan() {
+					fmt.Printf("%s\t%s\n", color.HiBlueString("dart"), scanner.Text())
+				}
+
+				return c.Wait()
 			}, func(err error) {
 				color.HiYellow("stopping dart")
 				if c == nil || c.Process == nil {
