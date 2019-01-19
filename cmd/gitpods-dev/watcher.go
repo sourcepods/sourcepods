@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
+	"github.com/fatih/color"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -48,9 +48,9 @@ func (w *FileWatcher) Watch() {
 		case event := <-watcher.Events:
 			if event.Op != fsnotify.Chmod && event.Name != "" {
 				for _, restarter := range w.Restarters {
-					start := time.Now()
+					color.HiYellow("rebuilding %s\n", restarter.Name())
 					if err := restarter.Build(); err == nil { // only notify and log if binary was created successfully.
-						log.Printf("built a new %s in %v\n", restarter.Name(), time.Since(start))
+						color.HiYellow("restarting %s", restarter.Name())
 						restarter.Restart()
 					}
 				}

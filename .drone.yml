@@ -30,7 +30,7 @@ steps:
 
 ---
 kind: pipeline
-name: gitpods
+name: gitpods-dev
 
 platform:
   os: linux
@@ -44,7 +44,7 @@ steps:
 - name: binary
   image: golang:1.11.4
   commands:
-  - make dev/gitpods
+  - make dev/gitpods-dev
 
 depends_on:
 - testing
