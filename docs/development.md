@@ -1,27 +1,39 @@
 # Development
 
-GitPods is written in Go and Dart.
-All backend, server-side components are in Go, and all the web UI is written with AngularDart.
+GitPods is written in [Go](https://golang.org/) and [Dart](https://www.dartlang.org/).
+All backend server-side components are in Go and the web UI is written with AngularDart.
 
-Please make sure to have both Go and Dart installed, as well as Docker running.
+Please make sure to have both Go and Dart installed.  
+For development you also need to have [Docker](https://docs.docker.com/install/) running.
 
 ## Setting up
 
 First clone gitpods to `$GOPATH/src/github.com/gitpods/gitpods` and then change into the directory.
-Next you should compile the gitpods binary itself, which will help you setup all other components.
+This is not 100% necessary anymore, as we now use [Go modules](https://github.com/golang/go/wiki/Modules)
+but should make life easier for everyone when debugging a problem with the maintainers.
+
+### gitpods-dev
+
+GitPods ships with a development binary called `gitpods-dev`.
+During development this binary will help you run all components concurrently
+(api, storage, ui and a [Caddy](http://caddyserver.com) as reverse proxy).
+It also helps to enable a feature with one command line flag with all
+components at once (it forwards these flags).
 
 ```bash
-go install -v ./cmd/gitpods
+make dev/gitpods-dev
 ```
 
-_Note: Make sure to have `$GOPATH/bin` in your `$PATH`_.
-
-Now we can use that binary to setup our database (Cockroach) with docker and
-pull down all dart dependencies and Caddy, as a development proxy:
+Now we can use that binary to setup all external dependencies,
+like our database (Cockroach) which will be run as a Docker container.
+It will also pull down all Dart dependencies by running `pub get` and
+download a Caddy binary into `./dev/caddy` to be used a proxy during development:
 
 ```bash
-gitpods dev setup
+./dev/gitpods-dev setup
 ```
+
+## Begin with development
 
 ## Compiling the binaries
 
