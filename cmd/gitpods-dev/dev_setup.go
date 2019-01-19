@@ -18,6 +18,9 @@ import (
 
 	"github.com/fatih/color"
 	_ "github.com/lib/pq"
+	"github.com/mattes/migrate"
+	_ "github.com/mattes/migrate/database/postgres"
+	_ "github.com/mattes/migrate/source/file"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
@@ -79,21 +82,44 @@ func setupCockroach() error {
 
 	color.Blue("waiting for container cockroach to start")
 
-	db, err := sql.Open("postgres", "postgresql://root@localhost:26257?sslmode=disable")
+	dsn := "postgres://root@localhost:26257?sslmode=disable"
+
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	time.Sleep(15 * time.Second)
-
-	if err = db.Ping(); err != nil {
-		return err
+	for {
+		if _, err := db.Query(`SELECT 1;`); err == nil {
+			break
+		}
+		time.Sleep(time.Second)
 	}
 
 	color.Blue("creating gitpods database if not exists")
+
 	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS gitpods;")
 	if err != nil {
+		return err
+	}
+
+	// Now talking to gitpods database directly
+	dsn = "postgres://root@localhost:26257/gitpods?sslmode=disable"
+
+	path, err := filepath.Abs("./schema/cockroach")
+	if err != nil {
+		return err
+	}
+
+	mig, err := migrate.New("file://"+path, dsn)
+	if err != nil {
+		return err
+	}
+
+	color.Blue("migrating gitpods to latest version")
+
+	if err = mig.Up(); err != nil && err != migrate.ErrNoChange {
 		return err
 	}
 
