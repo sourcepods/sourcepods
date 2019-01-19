@@ -58,11 +58,11 @@ func (s *storageServer) Commit(ctx context.Context, req *CommitRequest) (*Commit
 		Tree:           c.Tree,
 		Parent:         c.Parent,
 		Message:        c.Message,
-		Author:         c.Author,
-		AuthorEmail:    c.AuthorEmail,
-		AuthorDate:     c.AuthorDate.Unix(),
-		Committer:      c.Committer,
-		CommitterEmail: c.CommitterEmail,
-		CommitterDate:  c.CommitterDate.Unix(),
+		Author:         c.Author.Name,
+		AuthorEmail:    c.Author.Email,
+		AuthorDate:     c.Author.Date.Unix(),
+		Committer:      c.Committer.Name,
+		CommitterEmail: c.Committer.Email,
+		CommitterDate:  c.Committer.Date.Unix(),
 	}, nil
 }
