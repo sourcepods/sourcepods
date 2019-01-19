@@ -210,8 +210,12 @@ func devAction(c *cli.Context) error {
 				c.Stdout = os.Stdout
 				c.Stderr = os.Stderr
 				c.Stdin = os.Stdin
+
+				color.HiGreen("starting dart")
+
 				return c.Run()
 			}, func(err error) {
+				color.HiYellow("stopping dart")
 				if c == nil || c.Process == nil {
 					return
 				}
