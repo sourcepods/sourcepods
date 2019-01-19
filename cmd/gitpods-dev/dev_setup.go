@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -55,6 +56,11 @@ func devSetupAction(c *cli.Context) error {
 }
 
 func setupCockroach() error {
+	databaseData, err := filepath.Abs("./dev/database")
+	if err != nil {
+		return err
+	}
+
 	name := "gitpods-cockroach"
 	args := []string{
 		"run", "-d",
@@ -62,10 +68,11 @@ func setupCockroach() error {
 		"--publish", "8080:8080",
 		"--publish", "26257:26257",
 		"--restart", "always",
+		"-v", databaseData + ":/cockroach/cockroach-data",
 		"cockroachdb/cockroach:v2.1.3",
 		"start", "--insecure",
 	}
-	err := ensureContainer(name, args)
+	err = ensureContainer(name, args)
 	if err != nil {
 		return err
 	}
