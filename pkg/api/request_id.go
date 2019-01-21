@@ -15,7 +15,7 @@ type contextValue string
 
 const contextReqID contextValue = "request_id"
 
-//NewRequestID creates a middleware that passes X-Request-ID via contenxt or creates a new ID
+//NewRequestID creates a middleware that passes X-Request-ID via context or creates a new ID
 func NewRequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := r.Header.Get("X-Request-ID")
