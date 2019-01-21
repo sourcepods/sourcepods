@@ -1,8 +1,6 @@
-# gitpods
+# SourcePods 
 
-[![Join the chat at https://gitter.im/gitpods/gitpods](https://badges.gitter.im/gitpods/gitpods.svg)](https://gitter.im/gitpods/gitpods?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://cloud.drone.io/api/badges/sourcepods/sourcepods/status.svg)](https://cloud.drone.io/sourcepods/sourcepods)
+[![Discord](https://img.shields.io/discord/528206666299342848.svg)](https://discord.gg/rrsRwxD)
 
-Access via three things:
- * UI
- * API
- * CLI
+SourcePods is a Kubernetes-first git hosting provider written in Go and AngularDart.
