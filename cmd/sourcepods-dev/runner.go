@@ -12,27 +12,27 @@ import (
 	"github.com/fatih/color"
 )
 
-// GitPodsRunner builds, runs, stops and restarts GitPods.
-type GitPodsRunner struct {
+// Runner builds, runs, stops and restarts SourcePods.
+type Runner struct {
 	name    string
 	env     []string
 	cmd     *exec.Cmd
 	restart chan bool
 }
 
-func NewGitPodsRunner(name string, env []string) *GitPodsRunner {
-	return &GitPodsRunner{
+func NewRunner(name string, env []string) *Runner {
+	return &Runner{
 		name:    name,
 		env:     env,
 		restart: make(chan bool, 16),
 	}
 }
 
-func (r *GitPodsRunner) Name() string {
+func (r *Runner) Name() string {
 	return r.name
 }
 
-func (r *GitPodsRunner) Run() error {
+func (r *Runner) Run() error {
 	if err := r.Build(); err == nil {
 		r.restart <- true
 	}
@@ -78,14 +78,14 @@ func (r *GitPodsRunner) Run() error {
 	}
 }
 
-func (r *GitPodsRunner) Stop() {
+func (r *Runner) Stop() {
 	if r.cmd == nil || r.cmd.Process == nil {
 		return
 	}
 	r.cmd.Process.Kill()
 }
 
-func (r *GitPodsRunner) Build() error {
+func (r *Runner) Build() error {
 	cmd := exec.Command("make", "dev/"+r.name)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -96,11 +96,11 @@ func (r *GitPodsRunner) Build() error {
 	return cmd.Run()
 }
 
-func (r *GitPodsRunner) Restart() {
+func (r *Runner) Restart() {
 	r.restart <- true
 }
 
-func (r *GitPodsRunner) Shutdown() {
+func (r *Runner) Shutdown() {
 	close(r.restart)
 	r.Stop()
 }

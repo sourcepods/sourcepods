@@ -47,13 +47,13 @@ test:
 	$(GOTEST) test -coverprofile coverage.out -race -v ./...
 
 .PHONY: build
-build: dev/api dev/gitpods-dev dev/storage dev/ui
+build: dev/api dev/sourcepods-dev dev/storage dev/ui
 
 dev/api: cmd/api $(GO_PKG_FILES)
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/api ./cmd/api
 
-dev/gitpods-dev: cmd/gitpods-dev $(GO_PKG_FILES)
-	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/gitpods-dev ./cmd/gitpods-dev
+dev/sourcepods-dev: cmd/sourcepods-dev $(GO_PKG_FILES)
+	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/sourcepods-dev ./cmd/sourcepods-dev
 
 dev/storage: cmd/storage $(GO_PKG_FILES)
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/storage ./cmd/storage

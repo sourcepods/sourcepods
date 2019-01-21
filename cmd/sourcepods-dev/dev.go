@@ -106,11 +106,11 @@ func devAction(c *cli.Context) error {
 		return err
 	}
 	if !exists {
-		color.HiRed("Development folder ./dev doesn't exists. Run gitpods dev setup first")
+		color.HiRed("Development folder ./dev doesn't exists. Run `sourcepods-dev setup` first")
 		return nil
 	}
 
-	uiRunner := NewGitPodsRunner("ui", []string{
+	uiRunner := NewRunner("ui", []string{
 		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, uiAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvAPIURL, "http://localhost:3000/api"), // TODO
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
@@ -118,7 +118,7 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
 	})
 
-	apiRunner := NewGitPodsRunner("api", []string{
+	apiRunner := NewRunner("api", []string{
 		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, apiAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSNFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvMigrationsPath, "./schema/postgres"),
@@ -130,7 +130,7 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
 	})
 
-	storageRunner := NewGitPodsRunner("storage", []string{
+	storageRunner := NewRunner("storage", []string{
 		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, storageAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
 		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
@@ -321,7 +321,7 @@ func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func ensureUIContainer() error {
-	name := "gitpods-ui"
+	name := "sourcepods-ui"
 	args := []string{"run", "-d", "-p=3010:3010", "--name=" + name, "gitpods/ui:latest"}
 	return ensureContainer(name, args)
 }

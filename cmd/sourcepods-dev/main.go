@@ -10,14 +10,14 @@ import (
 func main() {
 	app := cli.NewApp()
 
-	app.Name = "gitpods-dev"
-	app.Usage = "Runs gitpods on you local development machine"
+	app.Name = "sourcepods-dev"
+	app.Usage = "Runs sourcepods on you local development machine"
 	app.Flags = devFlags
 	app.Action = devAction
 
 	app.Commands = []cli.Command{{
 		Name:   "setup",
-		Usage:  "Sets up all the things necessary for developing gitpods",
+		Usage:  "Sets up all the things necessary for developing sourcepods",
 		Action: devSetupAction,
 	}}
 

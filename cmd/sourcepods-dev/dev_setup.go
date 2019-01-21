@@ -64,7 +64,7 @@ func setupCockroach() error {
 		return err
 	}
 
-	name := "gitpods-cockroach"
+	name := "sourcepods-cockroach"
 	args := []string{
 		"run", "-d",
 		"--name", name,
@@ -97,7 +97,7 @@ func setupCockroach() error {
 		time.Sleep(time.Second)
 	}
 
-	color.Blue("creating gitpods database if not exists")
+	color.Blue("creating sourcepods database if not exists")
 
 	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS gitpods;")
 	if err != nil {
@@ -117,7 +117,7 @@ func setupCockroach() error {
 		return err
 	}
 
-	color.Blue("migrating gitpods to latest version")
+	color.Blue("migrating sourcepods to latest version")
 
 	if err = mig.Up(); err != nil && err != migrate.ErrNoChange {
 		return err
