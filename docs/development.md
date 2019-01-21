@@ -1,6 +1,6 @@
 # Development
 
-GitPods is written in [Go](https://golang.org/) and [Dart](https://www.dartlang.org/).
+SourcePods is written in [Go](https://golang.org/) and [Dart](https://www.dartlang.org/).
 All backend server-side components are in Go and the web UI is written with AngularDart.
 
 Please make sure to have both Go and Dart installed.  
@@ -8,20 +8,20 @@ For development you also need to have [Docker](https://docs.docker.com/install/)
 
 ## Setting up
 
-First clone gitpods to `$GOPATH/src/github.com/gitpods/gitpods` and then change into the directory.
+First clone SourcePods to `$GOPATH/src/github.com/sourcepods/sourcepods` and then change into the directory.
 This is not 100% necessary anymore, as we now use [Go modules](https://github.com/golang/go/wiki/Modules)
 but should make life easier for everyone when debugging a problem with the maintainers.
 
-### gitpods-dev
+### sourcepods-dev
 
-GitPods ships with a development binary called `gitpods-dev`.
+SourcePods ships with a development binary called `sourcepods-dev`.
 During development this binary will help you run all components concurrently
 (api, storage, ui and a [Caddy](http://caddyserver.com) as reverse proxy).
 It also helps to enable a feature with one command line flag with all
 components at once (it forwards these flags).
 
 ```bash
-make dev/gitpods-dev
+make dev/sourcepods-dev
 ```
 
 Now we can use that binary to setup all external dependencies,
@@ -33,7 +33,7 @@ After starting Cockroach as database the command will run all migrations.
 You can check if the tables were successfully created in the Cockroach Console on [localhost:8080](http://localhost:8080/).
 
 ```bash
-./dev/gitpods-dev setup
+./dev/sourcepods-dev setup
 ```
 
 ### Creating user
@@ -61,16 +61,16 @@ After running server application you can sign to UI via entered email and passwo
 ### During Development
 
 ```bash
-./dev/gitpods-dev
+./dev/sourcepods-dev
 ```
 
 To make life easier when developing on an application that is composed of multiple components,
-we have created a wrapper to run all components of GitPods at once.
+we have created a wrapper to run all components of SourcePods at once.
 This will start `dev/api`, `dev/storage`, `dev/ui` (by default it start the UI in docker though)
 and Caddy as reverse proxy in front of it all.
 Once you Ctrl+C and quite the command, it will gracefully shut down all components.
 
-Check [localhost:3000](http://localhost:3000) and you show find a running instance of GitPods running on your machine.
+Check [localhost:3000](http://localhost:3000) and you show find a running instance of SourcePods running on your machine.
 
 It will proxy all requests to the UI component (which can be in a container, the `./dev/ui` binary, or Dart's development server)
 and all requests starting with `/api` will be proxied to the API component.
@@ -78,13 +78,13 @@ Additionally the storage component is running to serves the API via [gRPC](https
 
 #### Live reloading Go binaries
 
-The `gitpods-dev` command has a flag to enable watching all Go files in the project's folders.
+The `sourcepods-dev` command has a flag to enable watching all Go files in the project's folders.
 Once a change on the filesystem has been detected it will recompile the binaries and
 only on success restart the components with the new binaries, making development as easy and quick as possible.
 Essentially, it's an endless loop running `make build`, once a change is detected.
 
 ```bash
-gitpods dev --watch
+sourcepods-dev --watch
 ```
 
 This can be really helpful when working on the API, for example. Just save your change,
@@ -92,20 +92,20 @@ wait a second and hit the endpoint again with the newest version of it running.
 
 #### Tracing
 
-GitPods has built-in support for OpenTracing and [Jeager](https://www.jaegertracing.io/) is the default tracing backend.
+SourcePods has built-in support for OpenTracing and [Jeager](https://www.jaegertracing.io/) is the default tracing backend.
 You can start a Jaeger all-in-one container for local development by following their guide:  
 https://www.jaegertracing.io/docs/1.8/getting-started/#all-in-one
 
 Once Jaeger is running, simply add the `--tracing` flag and all traces will be sent to Jaeger.
 
 ```bash
-gitpods dev --tracing
+sourcepods-dev --tracing
 ```
 
 All log lines of the API and other components should contain a `request=2ae7cb76-fcec-4143-8d1d-ff4bf4913aea` key-value pair.
 You can copy this key-value-pair and paste it at Jaeger's UI into the _Tags_ input field. 
 After pressing enter you'll see the exact trace for the request you have the logs to.
-See [#31](https://github.com/gitpods/gitpods/pull/31#issue-244309605) for more information.
+See [#31](https://github.com/sourcepods/sourcepods/pull/31#issue-244309605) for more information.
 
 ### Dart (UI) development
 
@@ -116,12 +116,12 @@ As written above you need to have [Dart installed](https://webdev.dartlang.org/t
 AngularDart has one dependency for development.
 You can install [webdev](https://webdev.dartlang.org/tools/webdev) by running `pub global activate webdev`.
 
-After that it will be easiest to use the integrated `gitpods-dev` command that starts the reverse proxy and fowards
+After that it will be easiest to use the integrated `sourcepods-dev` command that starts the reverse proxy and fowards
 the requests correctly to the `webdev serve` command it starts in the background.
 
 It is the easiest to simply run
 ```bash
-gitpods-dev --ui=dart
+sourcepods-dev --ui=dart
 ```
 
-_Make sure to stop the Docker container running the UI!_ - `docker stop gitpods-ui`.
+_Make sure to stop the Docker container running the UI!_ - `docker stop sourcepods-ui`.
