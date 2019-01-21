@@ -1,6 +1,8 @@
 GOFLAGS := -mod=vendor
 GO := GOFLAGS=$(GOFLAGS) GO111MODULE=on CGO_ENABLED=0 go
 GOTEST := GOFLAGS=$(GOFLAGS) GO111MODULE=on CGO_ENABLED=1 go # -race needs cgo
+GO_PKG_FILES := $(shell find ./pkg/ -name "*.go" -type f ! -name "*_test.go")
+DARTFILES := $(shell find ./ui/lib/ -name "*.dart" -type f)
 
 .PHONY: generate
 generate: apiv1
@@ -45,20 +47,23 @@ test:
 	$(GOTEST) test -coverprofile coverage.out -race -v ./...
 
 .PHONY: build
-build: dev/api dev/gitpods dev/storage dev/ui
+build: dev/api dev/gitpods-dev dev/storage dev/ui
 
-dev/api: cmd/api pkg
+dev/api: cmd/api $(GO_PKG_FILES)
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/api ./cmd/api
 
-dev/gitpods-dev: cmd/gitpods-dev pkg
+dev/gitpods-dev: cmd/gitpods-dev $(GO_PKG_FILES)
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/gitpods-dev ./cmd/gitpods-dev
 
-dev/storage: cmd/storage pkg
+dev/storage: cmd/storage $(GO_PKG_FILES)
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/storage ./cmd/storage
 
-dev/ui: cmd/ui pkg dev/packr
+dev/ui: cmd/ui $(GO_PKG_FILES) ui/build dev/packr
 	./dev/packr
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/ui ./cmd/ui
+
+ui/build: $(DARTFILES)
+	cd ui && webdev build
 
 dev/packr:
 	mkdir -p dev/
