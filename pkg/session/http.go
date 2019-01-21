@@ -15,7 +15,7 @@ type ctxKey int
 
 const (
 	// CookieName is the name to store the cookie in the browser with.
-	CookieName                = "_gitpods_session"
+	CookieName                = "_sourcepods_session"
 	CookieUserID       ctxKey = iota
 	CookieUserUsername ctxKey = iota
 )

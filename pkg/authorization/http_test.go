@@ -45,7 +45,7 @@ func TestHTTPAuthorize(t *testing.T) {
 
 	h.ServeHTTP(w, req)
 
-	cookie := "_gitpods_session=410f59a5-75e6-4332-a0d3-ef06a0bfb2a5; Path=/; Expires=Tue, 10 Nov 2009 23:00:00 GMT"
+	cookie := "_sourcepods_session=410f59a5-75e6-4332-a0d3-ef06a0bfb2a5; Path=/; Expires=Tue, 10 Nov 2009 23:00:00 GMT"
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, cookie, w.Header().Get("Set-Cookie"))
