@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/gitpods/gitpods/pkg/gitpods/user"
-	"github.com/gitpods/gitpods/pkg/session"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
+	"github.com/sourcepods/sourcepods/pkg/session"
 )
 
 type loggingService struct {

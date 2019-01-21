@@ -19,13 +19,13 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/repositories"
-	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/users"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations/repositories"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations/users"
 )
 
-// NewGitpodsAPI creates a new Gitpods instance
-func NewGitpodsAPI(spec *loads.Document) *GitpodsAPI {
-	return &GitpodsAPI{
+// NewSourcepodsAPI creates a new Sourcepods instance
+func NewSourcepodsAPI(spec *loads.Document) *SourcepodsAPI {
+	return &SourcepodsAPI{
 		handlers:            make(map[string]map[string]http.Handler),
 		formats:             strfmt.Default,
 		defaultConsumes:     "application/json",
@@ -67,8 +67,8 @@ func NewGitpodsAPI(spec *loads.Document) *GitpodsAPI {
 	}
 }
 
-/*GitpodsAPI This is the API for GitPods - git in the cloud. */
-type GitpodsAPI struct {
+/*SourcepodsAPI This is the API for GitPods - git in the cloud. */
+type SourcepodsAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
@@ -128,42 +128,42 @@ type GitpodsAPI struct {
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *GitpodsAPI) SetDefaultProduces(mediaType string) {
+func (o *SourcepodsAPI) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *GitpodsAPI) SetDefaultConsumes(mediaType string) {
+func (o *SourcepodsAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // SetSpec sets a spec that will be served for the clients.
-func (o *GitpodsAPI) SetSpec(spec *loads.Document) {
+func (o *SourcepodsAPI) SetSpec(spec *loads.Document) {
 	o.spec = spec
 }
 
 // DefaultProduces returns the default produces media type
-func (o *GitpodsAPI) DefaultProduces() string {
+func (o *SourcepodsAPI) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *GitpodsAPI) DefaultConsumes() string {
+func (o *SourcepodsAPI) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *GitpodsAPI) Formats() strfmt.Registry {
+func (o *SourcepodsAPI) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *GitpodsAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *SourcepodsAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the GitpodsAPI
-func (o *GitpodsAPI) Validate() error {
+// Validate validates the registrations in the SourcepodsAPI
+func (o *SourcepodsAPI) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -214,26 +214,26 @@ func (o *GitpodsAPI) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *GitpodsAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *SourcepodsAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *GitpodsAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
+func (o *SourcepodsAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	return nil
 
 }
 
 // Authorizer returns the registered authorizer
-func (o *GitpodsAPI) Authorizer() runtime.Authorizer {
+func (o *SourcepodsAPI) Authorizer() runtime.Authorizer {
 
 	return nil
 
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (o *GitpodsAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
+func (o *SourcepodsAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 
 	result := make(map[string]runtime.Consumer)
 	for _, mt := range mediaTypes {
@@ -253,7 +253,7 @@ func (o *GitpodsAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consum
 }
 
 // ProducersFor gets the producers for the specified media types
-func (o *GitpodsAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
+func (o *SourcepodsAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 
 	result := make(map[string]runtime.Producer)
 	for _, mt := range mediaTypes {
@@ -273,7 +273,7 @@ func (o *GitpodsAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produc
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
-func (o *GitpodsAPI) HandlerFor(method, path string) (http.Handler, bool) {
+func (o *SourcepodsAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
@@ -288,8 +288,8 @@ func (o *GitpodsAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
-// Context returns the middleware context for the gitpods API
-func (o *GitpodsAPI) Context() *middleware.Context {
+// Context returns the middleware context for the sourcepods API
+func (o *SourcepodsAPI) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
@@ -297,7 +297,7 @@ func (o *GitpodsAPI) Context() *middleware.Context {
 	return o.context
 }
 
-func (o *GitpodsAPI) initHandlerCache() {
+func (o *SourcepodsAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
 
 	if o.handlers == nil {
@@ -348,7 +348,7 @@ func (o *GitpodsAPI) initHandlerCache() {
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *GitpodsAPI) Serve(builder middleware.Builder) http.Handler {
+func (o *SourcepodsAPI) Serve(builder middleware.Builder) http.Handler {
 	o.Init()
 
 	if o.Middleware != nil {
@@ -358,18 +358,18 @@ func (o *GitpodsAPI) Serve(builder middleware.Builder) http.Handler {
 }
 
 // Init allows you to just initialize the handler cache, you can then recompose the middleware as you see fit
-func (o *GitpodsAPI) Init() {
+func (o *SourcepodsAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
 }
 
 // RegisterConsumer allows you to add (or override) a consumer for a media type.
-func (o *GitpodsAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+func (o *SourcepodsAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
 	o.customConsumers[mediaType] = consumer
 }
 
 // RegisterProducer allows you to add (or override) a producer for a media type.
-func (o *GitpodsAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
+func (o *SourcepodsAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
 }

@@ -17,11 +17,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gitpods/gitpods/pkg/api"
 	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/opentracing/opentracing-go"
+	"github.com/sourcepods/sourcepods/pkg/api"
 )
 
 type GitHTTP struct {

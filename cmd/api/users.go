@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gitpods/gitpods/cmd"
-	"github.com/gitpods/gitpods/pkg/gitpods/user"
+	"github.com/sourcepods/sourcepods/cmd"
+	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
 	"github.com/urfave/cli"
 )
 

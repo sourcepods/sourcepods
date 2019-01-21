@@ -10,18 +10,18 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations"
-	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/repositories"
-	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/users"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations/repositories"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations/users"
 )
 
-//go:generate swagger generate server --target ../../v1 --name Gitpods --spec ../../../../swagger.yaml --exclude-main
+//go:generate swagger generate server --target ../../v1 --name Sourcepods --spec ../../../../swagger.yaml --exclude-main
 
-func configureFlags(api *operations.GitpodsAPI) {
+func configureFlags(api *operations.SourcepodsAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.GitpodsAPI) http.Handler {
+func configureAPI(api *operations.SourcepodsAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 

@@ -3,9 +3,9 @@ package authorization
 import (
 	"context"
 
-	"github.com/gitpods/gitpods/pkg/gitpods/user"
-	"github.com/gitpods/gitpods/pkg/session"
 	"github.com/opentracing/opentracing-go"
+	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
+	"github.com/sourcepods/sourcepods/pkg/session"
 	"golang.org/x/crypto/bcrypt"
 )
 

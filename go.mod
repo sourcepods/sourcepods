@@ -1,4 +1,4 @@
-module github.com/gitpods/gitpods
+module github.com/sourcepods/sourcepods
 
 require (
 	github.com/Microsoft/go-winio v0.4.11 // indirect
