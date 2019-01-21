@@ -105,7 +105,6 @@ func logout(s Service) http.HandlerFunc {
 			return
 		}
 
-		// TODO: Fix the url
-		http.Redirect(w, r, "https://try.gitpods.io/", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
