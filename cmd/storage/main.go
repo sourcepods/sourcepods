@@ -9,7 +9,7 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "gitpods-storage"
+	app.Name = "sourcepods-storage"
 	app.Usage = "git in the cloud!"
 
 	app.Action = storageAction

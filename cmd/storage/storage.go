@@ -150,7 +150,7 @@ func storageAction(c *cli.Context) error {
 
 		gr.Add(func() error {
 			level.Info(logger).Log(
-				"msg", "starting gitpods storage http server",
+				"msg", "starting SourcePods storage http server",
 				"addr", storageConfig.HTTPAddr,
 			)
 			return server.ListenAndServe()
@@ -172,7 +172,7 @@ func storageAction(c *cli.Context) error {
 		gs := storage.NewStorageServer(gitStorage)
 		gr.Add(func() error {
 			level.Info(logger).Log(
-				"msg", "starting gitpods storage grpc server",
+				"msg", "starting SourcePods storage grpc server",
 				"addr", storageConfig.GRPCAddr,
 			)
 			return gs.Serve(lis)

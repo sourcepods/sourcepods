@@ -11,13 +11,13 @@ func main() {
 	app := cli.NewApp()
 
 	app.Name = "sourcepods-dev"
-	app.Usage = "Runs sourcepods on you local development machine"
+	app.Usage = "Runs SourcePods on you local development machine"
 	app.Flags = devFlags
 	app.Action = devAction
 
 	app.Commands = []cli.Command{{
 		Name:   "setup",
-		Usage:  "Sets up all the things necessary for developing sourcepods",
+		Usage:  "Sets up all the things necessary for developing SourcePods",
 		Action: devSetupAction,
 	}}
 

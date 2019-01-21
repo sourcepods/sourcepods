@@ -4,13 +4,12 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/sourcepods/sourcepods/pkg/api"
-
 	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/gobuffalo/packr"
 	"github.com/sourcepods/sourcepods/cmd"
+	"github.com/sourcepods/sourcepods/pkg/api"
 	"github.com/urfave/cli"
 )
 
@@ -28,14 +27,14 @@ var (
 		cli.StringFlag{
 			Name:        cmd.FlagAPIURL,
 			EnvVar:      cmd.EnvAPIURL,
-			Usage:       "The address gitpods API runs on",
+			Usage:       "The address SourcePods API runs on",
 			Value:       ":3020",
 			Destination: &uiConfig.AddrAPI,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagHTTPAddr,
 			EnvVar:      cmd.EnvHTTPAddr,
-			Usage:       "The address gitpods UI runs on",
+			Usage:       "The address SourcePods UI runs on",
 			Value:       ":3010",
 			Destination: &uiConfig.Addr,
 		},
@@ -80,7 +79,7 @@ func ActionUI(c *cli.Context) error {
 	r.Handle("/img/*", http.FileServer(box))
 	r.Handle("/main.dart.js", http.FileServer(box))
 
-	level.Info(logger).Log("msg", "starting gitpods ui", "addr", uiConfig.Addr)
+	level.Info(logger).Log("msg", "starting SourcePods ui", "addr", uiConfig.Addr)
 	return http.ListenAndServe(uiConfig.Addr, r)
 }
 
