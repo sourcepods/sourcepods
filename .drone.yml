@@ -29,8 +29,11 @@ steps:
       from_secret: codecov
 
 ---
+depends_on:
+  - testing
+
 kind: pipeline
-name: gitpods-dev
+name: sourcepods-dev
 
 platform:
   os: linux
@@ -38,17 +41,13 @@ platform:
 
 workspace:
   base: /go
-  path: src/github.com/gitpods/gitpods
+  path: src/github.com/sourcepods/sourcepods
 
 steps:
 - name: binary
   image: golang:1.11.4
   commands:
-  - make dev/gitpods-dev
-
-depends_on:
-- testing
-
+  - make dev/sourcepods-dev
 ---
 kind: pipeline
 name: api
