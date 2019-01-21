@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
 	"github.com/sourcepods/sourcepods/pkg/session"
+	"github.com/sourcepods/sourcepods/pkg/sourcepods/user"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
 )

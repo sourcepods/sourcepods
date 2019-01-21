@@ -11,9 +11,9 @@ import (
 	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations"
 	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations/repositories"
 	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations/users"
-	"github.com/sourcepods/sourcepods/pkg/gitpods/repository"
-	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
 	"github.com/sourcepods/sourcepods/pkg/session"
+	"github.com/sourcepods/sourcepods/pkg/sourcepods/repository"
+	"github.com/sourcepods/sourcepods/pkg/sourcepods/user"
 )
 
 // API has the http.Handler for the OpenAPI implementation

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/go-kit/kit/metrics"
-	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
 	"github.com/sourcepods/sourcepods/pkg/session"
+	"github.com/sourcepods/sourcepods/pkg/sourcepods/user"
 )
 
 type metricsService struct {

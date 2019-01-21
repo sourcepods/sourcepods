@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/sourcepods/sourcepods/cmd"
-	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
+	"github.com/sourcepods/sourcepods/pkg/sourcepods/user"
 	"github.com/urfave/cli"
 )
 

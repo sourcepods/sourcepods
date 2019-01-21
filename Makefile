@@ -32,7 +32,7 @@ ui/lib/src/api: swagger.yaml
 
 .PHONY: lint
 lint:
-	golint $(shell $(GO) list ./pkg/gitpods/...)
+	golint $(shell $(GO) list ./pkg/sourcepods/...)
 
 .PHONY: check-vendor
 check-vendor:

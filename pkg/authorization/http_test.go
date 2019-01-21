@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
 	"github.com/sourcepods/sourcepods/pkg/session"
+	"github.com/sourcepods/sourcepods/pkg/sourcepods/user"
 	"github.com/stretchr/testify/assert"
 )
 
