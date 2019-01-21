@@ -4,10 +4,10 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/gitpods/gitpods/cmd"
 	"github.com/mattes/migrate"
 	_ "github.com/mattes/migrate/database/postgres"
 	_ "github.com/mattes/migrate/source/file"
+	"github.com/sourcepods/sourcepods/cmd"
 	"github.com/urfave/cli"
 )
 

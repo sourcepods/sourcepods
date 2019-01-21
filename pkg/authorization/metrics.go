@@ -3,9 +3,9 @@ package authorization
 import (
 	"context"
 
-	"github.com/gitpods/gitpods/pkg/gitpods/user"
-	"github.com/gitpods/gitpods/pkg/session"
 	"github.com/go-kit/kit/metrics"
+	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
+	"github.com/sourcepods/sourcepods/pkg/session"
 )
 
 type metricsService struct {

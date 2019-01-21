@@ -4,13 +4,13 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/gitpods/gitpods/pkg/api"
+	"github.com/sourcepods/sourcepods/pkg/api"
 
-	"github.com/gitpods/gitpods/cmd"
 	"github.com/go-chi/chi"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/gobuffalo/packr"
+	"github.com/sourcepods/sourcepods/cmd"
 	"github.com/urfave/cli"
 )
 

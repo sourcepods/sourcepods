@@ -6,10 +6,10 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gitpods/gitpods/pkg/session"
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
 	"github.com/opentracing/opentracing-go"
+	"github.com/sourcepods/sourcepods/pkg/session"
 )
 
 const megabyte = 1024 * 1024 * 1024

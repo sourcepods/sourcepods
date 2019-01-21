@@ -10,12 +10,12 @@ apiv1: pkg/api/v1/models pkg/api/v1/restapi ui/lib/src/api
 
 GOSWAGGER ?= docker run --rm \
 	--user=$(shell id -u $(USER)):$(shell id -g $(USER)) \
-	-v $(shell pwd):/go/src/github.com/gitpods/gitpods \
-	-w /go/src/github.com/gitpods/gitpods quay.io/goswagger/swagger:v0.18.0
+	-v $(shell pwd):/go/src/github.com/sourcepods/sourcepods \
+	-w /go/src/github.com/sourcepods/sourcepods quay.io/goswagger/swagger:v0.18.0
 
 pkg/api/v1/models pkg/api/v1/restapi: swagger.yaml
 	-rm -r pkg/api/v1/{models,restapi}
-	$(GOSWAGGER) generate server -f swagger.yaml --exclude-main -A gitpods --target pkg/api/v1
+	$(GOSWAGGER) generate server -f swagger.yaml --exclude-main -A sourcepods --target pkg/api/v1
 
 SWAGGER ?= docker run --rm \
 		--user=$(shell id -u $(USER)):$(shell id -g $(USER)) \

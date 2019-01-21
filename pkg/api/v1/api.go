@@ -3,17 +3,17 @@ package v1
 import (
 	"net/http"
 
-	"github.com/gitpods/gitpods/pkg/api/v1/models"
-	"github.com/gitpods/gitpods/pkg/api/v1/restapi"
-	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations"
-	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/repositories"
-	"github.com/gitpods/gitpods/pkg/api/v1/restapi/operations/users"
-	"github.com/gitpods/gitpods/pkg/gitpods/repository"
-	"github.com/gitpods/gitpods/pkg/gitpods/user"
-	"github.com/gitpods/gitpods/pkg/session"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/models"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations/repositories"
+	"github.com/sourcepods/sourcepods/pkg/api/v1/restapi/operations/users"
+	"github.com/sourcepods/sourcepods/pkg/gitpods/repository"
+	"github.com/sourcepods/sourcepods/pkg/gitpods/user"
+	"github.com/sourcepods/sourcepods/pkg/session"
 )
 
 // API has the http.Handler for the OpenAPI implementation
@@ -28,7 +28,7 @@ func New(rs repository.Service, us user.Service) (*API, error) {
 		return nil, err
 	}
 
-	gitpodsAPI := operations.NewGitpodsAPI(swaggerSpec)
+	gitpodsAPI := operations.NewSourcepodsAPI(swaggerSpec)
 
 	gitpodsAPI.Middleware = func(b middleware.Builder) http.Handler {
 		return middleware.Spec("", nil, gitpodsAPI.Context().RoutesHandler(b))

@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/gitpods/gitpods/cmd"
-	"github.com/gitpods/gitpods/pkg/storage"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/oklog/run"
+	"github.com/sourcepods/sourcepods/cmd"
+	"github.com/sourcepods/sourcepods/pkg/storage"
 	jaeger "github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
 	"github.com/urfave/cli"
