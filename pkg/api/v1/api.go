@@ -28,23 +28,23 @@ func New(rs repository.Service, us user.Service) (*API, error) {
 		return nil, err
 	}
 
-	gitpodsAPI := operations.NewSourcepodsAPI(swaggerSpec)
+	sourcepodsAPI := operations.NewSourcepodsAPI(swaggerSpec)
 
-	gitpodsAPI.Middleware = func(b middleware.Builder) http.Handler {
-		return middleware.Spec("", nil, gitpodsAPI.Context().RoutesHandler(b))
+	sourcepodsAPI.Middleware = func(b middleware.Builder) http.Handler {
+		return middleware.Spec("", nil, sourcepodsAPI.Context().RoutesHandler(b))
 	}
 
-	gitpodsAPI.RepositoriesCreateRepositoryHandler = CreateRepositoryHandler(rs)
-	gitpodsAPI.RepositoriesGetOwnerRepositoriesHandler = GetOwnerRepositoriesHandler(rs)
-	gitpodsAPI.RepositoriesGetRepositoryBranchesHandler = GetRepositoryBranchesHandler(rs)
-	gitpodsAPI.RepositoriesGetRepositoryHandler = GetRepositoryHandler(rs)
-	gitpodsAPI.UsersGetUserHandler = GetUserHandler(us)
-	gitpodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
-	gitpodsAPI.UsersListUsersHandler = ListUsersHandler(us)
-	gitpodsAPI.UsersUpdateUserHandler = UpdateUserHandler(us)
+	sourcepodsAPI.RepositoriesCreateRepositoryHandler = CreateRepositoryHandler(rs)
+	sourcepodsAPI.RepositoriesGetOwnerRepositoriesHandler = GetOwnerRepositoriesHandler(rs)
+	sourcepodsAPI.RepositoriesGetRepositoryBranchesHandler = GetRepositoryBranchesHandler(rs)
+	sourcepodsAPI.RepositoriesGetRepositoryHandler = GetRepositoryHandler(rs)
+	sourcepodsAPI.UsersGetUserHandler = GetUserHandler(us)
+	sourcepodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
+	sourcepodsAPI.UsersListUsersHandler = ListUsersHandler(us)
+	sourcepodsAPI.UsersUpdateUserHandler = UpdateUserHandler(us)
 
 	return &API{
-		Handler: gitpodsAPI.Serve(nil),
+		Handler: sourcepodsAPI.Serve(nil),
 	}, nil
 }
 
