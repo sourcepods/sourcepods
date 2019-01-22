@@ -1,10 +1,10 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/routes.dart';
-import 'package:gitpods/src/gravatar_component.dart';
-import 'package:gitpods/src/login/login_service.dart';
-import 'package:gitpods/src/user/user.dart';
-import 'package:gitpods/src/user/user_service.dart';
+import 'package:sourcepods/routes.dart';
+import 'package:sourcepods/src/gravatar_component.dart';
+import 'package:sourcepods/src/login/login_service.dart';
+import 'package:sourcepods/src/user/user.dart';
+import 'package:sourcepods/src/user/user_service.dart';
 
 @Component(
   selector: 'gitpods-header',

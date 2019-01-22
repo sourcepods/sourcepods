@@ -1,8 +1,8 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/footer_component.dart';
-import 'package:gitpods/header_component.dart';
-import 'package:gitpods/routes.dart';
+import 'package:sourcepods/footer_component.dart';
+import 'package:sourcepods/header_component.dart';
+import 'package:sourcepods/routes.dart';
 
 @Component(
   selector: 'gitpods-app',
