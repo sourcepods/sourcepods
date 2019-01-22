@@ -1,7 +1,7 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/src/loading_component.dart';
-import 'package:gitpods/src/repository/repository_service.dart';
+import 'package:sourcepods/src/loading_component.dart';
+import 'package:sourcepods/src/repository/repository_service.dart';
 
 @Component(
   selector: 'repository-files',

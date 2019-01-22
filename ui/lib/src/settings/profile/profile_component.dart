@@ -3,9 +3,9 @@ import 'dart:html';
 import 'package:angular/angular.dart';
 import 'package:angular_forms/angular_forms.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/src/loading_component.dart';
-import 'package:gitpods/src/user/user.dart';
-import 'package:gitpods/src/user/user_service.dart';
+import 'package:sourcepods/src/loading_component.dart';
+import 'package:sourcepods/src/user/user.dart';
+import 'package:sourcepods/src/user/user_service.dart';
 
 @Component(
   selector: 'profile',

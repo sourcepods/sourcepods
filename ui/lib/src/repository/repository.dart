@@ -1,5 +1,5 @@
-import 'package:gitpods/src/user/user.dart';
-import 'package:gitpods/src/api/api.dart' as api;
+import 'package:sourcepods/src/user/user.dart';
+import 'package:sourcepods/src/api/api.dart' as api;
 
 class Repository {
   Repository({

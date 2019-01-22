@@ -1,6 +1,6 @@
 import 'dart:html';
 import 'dart:js_util';
-import 'package:gitpods/src/api/api.dart';
+import 'package:sourcepods/src/api/api.dart';
 
 class API {
   API() {

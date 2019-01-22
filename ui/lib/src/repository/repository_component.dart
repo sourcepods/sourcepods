@@ -1,11 +1,11 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/routes.dart' as global;
-import 'package:gitpods/src/gravatar_component.dart';
-import 'package:gitpods/src/loading_component.dart';
-import 'package:gitpods/src/repository/repository.dart';
-import 'package:gitpods/src/repository/repository_service.dart';
-import 'package:gitpods/src/repository/routes.dart';
+import 'package:sourcepods/routes.dart' as global;
+import 'package:sourcepods/src/gravatar_component.dart';
+import 'package:sourcepods/src/loading_component.dart';
+import 'package:sourcepods/src/repository/repository.dart';
+import 'package:sourcepods/src/repository/repository_service.dart';
+import 'package:sourcepods/src/repository/routes.dart';
 
 @Component(
   selector: 'gitpods-repository',

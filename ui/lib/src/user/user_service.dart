@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:angular/angular.dart';
-import 'package:gitpods/api.dart';
-import 'package:gitpods/src/api/api.dart' as api;
-import 'package:gitpods/src/repository/repository.dart';
-import 'package:gitpods/src/user/user.dart';
+import 'package:sourcepods/api.dart';
+import 'package:sourcepods/src/api/api.dart' as api;
+import 'package:sourcepods/src/repository/repository.dart';
+import 'package:sourcepods/src/user/user.dart';
 
 @Injectable()
 class UserService {
