@@ -1,8 +1,8 @@
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/routes.dart' as _parent;
-import 'package:gitpods/src/repository/commits/commits_component.template.dart';
-import 'package:gitpods/src/repository/files/files_component.template.dart';
-import 'package:gitpods/src/repository/settings/settings_component.template.dart';
+import 'package:sourcepods/routes.dart' as _parent;
+import 'package:sourcepods/src/repository/commits/commits_component.template.dart';
+import 'package:sourcepods/src/repository/files/files_component.template.dart';
+import 'package:sourcepods/src/repository/settings/settings_component.template.dart';
 
 class RoutePaths {
   static final commits = RoutePath(

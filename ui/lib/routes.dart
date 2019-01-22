@@ -1,11 +1,11 @@
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/src/login/login_component.template.dart';
-import 'package:gitpods/src/not_found_component.template.dart';
-import 'package:gitpods/src/repository/repository_component.template.dart';
-import 'package:gitpods/src/repository/repository_create_component.template.dart';
-import 'package:gitpods/src/settings/settings_component.template.dart';
-import 'package:gitpods/src/user/user_list_component.template.dart';
-import 'package:gitpods/src/user/user_profile_component.template.dart';
+import 'package:sourcepods/src/login/login_component.template.dart';
+import 'package:sourcepods/src/not_found_component.template.dart';
+import 'package:sourcepods/src/repository/repository_component.template.dart';
+import 'package:sourcepods/src/repository/repository_create_component.template.dart';
+import 'package:sourcepods/src/settings/settings_component.template.dart';
+import 'package:sourcepods/src/user/user_list_component.template.dart';
+import 'package:sourcepods/src/user/user_profile_component.template.dart';
 
 class RoutePaths {
   static final login = RoutePath(path: 'login');

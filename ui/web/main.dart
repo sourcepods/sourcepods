@@ -1,9 +1,9 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/api.dart';
-import 'package:gitpods/app_component.template.dart' as ng;
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
+import 'package:sourcepods/api.dart';
+import 'package:sourcepods/app_component.template.dart' as ng;
 
 import 'main.template.dart' as self;
 

@@ -1,6 +1,6 @@
 import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/src/settings/routes.dart';
+import 'package:sourcepods/src/settings/routes.dart';
 
 @Component(
   selector: 'settings',

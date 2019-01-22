@@ -1,8 +1,8 @@
 import 'package:angular_router/angular_router.dart';
-import 'package:gitpods/routes.dart' as _parent;
-import 'package:gitpods/src/settings/account/account_component.template.dart';
-import 'package:gitpods/src/settings/profile/profile_component.template.dart';
-import 'package:gitpods/src/settings/security/security_component.template.dart';
+import 'package:sourcepods/routes.dart' as _parent;
+import 'package:sourcepods/src/settings/account/account_component.template.dart';
+import 'package:sourcepods/src/settings/profile/profile_component.template.dart';
+import 'package:sourcepods/src/settings/security/security_component.template.dart';
 
 class RoutesPaths {
   static final account = RoutePath(

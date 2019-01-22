@@ -1,5 +1,5 @@
-import 'package:gitpods/src/api/api.dart' as api;
-import 'package:gitpods/src/repository/repository.dart';
+import 'package:sourcepods/src/api/api.dart' as api;
+import 'package:sourcepods/src/repository/repository.dart';
 
 class User {
   String id;
