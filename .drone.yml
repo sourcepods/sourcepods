@@ -8,7 +8,7 @@ platform:
 
 workspace:
   base: /go
-  path: src/github.com/gitpods/gitpods
+  path: src/github.com/sourcepods/sourcepods
 
 steps:
 - name: lint
@@ -58,7 +58,7 @@ platform:
 
 workspace:
   base: /go
-  path: src/github.com/gitpods/gitpods
+  path: src/github.com/sourcepods/sourcepods
 
 steps:
 - name: binary
@@ -97,7 +97,7 @@ platform:
 
 workspace:
   base: /go
-  path: src/github.com/gitpods/gitpods
+  path: src/github.com/sourcepods/sourcepods
 
 steps:
 - name: binary
@@ -136,7 +136,7 @@ platform:
 
 workspace:
   base: /go
-  path: src/github.com/gitpods/gitpods
+  path: src/github.com/sourcepods/sourcepods
 
 steps:
 - name: dart
@@ -194,7 +194,7 @@ depends_on:
 #
 #workspace:
 #  base: /go
-#  path: src/github.com/gitpods/gitpods
+#  path: src/github.com/sourcepods/sourcepods
 #
 #steps:
 #- name: api
