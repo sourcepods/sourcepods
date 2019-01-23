@@ -1,4 +1,4 @@
-import 'package:gitpods/src/api/api.dart' as api;
+import 'package:sourcepods/src/api/api.dart' as api;
 
 class TreeEntry {
   TreeEntry(this.mode, this.type, this.object, this.path);

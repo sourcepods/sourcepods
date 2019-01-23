@@ -19,7 +19,7 @@ func main() {
 		{
 			Name:        "tree",
 			Usage:       "Print the tree of a repository",
-			Description: "Print the tree of a repository at a given ref with a path\n\tExample: tree gitpods gitpods master pkg/api",
+			Description: "Print the tree of a repository at a given ref with a path\n\tExample: tree sourcepods sourcepods master pkg/api",
 			ArgsUsage:   "owner name ref path",
 			Action:      treeAction,
 		},

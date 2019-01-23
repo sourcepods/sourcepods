@@ -7,9 +7,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/gitpods/gitpods/pkg/storage"
-
-	"github.com/gitpods/gitpods/cmd"
+	"github.com/sourcepods/sourcepods/cmd"
+	"github.com/sourcepods/sourcepods/pkg/storage"
 	"github.com/urfave/cli"
 )
 

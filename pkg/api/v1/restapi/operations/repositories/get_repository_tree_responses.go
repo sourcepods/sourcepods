@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/gitpods/gitpods/pkg/api/v1/models"
+	models "github.com/sourcepods/sourcepods/pkg/api/v1/models"
 )
 
 // GetRepositoryTreeOKCode is the HTTP code returned for type GetRepositoryTreeOK
