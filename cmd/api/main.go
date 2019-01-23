@@ -9,7 +9,7 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "gitpods-api"
+	app.Name = "sourcepods-api"
 	app.Usage = "git in the cloud!"
 
 	app.Action = apiAction
