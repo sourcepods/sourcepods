@@ -67,7 +67,7 @@ func NewSourcepodsAPI(spec *loads.Document) *SourcepodsAPI {
 	}
 }
 
-/*SourcepodsAPI This is the API for GitPods - git in the cloud. */
+/*SourcepodsAPI This is the API for SourcePods - git in the cloud. */
 type SourcepodsAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context

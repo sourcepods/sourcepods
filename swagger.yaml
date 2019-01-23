@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
-  description: 'This is the API for GitPods - git in the cloud.'
-  title: GitPods OpenAPI
+  description: 'This is the API for SourcePods - git in the cloud.'
+  title: SourcePods OpenAPI
   version: 1.0.0
   license:
     name: Apache-2.0

@@ -30,8 +30,8 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "description": "This is the API for GitPods - git in the cloud.",
-    "title": "GitPods OpenAPI",
+    "description": "This is the API for SourcePods - git in the cloud.",
+    "title": "SourcePods OpenAPI",
     "license": {
       "name": "Apache-2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -511,8 +511,8 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "description": "This is the API for GitPods - git in the cloud.",
-    "title": "GitPods OpenAPI",
+    "description": "This is the API for SourcePods - git in the cloud.",
+    "title": "SourcePods OpenAPI",
     "license": {
       "name": "Apache-2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
