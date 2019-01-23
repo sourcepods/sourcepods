@@ -24,6 +24,8 @@ import (
 	"github.com/sourcepods/sourcepods/pkg/api"
 )
 
+var allowedServices = [2]string{"upload-pack", "receive-pack"}
+
 type GitHTTP struct {
 	root   string
 	git    string
@@ -43,7 +45,7 @@ func (gh *GitHTTP) Handler() *chi.Mux {
 	r.Use(api.NewRequestLogger(gh.Logger))
 
 	r.Get("/{owner}/{name}/HEAD", noCaching(gh.headHandler))
-	r.Get("/{owner}/{name}/info/refs", noCaching(gh.infoRefsHandler))
+	r.Get("/{owner}/{name}/info/refs", noCaching(serviceAllowed(gh.infoRefsHandler)))
 	r.Get("/{owner}/{name}/objects/{folder:[0-9a-f]{2}}/{file:[0-9a-f]{38}}", cacheForever(gh.looseObjectHandler))
 	r.Get("/{owner}/{name}/objects/info/{file}", noCaching(gh.infoHandler))
 	r.Get("/{owner}/{name}/objects/info/alternates", noCaching(gh.alternatesHandler))
@@ -51,7 +53,7 @@ func (gh *GitHTTP) Handler() *chi.Mux {
 	r.Get("/{owner}/{name}/objects/info/packs", cacheForever(gh.infoPacksHandler))
 	r.Get("/{owner}/{name}/objects/pack/pack-{hash:[0-9a-f]{40}}.idx", cacheForever(gh.idxHandler))
 	r.Get("/{owner}/{name}/objects/pack/pack-{hash:[0-9a-f]{40}}.pack", cacheForever(gh.packHandler))
-	r.Post("/{owner}/{name}/git-{service}", gh.serviceHandler)
+	r.Post("/{owner}/{name}/git-{service}", serviceAllowed(gh.serviceHandler))
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		level.Debug(gh.Logger).Log(
@@ -61,6 +63,26 @@ func (gh *GitHTTP) Handler() *chi.Mux {
 	})
 
 	return r
+}
+
+func serviceAllowed(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		service := chi.URLParam(r, "service")
+		if service == "" {
+			service = serviceQuery(r)
+		}
+
+		for _, v := range allowedServices {
+			if v == service {
+				next.ServeHTTP(w, r)
+				return
+			}
+		}
+
+		http.Error(w, fmt.Sprintf("invalid service %q", service), http.StatusBadRequest)
+		// TODO: inject logging?
+		//level.Warn(logger).Log("msg", "invalid service", "err", err)
+	}
 }
 
 func noCaching(next http.HandlerFunc) http.HandlerFunc {
