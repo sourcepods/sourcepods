@@ -5,7 +5,7 @@ import 'package:angular_forms/angular_forms.dart';
 import 'package:sourcepods/src/login/login_service.dart';
 
 @Component(
-  selector: 'gitpods-selector',
+  selector: 'sourcepods-login',
   templateUrl: 'login_component.html',
   styleUrls: const ['login_component.css'],
   directives: const [coreDirectives, formDirectives],

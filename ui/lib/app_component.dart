@@ -5,7 +5,7 @@ import 'package:sourcepods/header_component.dart';
 import 'package:sourcepods/routes.dart';
 
 @Component(
-  selector: 'gitpods-app',
+  selector: 'sourcepods-app',
   templateUrl: 'app_component.html',
   styleUrls: const ['app_component.css'],
   directives: const [

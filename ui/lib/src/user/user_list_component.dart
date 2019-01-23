@@ -7,7 +7,7 @@ import 'package:sourcepods/src/user/user.dart';
 import 'package:sourcepods/src/user/user_service.dart';
 
 @Component(
-  selector: 'gitpods-user-list',
+  selector: 'sourcepods-user-list',
   templateUrl: 'user_list_component.html',
   directives: const [
     coreDirectives,

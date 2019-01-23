@@ -7,7 +7,7 @@ import 'package:sourcepods/src/user/user.dart';
 import 'package:sourcepods/src/user/user_service.dart';
 
 @Component(
-  selector: 'gitpods-header',
+  selector: 'sourcepods-header',
   templateUrl: 'header_component.html',
   styleUrls: const ['header_component.css'],
   directives: const [

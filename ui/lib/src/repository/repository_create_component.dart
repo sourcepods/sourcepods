@@ -9,7 +9,7 @@ import 'package:sourcepods/src/repository/repository.dart';
 import 'package:sourcepods/src/repository/repository_service.dart';
 
 @Component(
-  selector: 'gitpods-repository-create',
+  selector: 'sourcepods-repository-create',
   templateUrl: 'repository_create_component.html',
   directives: const [coreDirectives, formDirectives, LoadingButtonComponent],
   providers: const [RepositoryService],

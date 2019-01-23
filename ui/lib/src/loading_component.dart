@@ -1,7 +1,7 @@
 import 'package:angular/angular.dart';
 
 @Component(
-  selector: 'gitpods-loading',
+  selector: 'sourcepods-loading',
   templateUrl: 'loading_component.html',
 )
 class LoadingComponent {}

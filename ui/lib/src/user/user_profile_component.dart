@@ -10,7 +10,7 @@ import 'package:sourcepods/src/user/user.dart';
 import 'package:sourcepods/src/user/user_service.dart';
 
 @Component(
-  selector: 'gitpods-user-profile',
+  selector: 'sourcepods-user-profile',
   templateUrl: 'user_profile_component.html',
   styleUrls: const ['user_profile_component.css'],
   providers: const [UserService],

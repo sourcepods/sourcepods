@@ -1,7 +1,7 @@
 import 'package:angular/angular.dart';
 
 @Component(
-  selector: 'gitpods-loading-button',
+  selector: 'sourcepods-loading-button',
   directives: [coreDirectives],
   template: '''
     <button class="uk-button uk-button-primary" type="submit" [disabled]="loading">
