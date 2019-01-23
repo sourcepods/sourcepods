@@ -347,7 +347,7 @@ type APIMetrics struct {
 }
 
 func apiMetrics() *APIMetrics {
-	namespace := "gitpods"
+	namespace := "sourcepods"
 
 	return &APIMetrics{
 		LoginAttempts: prometheus.NewCounterFrom(prom.CounterOpts{
