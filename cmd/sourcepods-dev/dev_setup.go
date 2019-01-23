@@ -99,13 +99,13 @@ func setupCockroach() error {
 
 	color.Blue("creating sourcepods database if not exists")
 
-	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS gitpods;")
+	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS sourcepods;")
 	if err != nil {
 		return err
 	}
 
-	// Now talking to gitpods database directly
-	dsn = "postgres://root@localhost:26257/gitpods?sslmode=disable"
+	// Now talking to sourcepods database directly
+	dsn = "postgres://root@localhost:26257/sourcepods?sslmode=disable"
 
 	path, err := filepath.Abs("./schema/cockroach")
 	if err != nil {

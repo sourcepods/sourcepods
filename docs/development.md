@@ -42,7 +42,7 @@ For now you need to create the users manually and the api binary has this functi
 (This will be removed in the future, as we will transition to OIDC login)
 
 ```bash
-GITPODS_DATABASE_DSN=postgres://root@localhost:26257/gitpods?sslmode=disable \
+GITPODS_DATABASE_DSN=postgres://root@localhost:26257/sourcepods?sslmode=disable \
     ./dev/api users create --email admin@localhost.com --username admin --name Admin --password password
 ```
 
