@@ -8,7 +8,7 @@ import 'package:sourcepods/src/repository/repository_service.dart';
 import 'package:sourcepods/src/repository/routes.dart';
 
 @Component(
-  selector: 'gitpods-repository',
+  selector: 'sourcepods-repository',
   templateUrl: 'repository_component.html',
   styleUrls: const ['repository_component.css'],
   directives: [

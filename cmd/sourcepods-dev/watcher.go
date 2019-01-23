@@ -66,7 +66,7 @@ func (w *FileWatcher) Watch() {
 func (w *FileWatcher) findGoFiles() ([]string, error) {
 	var files []string
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-		if strings.HasPrefix(path, "cmd/sourcepods-dev") { // don't watch gitpods itself
+		if strings.HasPrefix(path, "cmd/sourcepods-dev") { // don't watch sourcepods-dev itself
 			return nil
 		}
 		if strings.HasPrefix(path, "vendor") {

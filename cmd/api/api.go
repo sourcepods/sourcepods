@@ -74,14 +74,14 @@ var (
 		cli.StringFlag{
 			Name:        cmd.FlagHTTPAddr,
 			EnvVar:      cmd.EnvHTTPAddr,
-			Usage:       "The address gitpods API runs on",
+			Usage:       "The address SourcePods API runs on",
 			Value:       ":3020",
 			Destination: &apiConfig.HTTPAddr,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagHTTPPrivateAddr,
 			EnvVar:      cmd.EnvHTTPPrivateAddr,
-			Usage:       "The address gitpods runs a http server only for internal access",
+			Usage:       "The address SourcePods runs a http server only for internal access",
 			Value:       ":3021",
 			Destination: &apiConfig.HTTPPrivateAddr,
 		},
@@ -297,7 +297,7 @@ func apiAction(c *cli.Context) error {
 	{
 		gr.Add(func() error {
 			level.Info(logger).Log(
-				"msg", "starting gitpods api",
+				"msg", "starting SourcePods API",
 				"addr", apiConfig.HTTPAddr,
 			)
 			return server.ListenAndServe()
@@ -318,7 +318,7 @@ func apiAction(c *cli.Context) error {
 	{
 		gr.Add(func() error {
 			level.Info(logger).Log(
-				"msg", "starting internal gitpods api",
+				"msg", "starting internal SourcePods API",
 				"addr", apiConfig.HTTPPrivateAddr,
 			)
 			return privateServer.ListenAndServe()

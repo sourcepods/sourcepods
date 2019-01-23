@@ -2,7 +2,7 @@ package user
 
 import "time"
 
-// User of GitPods.
+// User of SourcePods
 type User struct {
 	ID       string
 	Email    string
