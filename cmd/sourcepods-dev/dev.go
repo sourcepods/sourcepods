@@ -322,7 +322,7 @@ func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func ensureUIContainer() error {
 	name := "sourcepods-ui"
-	args := []string{"run", "-d", "-p=3010:3010", "--name=" + name, "gitpods/ui:latest"}
+	args := []string{"run", "-d", "-p=3010:3010", "--name=" + name, "quay.io/sourcepods/ui:latest"}
 	return ensureContainer(name, args)
 }
 
