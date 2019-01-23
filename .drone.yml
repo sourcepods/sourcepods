@@ -75,7 +75,7 @@ steps:
     password:
       from_secret: docker_password
     dockerfile: ./cmd/api/Dockerfile
-    repo: gitpods/api
+    repo: quay.io/sourcepods/api
     tag:
     - latest
   when:
@@ -114,7 +114,7 @@ steps:
     password:
       from_secret: docker_password
     dockerfile: cmd/storage/Dockerfile
-    repo: gitpods/storage
+    repo: quay.io/sourcepods/storage
     tag:
     - latest
   when:
@@ -167,7 +167,7 @@ steps:
     password:
       from_secret: docker_password
     dockerfile: cmd/ui/Dockerfile
-    repo: gitpods/ui
+    repo: quay.io/sourcepods/ui
     tag:
     - latest
   when:
