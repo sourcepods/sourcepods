@@ -76,6 +76,7 @@ steps:
       from_secret: docker_password
     dockerfile: ./cmd/api/Dockerfile
     repo: quay.io/sourcepods/api
+    registry: quay.io
     tag:
     - latest
   when:
@@ -115,6 +116,7 @@ steps:
       from_secret: docker_password
     dockerfile: cmd/storage/Dockerfile
     repo: quay.io/sourcepods/storage
+    registry: quay.io
     tag:
     - latest
   when:
@@ -168,6 +170,7 @@ steps:
       from_secret: docker_password
     dockerfile: cmd/ui/Dockerfile
     repo: quay.io/sourcepods/ui
+    registry: quay.io
     tag:
     - latest
   when:
