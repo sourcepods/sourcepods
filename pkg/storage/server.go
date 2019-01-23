@@ -60,7 +60,7 @@ type commitServer struct {
 	storage Storage
 }
 
-func (s *commitServer) Create(ctx context.Context, req *CommitRequest) (*CommitResponse, error) {
+func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResponse, error) {
 	c, err := s.storage.Commit(ctx, req.GetOwner(), req.GetName(), req.GetRev())
 	if err != nil {
 		return nil, err

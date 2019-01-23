@@ -98,7 +98,7 @@ func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, e
 		Rev:   rev,
 	}
 
-	res, err := c.commits.Create(ctx, req)
+	res, err := c.commits.Get(ctx, req)
 	if err != nil {
 		return Commit{}, err
 	}

@@ -14,7 +14,7 @@ service Branch {
 }
 
 service Commit {
-    rpc Create(CommitRequest) returns (CommitResponse);
+    rpc Get(CommitRequest) returns (CommitResponse);
 }
 
 message CreateRequest {
