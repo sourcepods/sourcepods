@@ -10,23 +10,34 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
-	"time"
 )
 
 var (
-	authorLine = regexp.MustCompile(`(.*)\s\<(.*)\>\s(\d*)\s([\+-]\d*)`)
+	// ErrRepoNotValid is returned for invalid repositories
+	ErrRepoNotValid = fmt.Errorf("not a valid repository")
 )
 
 type (
 	// Storage TODO: is something that should be split up
 	Storage interface {
 		Create(ctx context.Context, owner, name string) error
-		SetDescription(ctx context.Context, owner, name, description string) error
-		Branches(ctx context.Context, owner string, name string) ([]Branch, error)
-		Commit(ctx context.Context, owner string, name string, rev string) (Commit, error)
+		GetRepository(ctx context.Context, owner, name string) (Repository, error)
+		//Branches(ctx context.Context, owner string, name string) ([]Branch, error)
+		//Commit(ctx context.Context, owner string, name string, rev string) (Commit, error)
+	}
+
+	// Repository is the interface for manipulating repos
+	Repository interface {
+		SetDescription(ctx context.Context, description string) error
+		ListBranches(ctx context.Context) ([]Branch, error)
+		GetCommit(ctx context.Context, rev string) (Commit, error)
+	}
+
+	// LocalRepository implements Repository for Local disk-access
+	LocalRepository struct {
+		git  string
+		path string
 	}
 
 	// LocalStorage implements Storage for Local disk-access
@@ -35,6 +46,12 @@ type (
 		root string
 	}
 )
+
+// SetDescription of repository
+func (r *LocalRepository) SetDescription(ctx context.Context, description string) error {
+	file := filepath.Join(r.path, "description")
+	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
+}
 
 // NewLocalStorage returns a LocalStorage in the given `root`
 func NewLocalStorage(root string) (*LocalStorage, error) {
@@ -45,6 +62,25 @@ func NewLocalStorage(root string) (*LocalStorage, error) {
 		git:  "/usr/bin/git",
 		root: root,
 	}, nil
+}
+
+// GetRepository from Storage
+// TODO: Cache these somehow?
+func (s *LocalStorage) GetRepository(ctx context.Context, owner, name string) (Repository, error) {
+	dir := filepath.Join(s.root, owner, name)
+
+	cmd := exec.CommandContext(ctx, s.git, "config", "--null", "core.repositoryformatversion")
+	cmd.Dir = dir
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, ErrRepoNotValid
+	}
+	if strings.TrimSuffix(string(output), "\x00") != "0" {
+		return nil, ErrRepoNotValid
+	}
+	// TODO: return an actual Repository...
+	return &LocalRepository{git: s.git, path: dir}, nil
 }
 
 // Create a new repository
@@ -60,12 +96,6 @@ func (s *LocalStorage) Create(ctx context.Context, owner, name string) error {
 	return cmd.Run()
 }
 
-// SetDescription of repository
-func (s *LocalStorage) SetDescription(ctx context.Context, owner, name, description string) error {
-	file := filepath.Join(s.root, owner, name, "description")
-	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
-}
-
 // Branch of a repository
 type Branch struct {
 	Name string
@@ -73,11 +103,11 @@ type Branch struct {
 	Type string
 }
 
-// Branches returns all branches of a given repository
-func (s *LocalStorage) Branches(ctx context.Context, owner string, name string) ([]Branch, error) {
+// ListBranches returns all branches of a given repository
+func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
 	args := []string{"for-each-ref", "--format=%(objectname) %(objecttype) %(refname)", "refs/heads"}
-	cmd := exec.CommandContext(ctx, s.git, args...)
-	cmd.Dir = filepath.Join(s.root, owner, name)
+	cmd := exec.CommandContext(ctx, r.git, args...)
+	cmd.Dir = r.path
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -98,45 +128,6 @@ func (s *LocalStorage) Branches(ctx context.Context, owner string, name string) 
 	return bs, nil
 }
 
-// Author holds the information given
-type Author struct {
-	Name  string
-	Email string
-	Date  time.Time
-}
-
-func parseAuthor(line string) (Author, error) {
-	committer := authorLine.FindStringSubmatch(line)
-
-	t, err := strconv.ParseInt(committer[3], 10, 64)
-	if err != nil {
-		return Author{}, err
-	}
-
-	tu := time.Unix(t, 0).In(time.UTC)
-
-	// Gracefully stolen from https://github.com/src-d/go-git/blob/434611b74cb54538088c6aeed4ed27d3044064fa/plumbing/object/object.go#L141-L149
-	//
-	// Include a dummy year in this time.Parse() call to avoid a bug in Go:
-	// https://github.com/golang/go/issues/19750
-	//
-	// Parsing the timezone with no other details causes the tl.Location() call
-	// below to return time.Local instead of the parsed zone in some cases
-	if len(committer) >= 5 {
-		tl, err := time.Parse("2006 -0700", "1970 "+committer[4])
-		if err != nil {
-			return Author{}, err
-		}
-		tu = tu.In(tl.Location())
-	}
-
-	return Author{
-		Name:  committer[1],
-		Email: committer[2],
-		Date:  tu,
-	}, nil
-}
-
 // Commit holds a commit
 type Commit struct {
 	Hash    string
@@ -145,16 +136,16 @@ type Commit struct {
 	Message string
 	Body    string
 
-	Author Author
+	Author Signature
 
-	Committer Author
+	Committer Signature
 }
 
-// Commit returns the given commit
-func (s *LocalStorage) Commit(ctx context.Context, owner string, name string, rev string) (Commit, error) {
+// GetCommit returns a single Commit from a Repository
+func (r *LocalRepository) GetCommit(ctx context.Context, rev string) (Commit, error) {
 	args := []string{"cat-file", "-p", rev}
-	cmd := exec.CommandContext(ctx, s.git, args...)
-	cmd.Dir = filepath.Join(s.root, owner, name)
+	cmd := exec.CommandContext(ctx, r.git, args...)
+	cmd.Dir = r.path
 	out, err := cmd.Output()
 	if err != nil {
 		return Commit{}, err
@@ -232,7 +223,7 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 		var err error
 		line := strings.TrimPrefix(line, authorPrefix)
 
-		c.Author, err = parseAuthor(line)
+		c.Author, err = parseSignature(line)
 		if err != nil {
 			// This should probably just error out, and not return a partial commit...
 			return false, err
@@ -244,7 +235,7 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 		var err error
 		line := strings.TrimPrefix(line, committerPrefix)
 
-		c.Committer, err = parseAuthor(line)
+		c.Committer, err = parseSignature(line)
 		if err != nil {
 			// This should probably just error out, and not return a partial commit...
 			return false, err
