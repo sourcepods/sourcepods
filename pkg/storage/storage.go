@@ -261,6 +261,27 @@ type TreeEntry struct {
 
 //Tree returns the files and folders at a given ref at a path in a repository
 func (s *storage) Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
+	treeEntries, err := s.tree(ctx, owner, name, ref, path)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(treeEntries) > 1 {
+		return treeEntries, nil
+	}
+
+	if treeEntries[0].Type != "tree" {
+		return treeEntries, nil
+	}
+
+	// In case we read a directory without a trailing slash,
+	// instead of returning the single directory, we change into it,
+	// by appending a slash, and return its contents
+	return s.tree(ctx, owner, name, ref, path+"/")
+}
+
+func (s *storage) tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
+
 	args := []string{"ls-tree", ref, path}
 	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = filepath.Join(s.root, owner, name)
