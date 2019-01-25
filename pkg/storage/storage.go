@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 )
 
@@ -281,6 +282,12 @@ func (s *storage) Tree(ctx context.Context, owner, name, ref, path string) ([]Tr
 }
 
 func (s *storage) tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.tree")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("ref", ref)
+	span.SetTag("path", path)
+	defer span.Finish()
 
 	args := []string{"ls-tree", ref, path}
 	cmd := exec.CommandContext(ctx, s.git, args...)
