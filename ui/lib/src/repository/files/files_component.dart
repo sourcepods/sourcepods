@@ -12,6 +12,7 @@ import 'package:sourcepods/src/repository/tree.dart';
   templateUrl: 'files_component.html',
   directives: const [
     coreDirectives,
+    routerDirectives,
     formDirectives,
     LoadingComponent,
   ],
@@ -24,16 +25,14 @@ class FilesComponent implements OnActivate {
 
   RepositoryService _repositoryService;
 
-  bool loading;
-
   String ownerName;
   String repositoryName;
-
   String defaultBranch = 'master'; // TODO: needs to be @Input()
   String currentBranch;
+  String path;
 
+  bool loading;
   List<String> branches;
-
   List<TreeEntry> files;
   List<TreeEntry> folders;
 
@@ -41,15 +40,38 @@ class FilesComponent implements OnActivate {
   void onActivate(RouterState previous, RouterState current) {
     this.ownerName = current.parameters['owner'];
     this.repositoryName = current.parameters['name'];
-    this.currentBranch = this.defaultBranch;
+    this._fromPath(current.path);
 
     Future.wait([
-      _repositoryService.getBranches(ownerName, repositoryName),
-      _repositoryService.getTree(ownerName, repositoryName, currentBranch, '.'),
+      _repositoryService.getBranches(
+        ownerName,
+        repositoryName,
+      ),
+      _repositoryService.getTree(
+        ownerName,
+        repositoryName,
+        currentBranch,
+        path,
+      ),
     ]).then((List responses) {
       _setBranches(responses[0]);
       _setTree(responses[1]);
     }).whenComplete(() => this.loading = false);
+  }
+
+  void _fromPath(String path) {
+    List<String> elements = path.split('/');
+
+    if (elements.length <= 4) {
+      this.currentBranch = this.defaultBranch;
+      this.path = '.';
+      return;
+    }
+
+    // First elements are owner, name and tree
+
+    currentBranch = elements.elementAt(4);
+    this.path = elements.sublist(5).join('/');
   }
 
   void _setBranches(List<String> branches) {
@@ -79,7 +101,7 @@ class FilesComponent implements OnActivate {
     print(e);
   }
 
-  void changePath(MouseEvent e) {
-    print(e);
+  String changePath(String path) {
+    return './$ownerName/$repositoryName/tree/$currentBranch/$path';
   }
 }

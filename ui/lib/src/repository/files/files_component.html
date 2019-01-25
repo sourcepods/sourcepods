@@ -30,7 +30,7 @@
                 <span uk-icon="icon: folder" class="folder"></span>
             </td>
             <td>
-                <a (click)="changePath">{{ entry.path }}</a>
+                <a [routerLink]="changePath(entry.path)">{{ entry.path }}</a>
             </td>
         </tr>
         <tr *ngFor="let entry of files">
@@ -38,7 +38,7 @@
                 <span uk-icon="icon: file"></span>
             </td>
             <td>
-                <a (click)="changePath">{{ entry.path }}</a>
+                <a [routerLink]="changePath(entry.path)">{{ entry.path }}</a>
             </td>
         </tr>
         </tbody>
