@@ -224,7 +224,7 @@ class RepositoriesApi {
   /// Get the tree including folders (tree) and files (blob) for a repository
   ///
   /// 
-  Future<List<TreeEntry>> getRepositoryTree(String owner, String name, { String ref, String path }) async {
+  Future<List<TreeEntry>> getRepositoryTree(String owner, String name, { String ref, String gitPath }) async {
     Object postBody = null;
 
     // verify required params are set
@@ -246,7 +246,7 @@ class RepositoriesApi {
       queryParams.addAll(_convertParametersForCollectionFormat("", "ref", ref));
     }
     if(path != null) {
-      queryParams.addAll(_convertParametersForCollectionFormat("", "path", path));
+      queryParams.addAll(_convertParametersForCollectionFormat("", "path", gitPath));
     }
     
     List<String> contentTypes = ["application/json"];
