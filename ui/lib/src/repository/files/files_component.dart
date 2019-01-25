@@ -104,4 +104,8 @@ class FilesComponent implements OnActivate {
   String changePath(String path) {
     return './$ownerName/$repositoryName/tree/$currentBranch/$path';
   }
+
+  String openBlob(String path) {
+    return './$ownerName/$repositoryName/blob/$currentBranch/$path';
+  }
 }
