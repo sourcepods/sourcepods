@@ -7,12 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/sourcepods/sourcepods/pkg/sourcepods/repository"
+	"github.com/sourcepods/sourcepods/pkg/sourcepods/user"
+	"github.com/sourcepods/sourcepods/pkg/storage"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/gitpods/gitpods/pkg/gitpods/user"
-
-	"github.com/gitpods/gitpods/pkg/gitpods/repository"
-	"github.com/gitpods/gitpods/pkg/storage"
 )
 
 type repositoryTestService struct{}
