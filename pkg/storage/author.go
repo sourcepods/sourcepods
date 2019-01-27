@@ -19,6 +19,7 @@ type Signature struct {
 	Date  time.Time
 }
 
+// Validate the Signature
 func (s Signature) Validate() error {
 	if len(s.Name) == 0 {
 		return fmt.Errorf("no name")
@@ -38,6 +39,7 @@ func offsetToString(offset int) string {
 	return fmt.Sprintf("%+03d%02d", offsetHour, offsetMinute)
 }
 
+// String formats a valid git signature
 func (s Signature) String() string {
 	_, offset := s.Date.Zone()
 	return fmt.Sprintf("%s <%s> %d %s", s.Name, s.Email, s.Date.Unix(), offsetToString(offset))
