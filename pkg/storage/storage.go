@@ -24,11 +24,8 @@ var (
 type (
 	// Storage TODO: is something that should be split up
 	Storage interface {
-		Create(ctx context.Context, owner, name string) error
-		GetRepository(ctx context.Context, owner, name string) (Repository, error)
-		//Branches(ctx context.Context, owner string, name string) ([]Branch, error)
-		//Commit(ctx context.Context, owner string, name string, rev string) (Commit, error)
-		Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error)
+		Create(ctx context.Context, repoHash string) error
+		GetRepository(ctx context.Context, repoHash string) (Repository, error)
 	}
 
 	// LocalStorage implements Storage for Local disk-access
@@ -63,9 +60,14 @@ func NewLocalStorage(root string) (*LocalStorage, error) {
 	}, nil
 }
 
+func (s *LocalStorage) repoPath(repoHash string) string {
+	repoHash = strings.Replace(repoHash, "-", "", -1)
+	return filepath.Join(s.root, repoHash[:2], repoHash[2:2], repoHash[4:])
+}
+
 // Create a new repository
-func (s *LocalStorage) Create(ctx context.Context, owner, name string) error {
-	dir := filepath.Join(s.root, owner, name)
+func (s *LocalStorage) Create(ctx context.Context, repoHash string) error {
+	dir := s.repoPath(repoHash)
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to repository directory: %s", dir)
@@ -78,8 +80,8 @@ func (s *LocalStorage) Create(ctx context.Context, owner, name string) error {
 
 // GetRepository from Storage
 // TODO: Cache these somehow?
-func (s *LocalStorage) GetRepository(ctx context.Context, owner, name string) (Repository, error) {
-	dir := filepath.Join(s.root, owner, name)
+func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repository, error) {
+	dir := s.repoPath(repoPath)
 
 	cmd := exec.CommandContext(ctx, s.git, "config", "--null", "core.repositoryformatversion")
 	cmd.Dir = dir
@@ -93,15 +95,6 @@ func (s *LocalStorage) GetRepository(ctx context.Context, owner, name string) (R
 	}
 	// TODO: return an actual Repository...
 	return &LocalRepository{git: s.git, path: dir}, nil
-}
-
-func (s *LocalStorage) Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
-	r, err := s.GetRepository(ctx, owner, name)
-	if err != nil {
-		return nil, err
-	}
-
-	return r.Tree(ctx, ref, path)
 }
 
 // Branch of a repository
@@ -272,6 +265,11 @@ type TreeEntry struct {
 
 //Tree returns the files and folders at a given ref at a path in a repository
 func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.Tree")
+	span.SetTag("ref", ref)
+	span.SetTag("path", path)
+	defer span.Finish()
+
 	treeEntries, err := r.tree(ctx, ref, path)
 	if err != nil {
 		return nil, err

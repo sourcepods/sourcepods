@@ -14,17 +14,17 @@ import (
 
 func treeAction(c *cli.Context) error {
 	args := c.Args()
-	if len(args) != 4 {
-		return errors.New("need exactly 4 arguments: owner name rev path")
+	if len(args) != 3 {
+		return errors.New("need exactly 3 arguments: repo_hash rev path")
 	}
-	owner, name, rev, path := args[0], args[1], args[2], args[3]
+	repoHash, rev, path := args[0], args[1], args[2]
 
 	s, err := storage.NewLocalStorage(c.GlobalString(cmd.FlagRoot))
 	if err != nil {
 		return err
 	}
 
-	r, err := s.GetRepository(context.Background(), owner, name)
+	r, err := s.GetRepository(context.Background(), repoHash)
 	if err != nil {
 		return err
 	}

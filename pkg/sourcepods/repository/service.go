@@ -22,27 +22,27 @@ type (
 	// Store or retrieve repositories from some database.
 	Store interface {
 		List(ctx context.Context, owner string) ([]*Repository, string, error)
-		Find(ctx context.Context, owner string, name string) (*Repository, string, error)
+		Find(ctx context.Context, owner, name string) (*Repository, string, error)
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
 	}
 
 	// Storage manages the git storage
 	Storage interface {
-		Create(ctx context.Context, owner string, name string) error
-		SetDescription(ctx context.Context, owner, name, description string) error
-		Branches(ctx context.Context, owner string, name string) ([]storage.Branch, error)
-		Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error)
-		Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error)
+		Create(ctx context.Context, repoPath string) error
+		SetDescription(ctx context.Context, repoPath, description string) error
+		Branches(ctx context.Context, repoPath string) ([]storage.Branch, error)
+		Commit(ctx context.Context, repoPath, rev string) (storage.Commit, error)
+		Tree(ctx context.Context, repoPath, rev, path string) ([]storage.TreeEntry, error)
 	}
 
 	// Service to interact with repositories.
 	Service interface {
 		List(ctx context.Context, owner string) ([]*Repository, string, error)
-		Find(ctx context.Context, owner string, name string) (*Repository, string, error)
+		Find(ctx context.Context, owner, name string) (*Repository, string, error)
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
-		Branches(ctx context.Context, owner string, name string) ([]*Branch, error)
-		Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error)
-		Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error)
+		Branches(ctx context.Context, owner, name string) ([]*Branch, error)
+		Commit(ctx context.Context, owner, name, rev string) (storage.Commit, error)
+		Tree(ctx context.Context, owner, name, rev, path string) ([]storage.TreeEntry, error)
 	}
 
 	service struct {
@@ -63,7 +63,7 @@ func (s *service) List(ctx context.Context, owner string) ([]*Repository, string
 	return s.repositories.List(ctx, owner)
 }
 
-func (s *service) Find(ctx context.Context, owner string, name string) (*Repository, string, error) {
+func (s *service) Find(ctx context.Context, owner, name string) (*Repository, string, error) {
 	return s.repositories.Find(ctx, owner, name)
 }
 
@@ -77,26 +77,26 @@ func (s *service) Create(ctx context.Context, owner string, repository *Reposito
 		return r, err
 	}
 
-	if err := s.storage.Create(ctx, owner, r.Name); err != nil {
+	if err := s.storage.Create(ctx, r.ID); err != nil {
 		return r, err
 	}
 
-	if err := s.storage.SetDescription(ctx, owner, r.Name, r.Description); err != nil {
+	if err := s.storage.SetDescription(ctx, r.ID, r.Description); err != nil {
 		return r, err
 	}
 
 	return r, nil
 }
 
-func (s *service) Branches(ctx context.Context, owner string, name string) ([]*Branch, error) {
+func (s *service) Branches(ctx context.Context, owner, name string) ([]*Branch, error) {
 	// Check if the repository exists before requesting storage
 	// TODO: This should probably become a middleware implementation of the interface for all storage calls.
-	_, _, err := s.repositories.Find(ctx, owner, name)
+	r, _, err := s.repositories.Find(ctx, owner, name)
 	if err != nil { // This includes ErrRepositoryNotFound
 		return nil, err
 	}
 
-	bs, err := s.storage.Branches(ctx, owner, name)
+	bs, err := s.storage.Branches(ctx, r.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -113,19 +113,23 @@ func (s *service) Branches(ctx context.Context, owner string, name string) ([]*B
 	return branches, nil
 }
 
-func (s *service) Commit(ctx context.Context, owner string, name string, rev string) (storage.Commit, error) {
-	// TODO: Check repository exists first
-	return s.storage.Commit(ctx, owner, name, rev)
+func (s *service) Commit(ctx context.Context, owner, name, rev string) (storage.Commit, error) {
+	r, _, err := s.repositories.Find(ctx, owner, name)
+	if err != nil { // This includes ErrRepositoryNotFound
+		return storage.Commit{}, err
+	}
+
+	return s.storage.Commit(ctx, r.ID, rev)
 }
 
 //Tree returns the git tree for the repository at a given rev and path
-func (s *service) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error) {
+func (s *service) Tree(ctx context.Context, owner, name, rev, path string) ([]storage.TreeEntry, error) {
 	// Check if the repository exists before requesting storage
 	// TODO: This should probably become a middleware implementation of the interface for all storage calls.
-	_, _, err := s.repositories.Find(ctx, owner, name)
+	r, _, err := s.repositories.Find(ctx, owner, name)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.storage.Tree(ctx, owner, name, rev, path)
+	return s.storage.Tree(ctx, r.ID, rev, path)
 }
