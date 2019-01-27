@@ -21,6 +21,7 @@ var (
 )
 
 type (
+	// Storage TODO: is something that should be split up
 	Storage interface {
 		Create(ctx context.Context, owner, name string) error
 		SetDescription(ctx context.Context, owner, name, description string) error
@@ -28,23 +29,26 @@ type (
 		Commit(ctx context.Context, owner string, name string, rev string) (Commit, error)
 	}
 
-	storage struct {
+	// LocalStorage implements Storage for Local disk-access
+	LocalStorage struct {
 		git  string
 		root string
 	}
 )
 
-func NewStorage(root string) (Storage, error) {
+// NewLocalStorage returns a LocalStorage in the given `root`
+func NewLocalStorage(root string) (*LocalStorage, error) {
 	if err := os.MkdirAll(root, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create storage root: %s", root)
 	}
-	return &storage{
+	return &LocalStorage{
 		git:  "/usr/bin/git",
 		root: root,
 	}, nil
 }
 
-func (s *storage) Create(ctx context.Context, owner, name string) error {
+// Create a new repository
+func (s *LocalStorage) Create(ctx context.Context, owner, name string) error {
 	dir := filepath.Join(s.root, owner, name)
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -56,20 +60,21 @@ func (s *storage) Create(ctx context.Context, owner, name string) error {
 	return cmd.Run()
 }
 
-func (s *storage) SetDescription(ctx context.Context, owner, name, description string) error {
+// SetDescription of repository
+func (s *LocalStorage) SetDescription(ctx context.Context, owner, name, description string) error {
 	file := filepath.Join(s.root, owner, name, "description")
 	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
 }
 
-//Branch of a repository
+// Branch of a repository
 type Branch struct {
 	Name string
 	Sha1 string
 	Type string
 }
 
-//Branches returns all branches of a given repository
-func (s *storage) Branches(ctx context.Context, owner string, name string) ([]Branch, error) {
+// Branches returns all branches of a given repository
+func (s *LocalStorage) Branches(ctx context.Context, owner string, name string) ([]Branch, error) {
 	args := []string{"for-each-ref", "--format=%(objectname) %(objecttype) %(refname)", "refs/heads"}
 	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = filepath.Join(s.root, owner, name)
@@ -132,6 +137,7 @@ func parseAuthor(line string) (Author, error) {
 	}, nil
 }
 
+// Commit holds a commit
 type Commit struct {
 	Hash    string
 	Tree    string
@@ -144,7 +150,8 @@ type Commit struct {
 	Committer Author
 }
 
-func (s *storage) Commit(ctx context.Context, owner string, name string, rev string) (Commit, error) {
+// Commit returns the given commit
+func (s *LocalStorage) Commit(ctx context.Context, owner string, name string, rev string) (Commit, error) {
 	args := []string{"cat-file", "-p", rev}
 	cmd := exec.CommandContext(ctx, s.git, args...)
 	cmd.Dir = filepath.Join(s.root, owner, name)

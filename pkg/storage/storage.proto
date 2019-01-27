@@ -2,14 +2,19 @@ syntax = "proto3";
 
 package storage;
 
-service Storage {
-    rpc Create (CreateRequest) returns (EmptyResponse);
-    rpc SetDescriptions (SetDescriptionRequest) returns (EmptyResponse);
-    rpc Branches (BranchesRequest) returns (BranchesResponse);
-    rpc Commit (CommitRequest) returns (CommitResponse);
+import "google/protobuf/empty.proto";
+
+service Repository {
+    rpc Create (CreateRequest) returns (google.protobuf.Empty);
+    rpc SetDescriptions (SetDescriptionRequest) returns (google.protobuf.Empty);
 }
 
-message EmptyResponse {
+service Branch {
+    rpc List(BranchesRequest) returns (BranchesResponse);
+}
+
+service Commit {
+    rpc Get(CommitRequest) returns (CommitResponse);
 }
 
 message CreateRequest {

@@ -8,6 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestInterface(t *testing.T) {
+	assert.Implements(t, (*Storage)(nil), &LocalStorage{})
+}
 func TestParseCommit(t *testing.T) {
 	foo := `tree 40279100b292dd26bfda150adf1c4fd5a4e52ffe
 parent ae51e9d1b987f9086cbc65e694f06759bc62e743
