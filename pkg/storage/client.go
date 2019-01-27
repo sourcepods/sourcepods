@@ -108,12 +108,12 @@ func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, e
 		Tree:    res.GetTree(),
 		Parent:  res.GetParent(),
 		Message: res.GetMessage(),
-		Author: Author{
+		Author: Signature{
 			Name:  res.GetAuthor(),
 			Email: res.GetAuthorEmail(),
 			Date:  time.Unix(res.GetAuthorDate(), 0),
 		},
-		Committer: Author{
+		Committer: Signature{
 			Name:  res.GetCommitter(),
 			Email: res.GetCommitterEmail(),
 			Date:  time.Unix(res.GetCommitterDate(), 0),

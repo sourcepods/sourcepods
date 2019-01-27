@@ -3,6 +3,8 @@ package storage
 import (
 	"context"
 
+	"google.golang.org/grpc/codes"
+
 	empty "github.com/golang/protobuf/ptypes/empty"
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"google.golang.org/grpc"
@@ -31,7 +33,11 @@ func (s *repositoryServer) Create(ctx context.Context, req *CreateRequest) (*emp
 }
 
 func (s *repositoryServer) SetDescriptions(ctx context.Context, req *SetDescriptionRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, s.storage.SetDescription(ctx, req.GetOwner(), req.GetName(), req.GetDescription())
+	repo, err := s.storage.GetRepository(ctx, req.GetOwner(), req.GetName())
+	if err != nil {
+		return nil, grpc.Errorf(codes.NotFound, "%v", err)
+	}
+	return &empty.Empty{}, repo.SetDescription(ctx, req.GetDescription())
 }
 
 type branchesServer struct {
@@ -39,9 +45,13 @@ type branchesServer struct {
 }
 
 func (s *branchesServer) List(ctx context.Context, req *BranchesRequest) (*BranchesResponse, error) {
-	branches, err := s.storage.Branches(ctx, req.GetOwner(), req.GetName())
+	repo, err := s.storage.GetRepository(ctx, req.GetOwner(), req.GetName())
 	if err != nil {
-		return nil, err
+		return nil, grpc.Errorf(codes.NotFound, "%v", err)
+	}
+	branches, err := repo.ListBranches(ctx)
+	if err != nil {
+		return nil, grpc.Errorf(codes.Internal, "%v", err)
 	}
 
 	res := &BranchesResponse{}
@@ -61,9 +71,13 @@ type commitServer struct {
 }
 
 func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResponse, error) {
-	c, err := s.storage.Commit(ctx, req.GetOwner(), req.GetName(), req.GetRev())
+	repo, err := s.storage.GetRepository(ctx, req.GetOwner(), req.GetName())
 	if err != nil {
-		return nil, err
+		return nil, grpc.Errorf(codes.NotFound, "%v", err)
+	}
+	c, err := repo.GetCommit(ctx, req.GetRev())
+	if err != nil {
+		return nil, grpc.Errorf(codes.Internal, "%v", err)
 	}
 
 	return &CommitResponse{
