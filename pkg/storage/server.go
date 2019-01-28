@@ -94,7 +94,7 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 	}, nil
 }
 
-func (s *storageServer) Tree(ctx context.Context, req *TreeRequest) (*TreeResponse, error) {
+func (s *repositoryServer) Tree(ctx context.Context, req *TreeRequest) (*TreeResponse, error) {
 	entries, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetRef(), req.GetPath())
 	if err != nil {
 		return nil, err

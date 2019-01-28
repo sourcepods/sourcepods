@@ -141,7 +141,7 @@ func (c *Client) Tree(ctx context.Context, owner, name, ref, path string) ([]Tre
 		Path:  path,
 	}
 
-	res, err := c.client.Tree(ctx, req)
+	res, err := c.repos.Tree(ctx, req)
 	if err != nil {
 		return nil, err
 	}

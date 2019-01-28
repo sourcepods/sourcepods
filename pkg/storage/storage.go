@@ -28,20 +28,7 @@ type (
 		GetRepository(ctx context.Context, owner, name string) (Repository, error)
 		//Branches(ctx context.Context, owner string, name string) ([]Branch, error)
 		//Commit(ctx context.Context, owner string, name string, rev string) (Commit, error)
-	}
-
-	// Repository is the interface for manipulating repos
-	Repository interface {
-		SetDescription(ctx context.Context, description string) error
-		ListBranches(ctx context.Context) ([]Branch, error)
-		GetCommit(ctx context.Context, rev string) (Commit, error)
 		Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error)
-	}
-
-	// LocalRepository implements Repository for Local disk-access
-	LocalRepository struct {
-		git  string
-		path string
 	}
 
 	// LocalStorage implements Storage for Local disk-access
@@ -49,13 +36,21 @@ type (
 		git  string
 		root string
 	}
-)
 
-// SetDescription of repository
-func (r *LocalRepository) SetDescription(ctx context.Context, description string) error {
-	file := filepath.Join(r.path, "description")
-	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
-}
+	// Repository is the interface for manipulating repos
+	Repository interface {
+		SetDescription(ctx context.Context, description string) error
+		ListBranches(ctx context.Context) ([]Branch, error)
+		GetCommit(ctx context.Context, ref string) (Commit, error)
+		Tree(ctx context.Context, ref, path string) ([]TreeEntry, error)
+	}
+
+	// LocalRepository implements Repository for Local disk-access
+	LocalRepository struct {
+		git  string
+		path string
+	}
+)
 
 // NewLocalStorage returns a LocalStorage in the given `root`
 func NewLocalStorage(root string) (*LocalStorage, error) {
@@ -66,6 +61,19 @@ func NewLocalStorage(root string) (*LocalStorage, error) {
 		git:  "/usr/bin/git",
 		root: root,
 	}, nil
+}
+
+// Create a new repository
+func (s *LocalStorage) Create(ctx context.Context, owner, name string) error {
+	dir := filepath.Join(s.root, owner, name)
+
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("failed to repository directory: %s", dir)
+	}
+
+	cmd := exec.CommandContext(ctx, s.git, "init", "--bare")
+	cmd.Dir = dir
+	return cmd.Run()
 }
 
 // GetRepository from Storage
@@ -87,17 +95,13 @@ func (s *LocalStorage) GetRepository(ctx context.Context, owner, name string) (R
 	return &LocalRepository{git: s.git, path: dir}, nil
 }
 
-// Create a new repository
-func (s *LocalStorage) Create(ctx context.Context, owner, name string) error {
-	dir := filepath.Join(s.root, owner, name)
-
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("failed to repository directory: %s", dir)
+func (s *LocalStorage) Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
+	r, err := s.GetRepository(ctx, owner, name)
+	if err != nil {
+		return nil, err
 	}
 
-	cmd := exec.CommandContext(ctx, s.git, "init", "--bare")
-	cmd.Dir = dir
-	return cmd.Run()
+	return r.Tree(ctx, ref, path)
 }
 
 // Branch of a repository
@@ -105,6 +109,12 @@ type Branch struct {
 	Name string
 	Sha1 string
 	Type string
+}
+
+// SetDescription of repository
+func (r *LocalRepository) SetDescription(ctx context.Context, description string) error {
+	file := filepath.Join(r.path, "description")
+	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
 }
 
 // ListBranches returns all branches of a given repository
@@ -261,8 +271,8 @@ type TreeEntry struct {
 }
 
 //Tree returns the files and folders at a given ref at a path in a repository
-func (s *storage) Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
-	treeEntries, err := s.tree(ctx, owner, name, ref, path)
+func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
+	treeEntries, err := r.tree(ctx, ref, path)
 	if err != nil {
 		return nil, err
 	}
@@ -278,20 +288,18 @@ func (s *storage) Tree(ctx context.Context, owner, name, ref, path string) ([]Tr
 	// In case we read a directory without a trailing slash,
 	// instead of returning the single directory, we change into it,
 	// by appending a slash, and return its contents
-	return s.tree(ctx, owner, name, ref, path+"/")
+	return r.tree(ctx, ref, path+"/")
 }
 
-func (s *storage) tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
+func (r *LocalRepository) tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.tree")
-	span.SetTag("owner", owner)
-	span.SetTag("name", name)
 	span.SetTag("ref", ref)
 	span.SetTag("path", path)
 	defer span.Finish()
 
 	args := []string{"ls-tree", ref, path}
-	cmd := exec.CommandContext(ctx, s.git, args...)
-	cmd.Dir = filepath.Join(s.root, owner, name)
+	cmd := exec.CommandContext(ctx, r.git, args...)
+	cmd.Dir = r.path
 	out, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to run git ls-tree")
