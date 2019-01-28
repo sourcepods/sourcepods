@@ -1,7 +1,7 @@
 <sourcepods-loading *ngIf="loading"></sourcepods-loading>
 
 <div class="uk-container" *ngIf="loading == false">
-    <div class="uk-flex-middle" uk-grid>
+    <div class="uk-flex-middle uk-grid-match" uk-grid>
         <div class="uk-width-auto">
             <div class="uk-margin">
                 <div *ngIf="branches != null">
@@ -12,6 +12,10 @@
                     </select>
                 </div>
             </div>
+        </div>
+
+        <div>
+            <files-breadcrumb [path]="path"></files-breadcrumb>
         </div>
     </div>
 </div>

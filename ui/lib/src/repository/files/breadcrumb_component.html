@@ -1,0 +1,5 @@
+<ul class="uk-breadcrumb" style="margin: 0;">
+    <li *ngFor="let element of elements">
+        <a [routerLink]="changeDirectory(element)">{{ element }}</a>
+    </li>
+</ul>

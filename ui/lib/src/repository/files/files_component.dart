@@ -4,6 +4,7 @@ import 'package:angular/angular.dart';
 import 'package:angular_forms/angular_forms.dart';
 import 'package:angular_router/angular_router.dart';
 import 'package:sourcepods/src/loading_component.dart';
+import 'package:sourcepods/src/repository/files/breadcrumb_component.dart';
 import 'package:sourcepods/src/repository/repository_service.dart';
 import 'package:sourcepods/src/repository/tree.dart';
 
@@ -15,6 +16,7 @@ import 'package:sourcepods/src/repository/tree.dart';
     routerDirectives,
     formDirectives,
     LoadingComponent,
+    BreadcrumbComponent,
   ],
   providers: [
     ClassProvider(RepositoryService),
