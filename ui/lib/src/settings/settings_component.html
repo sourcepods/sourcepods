@@ -1,13 +1,13 @@
 <div style="margin-top: -20px;margin-bottom: 20px;background-color: #f8f8f8">
     <div class="uk-container">
         <ul class="uk-flex-center" uk-tab>
-            <li class="uk-active">
+            <li [class.uk-active]="tabActive('profile')">
                 <a [routerLink]="profileUrl()">Profile</a>
             </li>
-            <li>
+            <li [class.uk-active]="tabActive('account')">
                 <a [routerLink]="accountUrl()">Account</a>
             </li>
-            <li>
+            <li [class.uk-active]="tabActive('security')">
                 <a [routerLink]="securityUrl()">Security</a>
             </li>
         </ul>
