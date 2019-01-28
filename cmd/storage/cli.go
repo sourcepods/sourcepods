@@ -19,12 +19,17 @@ func treeAction(c *cli.Context) error {
 	}
 	owner, name, rev, path := args[0], args[1], args[2], args[3]
 
-	s, err := storage.NewStorage(c.GlobalString(cmd.FlagRoot))
+	s, err := storage.NewLocalStorage(c.GlobalString(cmd.FlagRoot))
 	if err != nil {
 		return err
 	}
 
-	entries, err := s.Tree(context.Background(), owner, name, rev, path)
+	r, err := s.GetRepository(context.Background(), owner, name)
+	if err != nil {
+		return err
+	}
+
+	entries, err := r.Tree(context.Background(), rev, path)
 	if err != nil {
 		return err
 	}
