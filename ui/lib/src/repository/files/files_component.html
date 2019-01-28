@@ -25,12 +25,18 @@
         </tr>
         </thead>
         <tbody>
+        <tr *ngIf="path != ''">
+            <td></td>
+            <td>
+                <a [routerLink]="changeUp()">..</a>
+            </td>
+        </tr>
         <tr *ngFor="let entry of folders">
             <td>
                 <span uk-icon="icon: folder" class="folder"></span>
             </td>
             <td>
-                <a [routerLink]="changePath(entry.path)">{{ entry.path }}</a>
+                <a [routerLink]="changePath(entry.path)">{{ filename(entry.path) }}/</a>
             </td>
         </tr>
         <tr *ngFor="let entry of files">
@@ -38,7 +44,7 @@
                 <span uk-icon="icon: file"></span>
             </td>
             <td>
-                <a [routerLink]="openBlob(entry.path)">{{ entry.path }}</a>
+                <a [routerLink]="openBlob(entry.path)">{{ filename(entry.path) }}</a>
             </td>
         </tr>
         </tbody>

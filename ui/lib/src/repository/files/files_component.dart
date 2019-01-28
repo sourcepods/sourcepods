@@ -29,7 +29,7 @@ class FilesComponent implements OnActivate {
   String repositoryName;
   String defaultBranch = 'master'; // TODO: needs to be @Input()
   String currentBranch;
-  String path;
+  String path = '';
 
   bool loading;
   List<String> branches;
@@ -64,7 +64,7 @@ class FilesComponent implements OnActivate {
 
     if (elements.length <= 4) {
       this.currentBranch = this.defaultBranch;
-      this.path = '.';
+      this.path = '';
       return;
     }
 
@@ -99,6 +99,17 @@ class FilesComponent implements OnActivate {
 
   void changeBranch(Event e) {
     print(e);
+  }
+
+  String changeUp() {
+    List<String> elements = this.path.split('/');
+    elements.removeLast();
+    String up = elements.join('/');
+    return './$ownerName/$repositoryName/tree/$currentBranch/$up';
+  }
+
+  String filename(String filename) {
+    return filename.substring(this.path.length).replaceFirst('/', '');
   }
 
   String changePath(String path) {
