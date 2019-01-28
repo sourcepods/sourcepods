@@ -31,12 +31,27 @@ class RepositoryComponent implements OnActivate {
   String ownerName;
   Repository repository;
 
+  String tab;
+
   @override
   void onActivate(RouterState previous, RouterState current) {
     ownerName = current.parameters['owner'];
     String name = current.parameters['name'];
 
+    _setTab(current.path);
+
     _repositoryService.get(ownerName, name).then((r) => this.repository = r);
+  }
+
+  void _setTab(String path) {
+    String tab = 'files'; // default tab
+    List<String> elements = path.split('/');
+
+    // if tab other than default selected use this one
+    if (elements.length > 3) {
+      tab = elements.elementAt(3);
+    }
+    this.tab = tab;
   }
 
   String userProfileUrl() =>
@@ -55,4 +70,6 @@ class RepositoryComponent implements OnActivate {
   String commitsUrl() => RoutePaths.commits.toUrl(parameters: _parameters());
 
   String settingsUrl() => RoutePaths.settings.toUrl(parameters: _parameters());
+
+  bool tabActive(String tab) => this.tab == tab;
 }

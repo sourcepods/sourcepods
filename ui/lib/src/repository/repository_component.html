@@ -27,20 +27,20 @@
                 </div>
             </div>
             <ul class="uk-child-width-expand" uk-tab>
-                <li>
+                <li [class.uk-active]="tabActive('files')">
                     <a [routerLink]="filesUrl()">
                         <span uk-icon="icon: code"></span>
                         Files
                     </a>
                 </li>
-                <li>
+                <li [class.uk-active]="tabActive('commits')">
                     <a [routerLink]="commitsUrl()">
                         <span uk-icon="icon: history"></span>
                         Commits
                         <span class="uk-badge">123</span>
                     </a>
                 </li>
-                <li>
+                <li [class.uk-active]="tabActive('settings')">
                     <a [routerLink]="settingsUrl()">
                         <span uk-icon="icon: settings"></span>
                         Settings
