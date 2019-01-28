@@ -15,9 +15,6 @@ GOSWAGGER ?= docker run --rm \
 	-v $(shell pwd):/go/src/github.com/sourcepods/sourcepods \
 	-w /go/src/github.com/sourcepods/sourcepods quay.io/goswagger/swagger:v0.18.0
 
-pkg/storage/storage.pb.go: pkg/storage/storage.proto
-	go generate ./pkg/storage/...
-
 pkg/api/v1/models pkg/api/v1/restapi: swagger.yaml
 	-rm -r pkg/api/v1/{models,restapi}
 	$(GOSWAGGER) generate server -f swagger.yaml --exclude-main -A sourcepods --target pkg/api/v1
@@ -32,6 +29,9 @@ ui/lib/src/api: swagger.yaml
 	$(SWAGGER) generate -i /local/swagger.yaml -l dart -o /local/tmp/dart
 	mv tmp/dart/lib ui/lib/src/api
 	-rm -rf tmp/
+
+pkg/storage/storage.pb.go: pkg/storage/storage.proto
+	protoc pkg/storage/storage.proto --go_out=plugins=grpc:.
 
 .PHONY: lint
 lint:
@@ -58,7 +58,7 @@ dev/api: cmd/api $(GO_PKG_FILES)
 dev/sourcepods-dev: cmd/sourcepods-dev $(GO_PKG_FILES)
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/sourcepods-dev ./cmd/sourcepods-dev
 
-dev/storage: cmd/storage $(GO_PKG_FILES)
+dev/storage: cmd/storage $(GO_PKG_FILES) pkg/storage/storage.pb.go
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/storage ./cmd/storage
 
 dev/ui: cmd/ui $(GO_PKG_FILES) ui/build dev/packr

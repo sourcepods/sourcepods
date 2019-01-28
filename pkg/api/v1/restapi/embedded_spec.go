@@ -228,6 +228,66 @@ func init() {
         }
       }
     },
+    "/repositories/{owner}/{name}/tree": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get the tree including folders (tree) and files (blob) for a repository",
+        "operationId": "getRepositoryTree",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The ref for the tree",
+            "name": "ref",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The path for the tree",
+            "name": "path",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository's tree",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/treeEntry"
+              }
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": [
@@ -435,6 +495,29 @@ func init() {
           "format": "date-time"
         },
         "website": {
+          "type": "string"
+        }
+      }
+    },
+    "treeEntry": {
+      "type": "object",
+      "required": [
+        "mode",
+        "type",
+        "object",
+        "path"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "type": {
           "type": "string"
         }
       }
@@ -709,6 +792,66 @@ func init() {
         }
       }
     },
+    "/repositories/{owner}/{name}/tree": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get the tree including folders (tree) and files (blob) for a repository",
+        "operationId": "getRepositoryTree",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The ref for the tree",
+            "name": "ref",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The path for the tree",
+            "name": "path",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository's tree",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/treeEntry"
+              }
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": [
@@ -916,6 +1059,29 @@ func init() {
           "format": "date-time"
         },
         "website": {
+          "type": "string"
+        }
+      }
+    },
+    "treeEntry": {
+      "type": "object",
+      "required": [
+        "mode",
+        "type",
+        "object",
+        "path"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "type": {
           "type": "string"
         }
       }

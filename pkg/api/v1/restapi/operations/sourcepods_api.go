@@ -52,6 +52,9 @@ func NewSourcepodsAPI(spec *loads.Document) *SourcepodsAPI {
 		RepositoriesGetRepositoryBranchesHandler: repositories.GetRepositoryBranchesHandlerFunc(func(params repositories.GetRepositoryBranchesParams) middleware.Responder {
 			return middleware.NotImplemented("operation RepositoriesGetRepositoryBranches has not yet been implemented")
 		}),
+		RepositoriesGetRepositoryTreeHandler: repositories.GetRepositoryTreeHandlerFunc(func(params repositories.GetRepositoryTreeParams) middleware.Responder {
+			return middleware.NotImplemented("operation RepositoriesGetRepositoryTree has not yet been implemented")
+		}),
 		UsersGetUserHandler: users.GetUserHandlerFunc(func(params users.GetUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUser has not yet been implemented")
 		}),
@@ -103,6 +106,8 @@ type SourcepodsAPI struct {
 	RepositoriesGetRepositoryHandler repositories.GetRepositoryHandler
 	// RepositoriesGetRepositoryBranchesHandler sets the operation handler for the get repository branches operation
 	RepositoriesGetRepositoryBranchesHandler repositories.GetRepositoryBranchesHandler
+	// RepositoriesGetRepositoryTreeHandler sets the operation handler for the get repository tree operation
+	RepositoriesGetRepositoryTreeHandler repositories.GetRepositoryTreeHandler
 	// UsersGetUserHandler sets the operation handler for the get user operation
 	UsersGetUserHandler users.GetUserHandler
 	// UsersGetUserMeHandler sets the operation handler for the get user me operation
@@ -188,6 +193,10 @@ func (o *SourcepodsAPI) Validate() error {
 
 	if o.RepositoriesGetRepositoryBranchesHandler == nil {
 		unregistered = append(unregistered, "repositories.GetRepositoryBranchesHandler")
+	}
+
+	if o.RepositoriesGetRepositoryTreeHandler == nil {
+		unregistered = append(unregistered, "repositories.GetRepositoryTreeHandler")
 	}
 
 	if o.UsersGetUserHandler == nil {
@@ -323,6 +332,11 @@ func (o *SourcepodsAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/repositories/{owner}/{name}/branches"] = repositories.NewGetRepositoryBranches(o.context, o.RepositoriesGetRepositoryBranchesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/repositories/{owner}/{name}/tree"] = repositories.NewGetRepositoryTree(o.context, o.RepositoriesGetRepositoryTreeHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

@@ -45,6 +45,8 @@ class ApiClient {
           return new NewRepository.fromJson(value);
         case 'Repository':
           return new Repository.fromJson(value);
+        case 'TreeEntry':
+          return new TreeEntry.fromJson(value);
         case 'UpdatedUser':
           return new UpdatedUser.fromJson(value);
         case 'User':

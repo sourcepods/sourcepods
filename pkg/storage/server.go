@@ -75,7 +75,7 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 	if err != nil {
 		return nil, grpc.Errorf(codes.NotFound, "%v", err)
 	}
-	c, err := repo.GetCommit(ctx, req.GetRev())
+	c, err := repo.GetCommit(ctx, req.GetRef())
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, "%v", err)
 	}
@@ -92,4 +92,23 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 		CommitterEmail: c.Committer.Email,
 		CommitterDate:  c.Committer.Date.Unix(),
 	}, nil
+}
+
+func (s *repositoryServer) Tree(ctx context.Context, req *TreeRequest) (*TreeResponse, error) {
+	entries, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetRef(), req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	var treeEntryRes []*TreeEntryResponse
+	for _, e := range entries {
+		treeEntryRes = append(treeEntryRes, &TreeEntryResponse{
+			Mode:   e.Mode,
+			Type:   e.Type,
+			Object: e.Object,
+			Path:   e.Path,
+		})
+	}
+
+	return &TreeResponse{TreeEntries: treeEntryRes}, nil
 }

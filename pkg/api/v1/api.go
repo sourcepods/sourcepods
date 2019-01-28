@@ -38,6 +38,7 @@ func New(rs repository.Service, us user.Service) (*API, error) {
 	sourcepodsAPI.RepositoriesGetOwnerRepositoriesHandler = GetOwnerRepositoriesHandler(rs)
 	sourcepodsAPI.RepositoriesGetRepositoryBranchesHandler = GetRepositoryBranchesHandler(rs)
 	sourcepodsAPI.RepositoriesGetRepositoryHandler = GetRepositoryHandler(rs)
+	sourcepodsAPI.RepositoriesGetRepositoryTreeHandler = GetRepositoryTreeHandler(rs)
 	sourcepodsAPI.UsersGetUserHandler = GetUserHandler(us)
 	sourcepodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
 	sourcepodsAPI.UsersListUsersHandler = ListUsersHandler(us)
@@ -162,6 +163,51 @@ func GetRepositoryHandler(rs repository.Service) repositories.GetRepositoryHandl
 		}
 
 		return repositories.NewGetRepositoryOK().WithPayload(convertRepository(r))
+	}
+}
+
+//GetRepositoryTreeHandler gets a repository's tree for a given rev and path
+func GetRepositoryTreeHandler(rs repository.Service) repositories.GetRepositoryTreeHandlerFunc {
+	return func(params repositories.GetRepositoryTreeParams) middleware.Responder {
+		rev := "master" // TODO: lookup default branch in database
+		if params.Ref != nil {
+			rev = *params.Ref
+		}
+
+		path := "." // Use root as path by default
+		if params.Path != nil {
+			path = *params.Path
+		}
+
+		tree, err := rs.Tree(
+			params.HTTPRequest.Context(),
+			params.Owner,
+			params.Name,
+			rev,
+			path,
+		)
+		if err != nil {
+			if err == repository.ErrRepositoryNotFound {
+				message := "repository not found"
+				return repositories.NewGetRepositoryTreeNotFound().WithPayload(&models.Error{
+					Message: &message,
+				})
+			}
+			return repositories.NewGetRepositoryTreeDefault(http.StatusInternalServerError)
+		}
+
+		var payload []*models.TreeEntry
+		for _, te := range tree {
+			te := te
+			payload = append(payload, &models.TreeEntry{
+				Mode:   &te.Mode,
+				Object: &te.Object,
+				Path:   &te.Path,
+				Type:   &te.Type,
+			})
+		}
+
+		return repositories.NewGetRepositoryTreeOK().WithPayload(payload)
 	}
 }
 

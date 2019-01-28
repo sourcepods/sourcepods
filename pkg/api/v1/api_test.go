@@ -35,6 +35,10 @@ func (repositoryTestService) Commit(ctx context.Context, owner string, name stri
 	panic("implement me")
 }
 
+func (repositoryTestService) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error) {
+	panic("implement me")
+}
+
 type userTestService struct {
 	FinAll func(context.Context) ([]*user.User, error)
 }

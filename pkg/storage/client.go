@@ -5,11 +5,9 @@ import (
 	"time"
 
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 )
-
-//go:generate protoc storage.proto --go_out=plugins=grpc:.
 
 // Client holds the gRPC-connection to the storage-server
 type Client struct {
@@ -91,11 +89,17 @@ func (c *Client) Branches(ctx context.Context, owner, name string) ([]Branch, er
 }
 
 // Commit returns a single commit from a given repository
-func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, error) {
+func (c *Client) Commit(ctx context.Context, owner string, name string, ref string) (Commit, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Commit")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("ref", ref)
+	defer span.Finish()
+
 	req := &CommitRequest{
 		Owner: owner,
 		Name:  name,
-		Rev:   rev,
+		Ref:   ref,
 	}
 
 	res, err := c.commits.Get(ctx, req)
@@ -119,4 +123,38 @@ func (c *Client) Commit(ctx context.Context, owner, name, rev string) (Commit, e
 			Date:  time.Unix(res.GetCommitterDate(), 0),
 		},
 	}, nil
+}
+
+//Tree returns the files and folders at a given ref at a path in a repository
+func (c *Client) Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Tree")
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("ref", ref)
+	span.SetTag("path", path)
+	defer span.Finish()
+
+	req := &TreeRequest{
+		Owner: owner,
+		Name:  name,
+		Ref:   ref,
+		Path:  path,
+	}
+
+	res, err := c.repos.Tree(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	var treeEntries []TreeEntry
+	for _, te := range res.TreeEntries {
+		treeEntries = append(treeEntries, TreeEntry{
+			Mode:   te.Mode,
+			Type:   te.Type,
+			Object: te.Object,
+			Path:   te.Path,
+		})
+	}
+
+	return treeEntries, nil
 }

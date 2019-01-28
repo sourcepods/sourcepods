@@ -6,6 +6,7 @@ import 'package:sourcepods/api.dart';
 import 'package:sourcepods/src/api/api.dart' as api;
 import 'package:sourcepods/src/repository/repository.dart';
 import 'package:sourcepods/src/repository/repository_create_component.dart';
+import 'package:sourcepods/src/repository/tree.dart';
 
 @Injectable()
 class RepositoryService {
@@ -18,9 +19,17 @@ class RepositoryService {
     return Repository.fromAPI(r);
   }
 
-  Future<List<String>> getBranches (String owner, String name) async{
-    List<api.Branch> branches = await _api.repositories.getRepositoryBranches(owner, name);
+  Future<List<String>> getBranches(String owner, String name) async {
+    List<api.Branch> branches =
+        await _api.repositories.getRepositoryBranches(owner, name);
     return branches.map((b) => b.name).toList();
+  }
+
+  Future<List<TreeEntry>> getTree(
+      String owner, String name, String ref, String path) async {
+    List<api.TreeEntry> tree = await _api.repositories
+        .getRepositoryTree(owner, name, ref: ref, gitPath: path);
+    return tree.map((te) => TreeEntry.fromAPI(te)).toList();
   }
 
   Future<Repository> create(

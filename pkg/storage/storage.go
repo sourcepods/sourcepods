@@ -11,6 +11,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -25,19 +28,7 @@ type (
 		GetRepository(ctx context.Context, owner, name string) (Repository, error)
 		//Branches(ctx context.Context, owner string, name string) ([]Branch, error)
 		//Commit(ctx context.Context, owner string, name string, rev string) (Commit, error)
-	}
-
-	// Repository is the interface for manipulating repos
-	Repository interface {
-		SetDescription(ctx context.Context, description string) error
-		ListBranches(ctx context.Context) ([]Branch, error)
-		GetCommit(ctx context.Context, rev string) (Commit, error)
-	}
-
-	// LocalRepository implements Repository for Local disk-access
-	LocalRepository struct {
-		git  string
-		path string
+		Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error)
 	}
 
 	// LocalStorage implements Storage for Local disk-access
@@ -45,13 +36,21 @@ type (
 		git  string
 		root string
 	}
-)
 
-// SetDescription of repository
-func (r *LocalRepository) SetDescription(ctx context.Context, description string) error {
-	file := filepath.Join(r.path, "description")
-	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
-}
+	// Repository is the interface for manipulating repos
+	Repository interface {
+		SetDescription(ctx context.Context, description string) error
+		ListBranches(ctx context.Context) ([]Branch, error)
+		GetCommit(ctx context.Context, ref string) (Commit, error)
+		Tree(ctx context.Context, ref, path string) ([]TreeEntry, error)
+	}
+
+	// LocalRepository implements Repository for Local disk-access
+	LocalRepository struct {
+		git  string
+		path string
+	}
+)
 
 // NewLocalStorage returns a LocalStorage in the given `root`
 func NewLocalStorage(root string) (*LocalStorage, error) {
@@ -62,6 +61,19 @@ func NewLocalStorage(root string) (*LocalStorage, error) {
 		git:  "/usr/bin/git",
 		root: root,
 	}, nil
+}
+
+// Create a new repository
+func (s *LocalStorage) Create(ctx context.Context, owner, name string) error {
+	dir := filepath.Join(s.root, owner, name)
+
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("failed to repository directory: %s", dir)
+	}
+
+	cmd := exec.CommandContext(ctx, s.git, "init", "--bare")
+	cmd.Dir = dir
+	return cmd.Run()
 }
 
 // GetRepository from Storage
@@ -83,17 +95,13 @@ func (s *LocalStorage) GetRepository(ctx context.Context, owner, name string) (R
 	return &LocalRepository{git: s.git, path: dir}, nil
 }
 
-// Create a new repository
-func (s *LocalStorage) Create(ctx context.Context, owner, name string) error {
-	dir := filepath.Join(s.root, owner, name)
-
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("failed to repository directory: %s", dir)
+func (s *LocalStorage) Tree(ctx context.Context, owner, name, ref, path string) ([]TreeEntry, error) {
+	r, err := s.GetRepository(ctx, owner, name)
+	if err != nil {
+		return nil, err
 	}
 
-	cmd := exec.CommandContext(ctx, s.git, "init", "--bare")
-	cmd.Dir = dir
-	return cmd.Run()
+	return r.Tree(ctx, ref, path)
 }
 
 // Branch of a repository
@@ -101,6 +109,12 @@ type Branch struct {
 	Name string
 	Sha1 string
 	Type string
+}
+
+// SetDescription of repository
+func (r *LocalRepository) SetDescription(ctx context.Context, description string) error {
+	file := filepath.Join(r.path, "description")
+	return ioutil.WriteFile(file, []byte(description+"\n"), 0644)
 }
 
 // ListBranches returns all branches of a given repository
@@ -142,8 +156,8 @@ type Commit struct {
 }
 
 // GetCommit returns a single Commit from a Repository
-func (r *LocalRepository) GetCommit(ctx context.Context, rev string) (Commit, error) {
-	args := []string{"cat-file", "-p", rev}
+func (r *LocalRepository) GetCommit(ctx context.Context, ref string) (Commit, error) {
+	args := []string{"cat-file", "-p", ref}
 	cmd := exec.CommandContext(ctx, r.git, args...)
 	cmd.Dir = r.path
 	out, err := cmd.Output()
@@ -151,7 +165,7 @@ func (r *LocalRepository) GetCommit(ctx context.Context, rev string) (Commit, er
 		return Commit{}, err
 	}
 
-	commit, err := parseCommit(bytes.NewBuffer(out), rev)
+	commit, err := parseCommit(bytes.NewBuffer(out), ref)
 	if err != nil {
 		return commit, err
 	}
@@ -246,4 +260,88 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 
 	// skip any excessive header-lines
 	return false, nil
+}
+
+//TreeEntry is a file or folder at a given path in a repository
+type TreeEntry struct {
+	Mode   string
+	Type   string
+	Object string
+	Path   string
+}
+
+//Tree returns the files and folders at a given ref at a path in a repository
+func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
+	treeEntries, err := r.tree(ctx, ref, path)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(treeEntries) > 1 {
+		return treeEntries, nil
+	}
+
+	if treeEntries[0].Type != "tree" {
+		return treeEntries, nil
+	}
+
+	// In case we read a directory without a trailing slash,
+	// instead of returning the single directory, we change into it,
+	// by appending a slash, and return its contents
+	return r.tree(ctx, ref, path+"/")
+}
+
+func (r *LocalRepository) tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.tree")
+	span.SetTag("ref", ref)
+	span.SetTag("path", path)
+	defer span.Finish()
+
+	args := []string{"ls-tree", ref, path}
+	cmd := exec.CommandContext(ctx, r.git, args...)
+	cmd.Dir = r.path
+	out, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to run git ls-tree")
+	}
+	if err = cmd.Start(); err != nil {
+		return nil, errors.Wrap(err, "failed to run git ls-tree")
+	}
+
+	// TODO: The scanner takes unbounded inputs. This could cause OOMs
+
+	var treeEntries []TreeEntry
+	scanner := bufio.NewScanner(out)
+	for scanner.Scan() {
+		line := scanner.Text()
+		te, err := parseTreeEntry(line)
+		if err != nil {
+			return treeEntries, errors.Wrap(err, "unable to parse tree entry line")
+		}
+		treeEntries = append(treeEntries, te)
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return nil, errors.Wrap(err, "failed to wait for command to finish")
+	}
+
+	return treeEntries, nil
+}
+
+func parseTreeEntry(s string) (TreeEntry, error) {
+	tabs := strings.Split(s, "\t")
+	if len(tabs) != 2 {
+		return TreeEntry{}, errors.New("expected 2 tab separated inputs")
+	}
+	spaces := strings.Split(tabs[0], " ")
+	if len(spaces) != 3 {
+		return TreeEntry{}, errors.New("expected 3 space separated inputs")
+	}
+
+	return TreeEntry{
+		Mode:   spaces[0],
+		Type:   spaces[1],
+		Object: spaces[2],
+		Path:   tabs[1],
+	}, nil
 }

@@ -20,6 +20,7 @@ part 'model/branch.dart';
 part 'model/error.dart';
 part 'model/new_repository.dart';
 part 'model/repository.dart';
+part 'model/tree_entry.dart';
 part 'model/updated_user.dart';
 part 'model/user.dart';
 part 'model/validation_error.dart';

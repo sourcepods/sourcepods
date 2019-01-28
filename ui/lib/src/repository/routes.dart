@@ -14,7 +14,7 @@ class RoutePaths {
     parent: _parent.RoutePaths.repository,
   );
   static final files = RoutePath(
-    path: '',
+    path: 'tree/.*',
     parent: _parent.RoutePaths.repository,
     useAsDefault: true,
   );
