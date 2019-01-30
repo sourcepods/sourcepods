@@ -1,0 +1,8 @@
+<ul class="uk-breadcrumb">
+    <li>
+        <a class="repository" [routerLink]="changeRoot()">{{ repositoryName }}</a>
+    </li>
+    <li *ngFor="let element of elements; let i=index">
+        <a [routerLink]="changeDirectory(i)">{{ element }}</a>
+    </li>
+</ul>

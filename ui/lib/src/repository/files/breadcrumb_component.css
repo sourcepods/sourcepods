@@ -1,0 +1,15 @@
+ul.uk-breadcrumb {
+	margin: 0;
+}
+
+ul.uk-breadcrumb li:before {
+	margin: 0 10px;
+}
+
+ul.uk-breadcrumb li a {
+	font-size: 1rem;
+}
+
+ul.uk-breadcrumb li a.repository {
+	color: #0e6dcd;
+}
