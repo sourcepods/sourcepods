@@ -29,11 +29,11 @@ type repositoryServer struct {
 }
 
 func (s *repositoryServer) Create(ctx context.Context, req *CreateRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, s.storage.Create(ctx, req.GetOwner(), req.GetName())
+	return &empty.Empty{}, s.storage.Create(ctx, req.GetId())
 }
 
 func (s *repositoryServer) SetDescriptions(ctx context.Context, req *SetDescriptionRequest) (*empty.Empty, error) {
-	repo, err := s.storage.GetRepository(ctx, req.GetOwner(), req.GetName())
+	repo, err := s.storage.GetRepository(ctx, req.GetId())
 	if err != nil {
 		return nil, grpc.Errorf(codes.NotFound, "%v", err)
 	}
@@ -45,7 +45,7 @@ type branchesServer struct {
 }
 
 func (s *branchesServer) List(ctx context.Context, req *BranchesRequest) (*BranchesResponse, error) {
-	repo, err := s.storage.GetRepository(ctx, req.GetOwner(), req.GetName())
+	repo, err := s.storage.GetRepository(ctx, req.GetId())
 	if err != nil {
 		return nil, grpc.Errorf(codes.NotFound, "%v", err)
 	}
@@ -71,7 +71,7 @@ type commitServer struct {
 }
 
 func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResponse, error) {
-	repo, err := s.storage.GetRepository(ctx, req.GetOwner(), req.GetName())
+	repo, err := s.storage.GetRepository(ctx, req.GetId())
 	if err != nil {
 		return nil, grpc.Errorf(codes.NotFound, "%v", err)
 	}
@@ -92,10 +92,15 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 		CommitterEmail: c.Committer.Email,
 		CommitterDate:  c.Committer.Date.Unix(),
 	}, nil
+
 }
 
 func (s *repositoryServer) Tree(ctx context.Context, req *TreeRequest) (*TreeResponse, error) {
-	entries, err := s.storage.Tree(ctx, req.GetOwner(), req.GetName(), req.GetRef(), req.GetPath())
+	repo, err := s.storage.GetRepository(ctx, req.GetId())
+	if err != nil {
+		return nil, grpc.Errorf(codes.NotFound, "%v", err)
+	}
+	entries, err := repo.Tree(ctx, req.GetRef(), req.GetPath())
 	if err != nil {
 		return nil, err
 	}

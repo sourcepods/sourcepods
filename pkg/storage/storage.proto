@@ -19,19 +19,16 @@ service Commit {
 }
 
 message CreateRequest {
-    string owner = 1;
-    string name = 2;
+    string id = 1;
 }
 
 message SetDescriptionRequest {
-    string owner = 1;
-    string name = 2;
-    string description = 3;
+    string id = 1;
+    string description = 2;
 }
 
 message BranchesRequest {
-    string owner = 1;
-    string name = 2;
+    string id = 1;
 }
 
 message BranchResponse {
@@ -45,9 +42,8 @@ message BranchesResponse {
 }
 
 message CommitRequest {
-    string owner = 1;
-    string name = 2;
-    string ref = 3;
+    string id = 1;
+    string ref = 2;
 }
 
 message CommitResponse {
@@ -64,10 +60,9 @@ message CommitResponse {
 }
 
 message TreeRequest {
-    string owner = 1;
-    string name = 2;
-    string ref = 3;
-    string path = 4;
+    string id = 1;
+    string ref = 2;
+    string path = 3;
 }
 
 message TreeEntryResponse {
