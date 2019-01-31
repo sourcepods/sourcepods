@@ -15,16 +15,16 @@ import (
 func treeAction(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 3 {
-		return errors.New("need exactly 3 arguments: repo_hash rev path")
+		return errors.New("need exactly 3 arguments: id rev path")
 	}
-	repoHash, rev, path := args[0], args[1], args[2]
+	id, rev, path := args[0], args[1], args[2]
 
 	s, err := storage.NewLocalStorage(c.GlobalString(cmd.FlagRoot))
 	if err != nil {
 		return err
 	}
 
-	r, err := s.GetRepository(context.Background(), repoHash)
+	r, err := s.GetRepository(context.Background(), id)
 	if err != nil {
 		return err
 	}
