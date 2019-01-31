@@ -19,16 +19,16 @@ service Commit {
 }
 
 message CreateRequest {
-    string repo_hash = 1;
+    string id = 1;
 }
 
 message SetDescriptionRequest {
-    string repo_hash = 1;
+    string id = 1;
     string description = 2;
 }
 
 message BranchesRequest {
-    string repo_hash = 1;
+    string id = 1;
 }
 
 message BranchResponse {
@@ -42,7 +42,7 @@ message BranchesResponse {
 }
 
 message CommitRequest {
-    string repo_hash = 1;
+    string id = 1;
     string ref = 2;
 }
 
@@ -60,7 +60,7 @@ message CommitResponse {
 }
 
 message TreeRequest {
-    string repo_hash = 1;
+    string id = 1;
     string ref = 2;
     string path = 3;
 }

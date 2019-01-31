@@ -35,36 +35,36 @@ func NewClient(storageAddr string) (*Client, error) {
 }
 
 // Create a repository
-func (c *Client) Create(ctx context.Context, repoHash string) error {
+func (c *Client) Create(ctx context.Context, id string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Create")
-	span.SetTag("repo_hash", repoHash)
+	span.SetTag("id", id)
 	defer span.Finish()
 
-	_, err := c.repos.Create(ctx, &CreateRequest{RepoHash: repoHash})
+	_, err := c.repos.Create(ctx, &CreateRequest{Id: id})
 	return err
 }
 
 // SetDescription of a repository
-func (c *Client) SetDescription(ctx context.Context, repoHash, description string) error {
+func (c *Client) SetDescription(ctx context.Context, id, description string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Description")
-	span.SetTag("repo_hash", repoHash)
+	span.SetTag("id", id)
 	span.SetTag("description", description)
 	defer span.Finish()
 
 	_, err := c.repos.SetDescriptions(ctx, &SetDescriptionRequest{
-		RepoHash:    repoHash,
+		Id:          id,
 		Description: description,
 	})
 	return err
 }
 
 // Branches returns all branches of a repository
-func (c *Client) Branches(ctx context.Context, repoHash string) ([]Branch, error) {
+func (c *Client) Branches(ctx context.Context, id string) ([]Branch, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Branches")
-	span.SetTag("repo_hash", repoHash)
+	span.SetTag("id", id)
 	defer span.Finish()
 
-	res, err := c.branches.List(ctx, &BranchesRequest{RepoHash: repoHash})
+	res, err := c.branches.List(ctx, &BranchesRequest{Id: id})
 
 	var branches []Branch
 	for _, b := range res.Branch {
@@ -79,15 +79,15 @@ func (c *Client) Branches(ctx context.Context, repoHash string) ([]Branch, error
 }
 
 // Commit returns a single commit from a given repository
-func (c *Client) Commit(ctx context.Context, repoHash, ref string) (Commit, error) {
+func (c *Client) Commit(ctx context.Context, id, ref string) (Commit, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Commit")
-	span.SetTag("repo_hash", repoHash)
+	span.SetTag("id", id)
 	span.SetTag("ref", ref)
 	defer span.Finish()
 
 	req := &CommitRequest{
-		RepoHash: repoHash,
-		Ref:      ref,
+		Id:  id,
+		Ref: ref,
 	}
 
 	res, err := c.commits.Get(ctx, req)
@@ -114,17 +114,17 @@ func (c *Client) Commit(ctx context.Context, repoHash, ref string) (Commit, erro
 }
 
 //Tree returns the files and folders at a given ref at a path in a repository
-func (c *Client) Tree(ctx context.Context, repoHash, ref, path string) ([]TreeEntry, error) {
+func (c *Client) Tree(ctx context.Context, id, ref, path string) ([]TreeEntry, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Tree")
-	span.SetTag("repo_path", repoHash)
+	span.SetTag("repo_path", id)
 	span.SetTag("ref", ref)
 	span.SetTag("path", path)
 	defer span.Finish()
 
 	req := &TreeRequest{
-		RepoHash: repoHash,
-		Ref:      ref,
-		Path:     path,
+		Id:   id,
+		Ref:  ref,
+		Path: path,
 	}
 
 	res, err := c.repos.Tree(ctx, req)

@@ -24,8 +24,8 @@ var (
 type (
 	// Storage TODO: is something that should be split up
 	Storage interface {
-		Create(ctx context.Context, repoHash string) error
-		GetRepository(ctx context.Context, repoHash string) (Repository, error)
+		Create(ctx context.Context, id string) error
+		GetRepository(ctx context.Context, id string) (Repository, error)
 	}
 
 	// LocalStorage implements Storage for Local disk-access
@@ -60,14 +60,14 @@ func NewLocalStorage(root string) (*LocalStorage, error) {
 	}, nil
 }
 
-func (s *LocalStorage) repoPath(repoHash string) string {
-	repoHash = strings.Replace(repoHash, "-", "", -1)
-	return filepath.Join(s.root, repoHash[:2], repoHash[2:2], repoHash[4:])
+func (s *LocalStorage) repoPath(id string) string {
+	id = strings.Replace(id, "-", "", -1)
+	return filepath.Join(s.root, id[:2], id[2:2], id[4:])
 }
 
 // Create a new repository
-func (s *LocalStorage) Create(ctx context.Context, repoHash string) error {
-	dir := s.repoPath(repoHash)
+func (s *LocalStorage) Create(ctx context.Context, id string) error {
+	dir := s.repoPath(id)
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to repository directory: %s", dir)

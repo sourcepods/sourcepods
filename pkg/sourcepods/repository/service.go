@@ -28,11 +28,11 @@ type (
 
 	// Storage manages the git storage
 	Storage interface {
-		Create(ctx context.Context, repoPath string) error
-		SetDescription(ctx context.Context, repoPath, description string) error
-		Branches(ctx context.Context, repoPath string) ([]storage.Branch, error)
-		Commit(ctx context.Context, repoPath, rev string) (storage.Commit, error)
-		Tree(ctx context.Context, repoPath, rev, path string) ([]storage.TreeEntry, error)
+		Create(ctx context.Context, id string) error
+		SetDescription(ctx context.Context, id, description string) error
+		Branches(ctx context.Context, id string) ([]storage.Branch, error)
+		Commit(ctx context.Context, id, rev string) (storage.Commit, error)
+		Tree(ctx context.Context, id, rev, path string) ([]storage.TreeEntry, error)
 	}
 
 	// Service to interact with repositories.
