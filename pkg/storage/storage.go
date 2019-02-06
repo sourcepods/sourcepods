@@ -2,7 +2,6 @@ package storage
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -75,6 +74,8 @@ func (s *LocalStorage) Create(ctx context.Context, id string) error {
 
 	cmd := exec.CommandContext(ctx, s.git, "init", "--bare")
 	cmd.Dir = dir
+
+	//TODO: Don't throw away stdout/err...
 	return cmd.Run()
 }
 
@@ -93,7 +94,7 @@ func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repo
 	if strings.TrimSuffix(string(output), "\x00") != "0" {
 		return nil, ErrRepoNotValid
 	}
-	// TODO: return an actual Repository...
+
 	return &LocalRepository{git: s.git, path: dir}, nil
 }
 
@@ -112,16 +113,22 @@ func (r *LocalRepository) SetDescription(ctx context.Context, description string
 
 // ListBranches returns all branches of a given repository
 func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	args := []string{"for-each-ref", "--format=%(objectname) %(objecttype) %(refname)", "refs/heads"}
 	cmd := exec.CommandContext(ctx, r.git, args...)
 	cmd.Dir = r.path
-	out, err := cmd.Output()
+	out, err := cmd.StdoutPipe()
 	if err != nil {
+		return nil, err
+	}
+	if err = cmd.Start(); err != nil {
 		return nil, err
 	}
 
 	var bs []Branch
-	scanner := bufio.NewScanner(bytes.NewBuffer(out))
+	scanner := bufio.NewScanner(out)
 	for scanner.Scan() {
 		s := strings.Split(scanner.Text(), " ")
 
@@ -130,6 +137,10 @@ func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
 			Sha1: s[0],
 			Type: s[1],
 		})
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return nil, err
 	}
 
 	return bs, nil
@@ -150,17 +161,27 @@ type Commit struct {
 
 // GetCommit returns a single Commit from a Repository
 func (r *LocalRepository) GetCommit(ctx context.Context, ref string) (Commit, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	args := []string{"cat-file", "-p", ref}
 	cmd := exec.CommandContext(ctx, r.git, args...)
 	cmd.Dir = r.path
-	out, err := cmd.Output()
+	out, err := cmd.StdoutPipe()
+	if err != nil {
+		return Commit{}, err
+	}
+	if err = cmd.Start(); err != nil {
+		return Commit{}, err
+	}
+
+	commit, err := parseCommit(out, ref)
 	if err != nil {
 		return Commit{}, err
 	}
 
-	commit, err := parseCommit(bytes.NewBuffer(out), ref)
-	if err != nil {
-		return commit, err
+	if err := cmd.Wait(); err != nil {
+		return Commit{}, err
 	}
 
 	return commit, nil
@@ -265,28 +286,24 @@ type TreeEntry struct {
 
 //Tree returns the files and folders at a given ref at a path in a repository
 func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.Tree")
 	span.SetTag("ref", ref)
 	span.SetTag("path", path)
 	defer span.Finish()
+
+	if !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
 
 	treeEntries, err := r.tree(ctx, ref, path)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(treeEntries) > 1 {
-		return treeEntries, nil
-	}
-
-	if treeEntries[0].Type != "tree" {
-		return treeEntries, nil
-	}
-
-	// In case we read a directory without a trailing slash,
-	// instead of returning the single directory, we change into it,
-	// by appending a slash, and return its contents
-	return r.tree(ctx, ref, path+"/")
+	return treeEntries, nil
 }
 
 func (r *LocalRepository) tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
