@@ -101,13 +101,15 @@ func devAction(c *cli.Context) error {
 		tracingURL = "localhost:6831"
 	}
 
-	exists, err := exists("./dev")
-	if err != nil {
-		return err
-	}
-	if !exists {
-		color.HiRed("Development folder ./dev doesn't exists. Run `sourcepods-dev setup` first")
-		return nil
+	for _, dir := range []string{"./dev", "./dev/keys"} {
+		exists, err := exists(dir)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			color.HiRed("Development folder %s doesn't exists. Run `sourcepods-dev setup` first", dir)
+			return nil
+		}
 	}
 
 	uiRunner := NewRunner("ui", []string{
@@ -138,11 +140,20 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
 	})
 
+	sshRunner := NewRunner("ssh", []string{
+		fmt.Sprintf("%s=%d", cmd.EnvSSHPort, 2222),
+		fmt.Sprintf("%s=%s", cmd.EnvSSHHostKeyPath, "./dev/keys/"),
+		fmt.Sprintf("%s=%s", cmd.EnvStorageGRPCURL, "localhost:3033"),
+		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
+		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
+		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
+	})
+
 	caddy := CaddyRunner{}
 
 	if watchFlag {
 		watcher := &FileWatcher{}
-		watcher.Add(uiRunner, apiRunner, storageRunner)
+		watcher.Add(uiRunner, apiRunner, storageRunner, sshRunner)
 
 		go watcher.Watch()
 	}
@@ -174,6 +185,15 @@ func devAction(c *cli.Context) error {
 		}, func(err error) {
 			color.HiYellow("stopping storage")
 			storageRunner.Shutdown()
+		})
+	}
+	{
+		g.Add(func() error {
+			color.HiGreen("starting ssh")
+			return sshRunner.Run()
+		}, func(err error) {
+			color.HiYellow("stopping ssh")
+			sshRunner.Shutdown()
 		})
 	}
 	{

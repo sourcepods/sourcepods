@@ -2,10 +2,14 @@ package storage
 
 import (
 	"context"
+	fmt "fmt"
+	"io"
+	"sync"
 	"time"
 
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
+	"gitlab.com/gitlab-org/gitaly/streamio"
 	"google.golang.org/grpc"
 )
 
@@ -14,6 +18,7 @@ type Client struct {
 	repos    RepositoryClient
 	branches BranchClient
 	commits  CommitClient
+	ssh      SSHClient
 }
 
 // NewClient returns a new Storage client.
@@ -21,6 +26,7 @@ func NewClient(storageAddr string) (*Client, error) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 	opts = append(opts, grpc.WithUnaryInterceptor(grpcopentracing.UnaryClientInterceptor()))
+	opts = append(opts, grpc.WithStreamInterceptor(grpcopentracing.StreamClientInterceptor()))
 
 	conn, err := grpc.DialContext(context.Background(), storageAddr, opts...)
 	if err != nil {
@@ -31,6 +37,7 @@ func NewClient(storageAddr string) (*Client, error) {
 		repos:    NewRepositoryClient(conn),
 		branches: NewBranchClient(conn),
 		commits:  NewCommitClient(conn),
+		ssh:      NewSSHClient(conn),
 	}, nil
 }
 
@@ -143,4 +150,124 @@ func (c *Client) Tree(ctx context.Context, id, ref, path string) ([]TreeEntry, e
 	}
 
 	return treeEntries, nil
+}
+
+// UploadPack to a git-repo
+func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, stdout, stderr io.Writer) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.UploadPack")
+	span.SetTag("repo_path", id)
+	defer span.Finish()
+
+	req := &GRERequest{Id: id}
+
+	stream, err := c.ssh.UploadPack(ctx)
+	if err != nil {
+		return err
+	}
+
+	if err := stream.Send(req); err != nil {
+		return nil
+	}
+
+	wg := sync.WaitGroup{}
+
+	// Go-routine for sending stdin
+	wg.Add(1)
+	go func() {
+		in := streamio.NewWriter(func(p []byte) error {
+			return stream.Send(&GRERequest{Stdin: p})
+		})
+		// _, err := io.Copy(in, stdin)
+		io.Copy(in, stdin)
+		stream.CloseSend()
+		// Handle err...
+		wg.Done()
+	}()
+
+	var (
+		resp *GREResponse
+	)
+	for ; err == nil; resp, err = stream.Recv() {
+		if resp.GetExitCode() != nil {
+			if value := resp.GetExitCode().GetExitCode(); value != 0 {
+				return fmt.Errorf("exitcode: %d", value)
+			}
+			return nil
+		}
+		if len(resp.GetStderr()) > 0 {
+			stderr.Write(resp.GetStderr())
+		}
+		if len(resp.GetStdout()) > 0 {
+			stdout.Write(resp.GetStdout())
+		}
+	}
+	if err == io.EOF {
+		err = nil
+	}
+
+	wg.Wait()
+
+	return err
+}
+
+// ReceivePack from a git-repo
+func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, stdout, stderr io.Writer) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.ReceivePack")
+	span.SetTag("repo_path", id)
+	defer span.Finish()
+
+	req := &GRERequest{Id: id}
+
+	stream, err := c.ssh.ReceivePack(ctx)
+	if err != nil {
+		return err
+	}
+
+	if err := stream.Send(req); err != nil {
+		return nil
+	}
+
+	wg := sync.WaitGroup{}
+
+	// Go-routine for sending stdin
+	wg.Add(1)
+	go func() {
+		in := streamio.NewWriter(func(p []byte) error {
+			return stream.Send(&GRERequest{Stdin: p})
+		})
+		// _, err := io.Copy(in, stdin)
+		io.Copy(in, stdin)
+		stream.CloseSend()
+		// Handle err...
+		wg.Done()
+	}()
+
+	var (
+		resp *GREResponse
+	)
+	for ; err == nil; resp, err = stream.Recv() {
+		if resp.GetExitCode() != nil {
+			if value := resp.GetExitCode().GetExitCode(); value != 0 {
+				return fmt.Errorf("exitcode: %d", value)
+			}
+			return nil
+		}
+		if len(resp.GetStderr()) > 0 {
+			if _, err = stderr.Write(resp.GetStderr()); err != nil {
+				break
+			}
+		}
+		if len(resp.GetStdout()) > 0 {
+			if _, err = stdout.Write(resp.GetStdout()); err != nil {
+				break
+			}
+		}
+	}
+	if err == io.EOF {
+		err = nil
+	}
+
+	wg.Wait()
+
+	return err
 }

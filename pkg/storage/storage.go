@@ -39,6 +39,8 @@ type (
 		ListBranches(ctx context.Context) ([]Branch, error)
 		GetCommit(ctx context.Context, ref string) (Commit, error)
 		Tree(ctx context.Context, ref, path string) ([]TreeEntry, error)
+		UploadPack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error)
+		ReceivePack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error)
 	}
 
 	// LocalRepository implements Repository for Local disk-access
@@ -61,7 +63,7 @@ func NewLocalStorage(root string) (*LocalStorage, error) {
 
 func (s *LocalStorage) repoPath(id string) string {
 	id = strings.Replace(id, "-", "", -1)
-	return filepath.Join(s.root, id[:2], id[2:2], id[4:])
+	return filepath.Join(s.root, id[0:2], id[2:4], id[4:])
 }
 
 // Create a new repository
@@ -359,4 +361,56 @@ func parseTreeEntry(s string) (TreeEntry, error) {
 		Object: spaces[2],
 		Path:   tabs[1],
 	}, nil
+}
+
+// UploadPack is a hack...
+//  int32 exitCode - The commands exit-code
+//  error internalError - And internal error occured
+func (r *LocalRepository) UploadPack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Repository.UploadPack")
+	span.SetTag("repo_path", r.path)
+	defer span.Finish()
+
+	cmd := exec.CommandContext(ctx, "/usr/bin/git", "upload-pack", r.path)
+	span.LogEvent(fmt.Sprintf("%v", cmd.Args))
+
+	cmd.Stdin = stdin
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	if err := cmd.Start(); err != nil {
+		return 0, fmt.Errorf("cmd.Start: %v", err)
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return 1, nil
+	}
+
+	return 0, nil
+}
+
+// ReceivePack is a hack...
+//  int32 exitCode - The commands exit-code
+//  error internalError - And internal error occured
+func (r *LocalRepository) ReceivePack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Repository.ReceivePack")
+	span.SetTag("repo_path", r.path)
+	defer span.Finish()
+
+	cmd := exec.CommandContext(ctx, "/usr/bin/git", "receive-pack", r.path)
+	span.LogEvent(fmt.Sprintf("%v", cmd.Args))
+
+	cmd.Stdin = stdin
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	if err := cmd.Start(); err != nil {
+		return 0, fmt.Errorf("cmd.Start: %v", err)
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return 1, nil
+	}
+
+	return 0, nil
 }

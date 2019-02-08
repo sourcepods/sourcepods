@@ -18,6 +18,29 @@ service Commit {
     rpc Get(CommitRequest) returns (CommitResponse);
 }
 
+service SSH {
+    rpc UploadPack(stream GRERequest) returns (stream GREResponse);
+    rpc ReceivePack(stream GRERequest) returns (stream GREResponse);
+}
+
+// GRE == gRPC Remote Execution
+message GRERequest {
+    // Repository ID, must be present in the first message.
+    string id = 1;
+    bytes stdin = 2;
+}
+
+message GREResponse {
+    bytes stdout = 1;
+    bytes stderr = 2;
+    // ONLY sent in the last message.
+    GREExitCode exit_code = 3;
+}
+
+message GREExitCode {
+    int32 exit_code = 1;
+}
+
 message CreateRequest {
     string id = 1;
 }

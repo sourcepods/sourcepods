@@ -14,12 +14,14 @@ import (
 func NewStorageServer(storage Storage) *grpc.Server {
 	var opts []grpc.ServerOption
 	opts = append(opts, grpc.UnaryInterceptor(grpcopentracing.UnaryServerInterceptor()))
+	opts = append(opts, grpc.StreamInterceptor(grpcopentracing.StreamServerInterceptor()))
 
 	s := grpc.NewServer(opts...)
 
 	RegisterRepositoryServer(s, &repositoryServer{storage: storage})
 	RegisterBranchServer(s, &branchesServer{storage: storage})
 	RegisterCommitServer(s, &commitServer{storage: storage})
+	RegisterSSHServer(s, &sshService{storage: storage})
 
 	return s
 }
