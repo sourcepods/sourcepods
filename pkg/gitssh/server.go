@@ -3,10 +3,8 @@ package gitssh
 import (
 	"context"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/opentracing/opentracing-go"
@@ -38,36 +36,6 @@ func NewSSHServer(port int, hostKeyPath string, logger log.Logger, cli *storage.
 	}
 
 	return s
-}
-
-func sendPktLine(w io.Writer, format string, args ...interface{}) {
-	pkt := fmt.Sprintf(format, args...)
-	fmt.Fprintf(w, "%04X%s", 4+len(pkt), pkt)
-}
-
-func flushPkt(w io.Writer) {
-	fmt.Fprint(w, "0000")
-}
-
-func readLine(r io.Reader) (string, error) {
-	lenByte := make([]byte, 4)
-	_, err := r.Read(lenByte)
-	if err != nil {
-		return "", err
-	}
-	n, err := strconv.ParseInt(string(lenByte[:]), 16, 16)
-	if err != nil {
-		return "", err
-	}
-	foo := make([]byte, n)
-	n2, err := r.Read(foo)
-	if err != nil {
-		return "", err
-	}
-	if n2 != int(n) {
-		return "", fmt.Errorf("invalid pkt-line: %d != %d", n2, n)
-	}
-	return string(foo), nil
 }
 
 func mainHandler(cli *storage.Client, logger log.Logger) ssh.Handler {
@@ -122,10 +90,9 @@ func storageHandler(logger log.Logger, cli *storage.Client, s ssh.Session) {
 				"msg", "upload-pack failed",
 				"err", err.Error(),
 			)
-		}
-		if ec != 0 {
 			s.Exit(1)
 		}
+		s.Exit(int(ec))
 	case "git-receive-pack":
 		ec, err := cli.ReceivePack(ctx, id, s, s, s.Stderr())
 		if err != nil {
@@ -133,12 +100,13 @@ func storageHandler(logger log.Logger, cli *storage.Client, s ssh.Session) {
 				"msg", "recieve-pack failed",
 				"err", err.Error(),
 			)
-		}
-		if ec != 0 {
 			s.Exit(1)
 		}
+		s.Exit(int(ec))
+	default:
+		fmt.Fprintf(s, "unknown command given\n")
+		s.Exit(1)
 	}
-	s.Exit(0)
 }
 
 func loadHostKeys(dir string) ([]ssh.Option, error) {

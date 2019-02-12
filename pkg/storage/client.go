@@ -188,10 +188,7 @@ func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, std
 	)
 	for ; err == nil; resp, err = stream.Recv() {
 		if resp.GetExitCode() != nil {
-			if value := resp.GetExitCode().GetExitCode(); value != 0 {
-				return value, nil
-			}
-			return 0, nil
+			return resp.GetExitCode().GetExitCode(), nil
 		}
 		if len(resp.GetStderr()) > 0 {
 			stderr.Write(resp.GetStderr())
@@ -246,10 +243,7 @@ func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, st
 	)
 	for ; err == nil; resp, err = stream.Recv() {
 		if resp.GetExitCode() != nil {
-			if value := resp.GetExitCode().GetExitCode(); value != 0 {
-				return 1, nil
-			}
-			return 0, nil
+			return resp.GetExitCode().GetExitCode(), nil
 		}
 		if len(resp.GetStderr()) > 0 {
 			if _, err = stderr.Write(resp.GetStderr()); err != nil {
