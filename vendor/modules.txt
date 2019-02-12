@@ -192,6 +192,7 @@ google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.16.0
 google.golang.org/grpc
 google.golang.org/grpc/codes
+google.golang.org/grpc/status
 google.golang.org/grpc/grpclog
 google.golang.org/grpc/metadata
 google.golang.org/grpc/balancer
@@ -213,7 +214,6 @@ google.golang.org/grpc/resolver
 google.golang.org/grpc/resolver/dns
 google.golang.org/grpc/resolver/passthrough
 google.golang.org/grpc/stats
-google.golang.org/grpc/status
 google.golang.org/grpc/tap
 google.golang.org/grpc/balancer/base
 # gopkg.in/yaml.v2 v2.2.2
