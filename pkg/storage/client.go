@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	fmt "fmt"
 	"io"
 	"sync"
 	"time"
@@ -153,7 +152,7 @@ func (c *Client) Tree(ctx context.Context, id, ref, path string) ([]TreeEntry, e
 }
 
 // UploadPack to a git-repo
-func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, stdout, stderr io.Writer) error {
+func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, stdout, stderr io.Writer) (int32, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.UploadPack")
 	span.SetTag("repo_path", id)
 	defer span.Finish()
@@ -162,11 +161,11 @@ func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, std
 
 	stream, err := c.ssh.UploadPack(ctx)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if err := stream.Send(req); err != nil {
-		return nil
+		return 0, nil
 	}
 
 	wg := sync.WaitGroup{}
@@ -190,9 +189,9 @@ func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, std
 	for ; err == nil; resp, err = stream.Recv() {
 		if resp.GetExitCode() != nil {
 			if value := resp.GetExitCode().GetExitCode(); value != 0 {
-				return fmt.Errorf("exitcode: %d", value)
+				return value, nil
 			}
-			return nil
+			return 0, nil
 		}
 		if len(resp.GetStderr()) > 0 {
 			stderr.Write(resp.GetStderr())
@@ -207,11 +206,11 @@ func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, std
 
 	wg.Wait()
 
-	return err
+	return 0, err
 }
 
 // ReceivePack from a git-repo
-func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, stdout, stderr io.Writer) error {
+func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, stdout, stderr io.Writer) (int32, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.ReceivePack")
 	span.SetTag("repo_path", id)
 	defer span.Finish()
@@ -220,11 +219,11 @@ func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, st
 
 	stream, err := c.ssh.ReceivePack(ctx)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if err := stream.Send(req); err != nil {
-		return nil
+		return 0, nil
 	}
 
 	wg := sync.WaitGroup{}
@@ -248,9 +247,9 @@ func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, st
 	for ; err == nil; resp, err = stream.Recv() {
 		if resp.GetExitCode() != nil {
 			if value := resp.GetExitCode().GetExitCode(); value != 0 {
-				return fmt.Errorf("exitcode: %d", value)
+				return 1, nil
 			}
-			return nil
+			return 0, nil
 		}
 		if len(resp.GetStderr()) > 0 {
 			if _, err = stderr.Write(resp.GetStderr()); err != nil {
@@ -269,5 +268,5 @@ func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, st
 
 	wg.Wait()
 
-	return err
+	return 0, err
 }

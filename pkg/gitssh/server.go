@@ -73,6 +73,10 @@ func readLine(r io.Reader) (string, error) {
 func mainHandler(cli *storage.Client, logger log.Logger) ssh.Handler {
 	return func(s ssh.Session) {
 		defer s.Close()
+		span, _ := opentracing.StartSpanFromContext(s.Context(), "ssh.MainHandler")
+		span.SetTag("remote-addr", s.RemoteAddr().String())
+		defer span.Finish()
+
 		level.Info(logger).Log(
 			"msg", "new connection",
 			"user", s.User(),
@@ -103,7 +107,7 @@ func storageHandler(logger log.Logger, cli *storage.Client, s ssh.Session) {
 
 	id := command[1]
 
-	span, ctx := opentracing.StartSpanFromContext(s.Context(), "ssh.Storage.Handler")
+	span, ctx := opentracing.StartSpanFromContext(s.Context(), "ssh.StorageHandler")
 	span.SetTag("repo_path", id)
 	defer span.Finish()
 
@@ -112,20 +116,29 @@ func storageHandler(logger log.Logger, cli *storage.Client, s ssh.Session) {
 
 	switch command[0] {
 	case "git-upload-pack":
-		if err := cli.UploadPack(ctx, id, s, s, s.Stderr()); err != nil {
+		ec, err := cli.UploadPack(ctx, id, s, s, s.Stderr())
+		if err != nil {
 			level.Error(logger).Log(
 				"msg", "upload-pack failed",
 				"err", err.Error(),
 			)
 		}
+		if ec != 0 {
+			s.Exit(1)
+		}
 	case "git-receive-pack":
-		if err := cli.ReceivePack(ctx, id, s, s, s.Stderr()); err != nil {
+		ec, err := cli.ReceivePack(ctx, id, s, s, s.Stderr())
+		if err != nil {
 			level.Error(logger).Log(
 				"msg", "recieve-pack failed",
 				"err", err.Error(),
 			)
 		}
+		if ec != 0 {
+			s.Exit(1)
+		}
 	}
+	s.Exit(0)
 }
 
 func loadHostKeys(dir string) ([]ssh.Option, error) {
