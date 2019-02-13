@@ -26,7 +26,7 @@ type Service interface {
 func NewSSHServer(addr string, hostKeyPath string, logger log.Logger, cli *storage.Client) *ssh.Server {
 	s := &ssh.Server{
 		Addr:    addr,
-		Handler: logHandler(mainHandler(cli, logger), logger),
+		Handler: logHandler(mainHandler(cli), logger),
 		PublicKeyHandler: func(ssh.Context, ssh.PublicKey) bool {
 			// TODO: This needs to be implemented :D
 			return true
@@ -45,7 +45,7 @@ func NewSSHServer(addr string, hostKeyPath string, logger log.Logger, cli *stora
 	return s
 }
 
-func mainHandler(cli *storage.Client, logger log.Logger) ssh.Handler {
+func mainHandler(cli *storage.Client) ssh.Handler {
 	return func(s ssh.Session) {
 		cmd := s.Command()
 		if len(cmd) < 1 {
@@ -54,7 +54,7 @@ func mainHandler(cli *storage.Client, logger log.Logger) ssh.Handler {
 		}
 		switch cmd[0] {
 		case "git", "git-upload-pack", "git-receive-pack":
-			storageHandler(logger, cli, s)
+			storageHandler(cli, s)
 		default:
 			fmt.Fprintf(s, "unknown command given\n")
 			s.Exit(1)
@@ -62,19 +62,25 @@ func mainHandler(cli *storage.Client, logger log.Logger) ssh.Handler {
 	}
 }
 
-func storageHandler(logger log.Logger, cli *storage.Client, s ssh.Session) {
-	command := s.Command()
-	// NOTE: Windows sucks... sends "git upload-pack 'path/to/repo.git'" instead of "git-upload-pack 'path/to/repo.git'"
+// NOTE: Windows sucks... sends "git upload-pack 'path/to/repo.git'" instead of "git-upload-pack 'path/to/repo.git'"
+func windowsSucks(command []string) []string {
 	if command[0] == "git" {
 		command[0] = fmt.Sprintf("%s-%s", command[0], command[1])
-		command = append(command[0:1], command[2:]...)
+		return append(command[0:1], command[2:]...)
 	}
+	return command
+}
+
+func storageHandler(cli *storage.Client, s ssh.Session) {
+	ctx := s.Context().Value("span-ctx").(context.Context)
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ssh.StorageHandler")
+	defer span.Finish()
+
+	command := windowsSucks(s.Command())
 
 	id := command[1]
 
-	span, ctx := opentracing.StartSpanFromContext(s.Context(), "ssh.StorageHandler")
 	span.SetTag("repo_path", id)
-	defer span.Finish()
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -83,6 +89,7 @@ func storageHandler(logger log.Logger, cli *storage.Client, s ssh.Session) {
 	case "git-upload-pack":
 		ec, err := cli.UploadPack(ctx, id, s, s, s.Stderr())
 		if err != nil {
+			logger := s.Context().Value("logger").(log.Logger)
 			level.Error(logger).Log(
 				"msg", "upload-pack failed",
 				"err", err.Error(),
@@ -93,6 +100,7 @@ func storageHandler(logger log.Logger, cli *storage.Client, s ssh.Session) {
 	case "git-receive-pack":
 		ec, err := cli.ReceivePack(ctx, id, s, s, s.Stderr())
 		if err != nil {
+			logger := s.Context().Value("logger").(log.Logger)
 			level.Error(logger).Log(
 				"msg", "recieve-pack failed",
 				"err", err.Error(),
