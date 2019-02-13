@@ -15,15 +15,9 @@ import (
 	"github.com/sourcepods/sourcepods/pkg/storage"
 )
 
-type Service interface {
-	Handler() ssh.Handler
-	ListenAndServe() error
-	Shutdown(context.Context) error
-}
-
 // NewSSHServer returns a *grpc.Server serving SSH
 //  is no `hostKeyPath` is given, random hostkeys will be generated...
-func NewSSHServer(addr string, hostKeyPath string, logger log.Logger, cli *storage.Client) *ssh.Server {
+func NewSSHServer(addr, hostKeyPath string, logger log.Logger, cli *storage.Client) *ssh.Server {
 	s := &ssh.Server{
 		Addr:    addr,
 		Handler: logHandler(mainHandler(cli), logger),

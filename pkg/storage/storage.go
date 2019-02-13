@@ -103,6 +103,7 @@ func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repo
 	return &LocalRepository{git: s.git, path: dir, id: repoPath}, nil
 }
 
+// GetID returns the repos ID
 func (r *LocalRepository) GetID() string {
 	return r.id
 }
