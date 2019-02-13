@@ -141,7 +141,7 @@ func devAction(c *cli.Context) error {
 	})
 
 	sshRunner := NewRunner("ssh", []string{
-		fmt.Sprintf("%s=%d", cmd.EnvSSHPort, 2222),
+		fmt.Sprintf("%s=%s", cmd.EnvSSHAddr, ":2222"),
 		fmt.Sprintf("%s=%s", cmd.EnvSSHHostKeyPath, "./dev/keys/"),
 		fmt.Sprintf("%s=%s", cmd.EnvStorageGRPCURL, "localhost:3033"),
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),

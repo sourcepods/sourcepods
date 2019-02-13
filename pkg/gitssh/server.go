@@ -15,11 +15,18 @@ import (
 	"github.com/sourcepods/sourcepods/pkg/storage"
 )
 
+type Service interface {
+	Handler() ssh.Handler
+	ListenAndServe() error
+	Shutdown(context.Context) error
+}
+
 // NewSSHServer returns a *grpc.Server serving SSH
-func NewSSHServer(port int, hostKeyPath string, logger log.Logger, cli *storage.Client) *ssh.Server {
+//  is no `hostKeyPath` is given, random hostkeys will be generated...
+func NewSSHServer(addr string, hostKeyPath string, logger log.Logger, cli *storage.Client) *ssh.Server {
 	s := &ssh.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: mainHandler(cli, logger),
+		Addr:    addr,
+		Handler: logHandler(mainHandler(cli, logger), logger),
 		PublicKeyHandler: func(ssh.Context, ssh.PublicKey) bool {
 			// TODO: This needs to be implemented :D
 			return true
@@ -40,16 +47,6 @@ func NewSSHServer(port int, hostKeyPath string, logger log.Logger, cli *storage.
 
 func mainHandler(cli *storage.Client, logger log.Logger) ssh.Handler {
 	return func(s ssh.Session) {
-		defer s.Close()
-		span, _ := opentracing.StartSpanFromContext(s.Context(), "ssh.MainHandler")
-		span.SetTag("remote-addr", s.RemoteAddr().String())
-		defer span.Finish()
-
-		level.Info(logger).Log(
-			"msg", "new connection",
-			"user", s.User(),
-			"command", fmt.Sprintf("%v", s.Command()),
-		)
 		cmd := s.Command()
 		if len(cmd) < 1 {
 			fmt.Fprintf(s, "Welcome to SourcePods, %s\n", s.User())

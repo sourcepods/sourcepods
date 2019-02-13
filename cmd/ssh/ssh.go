@@ -19,7 +19,7 @@ import (
 )
 
 type sshConf struct {
-	SSHPort        int
+	SSHAddr        string
 	HostKeyPath    string
 	StorageGRPCURL string
 	HTTPAddr       string
@@ -31,12 +31,12 @@ type sshConf struct {
 var (
 	sshConfig = sshConf{}
 	sshFlags  = []cli.Flag{
-		cli.IntFlag{
-			Name:        cmd.FlagSSHPort,
-			EnvVar:      cmd.EnvSSHPort,
-			Value:       22,
-			Usage:       "The SSH port to listen on",
-			Destination: &sshConfig.SSHPort,
+		cli.StringFlag{
+			Name:        cmd.FlagSSHAddr,
+			EnvVar:      cmd.EnvSSHAddr,
+			Value:       ":22",
+			Usage:       "The SSH address to listen on",
+			Destination: &sshConfig.SSHAddr,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagSSHHostKeyPath,
@@ -139,11 +139,11 @@ func sshAction(c *cli.Context) error {
 		})
 	}
 	{
-		ss := gitssh.NewSSHServer(sshConfig.SSHPort, sshConfig.HostKeyPath, logger, storageClient)
+		ss := gitssh.NewSSHServer(sshConfig.SSHAddr, sshConfig.HostKeyPath, logger, storageClient)
 		gr.Add(func() error {
 			level.Info(logger).Log(
 				"msg", "starting SourcePods git-ssh server",
-				"addr", sshConfig.SSHPort,
+				"addr", sshConfig.SSHAddr,
 			)
 			return ss.ListenAndServe()
 		}, func(err error) {

@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -35,6 +36,7 @@ type (
 
 	// Repository is the interface for manipulating repos
 	Repository interface {
+		GetID() string
 		SetDescription(ctx context.Context, description string) error
 		ListBranches(ctx context.Context) ([]Branch, error)
 		GetCommit(ctx context.Context, ref string) (Commit, error)
@@ -47,6 +49,7 @@ type (
 	LocalRepository struct {
 		git  string
 		path string
+		id   string
 	}
 )
 
@@ -97,7 +100,11 @@ func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repo
 		return nil, ErrRepoNotValid
 	}
 
-	return &LocalRepository{git: s.git, path: dir}, nil
+	return &LocalRepository{git: s.git, path: dir, id: repoPath}, nil
+}
+
+func (r *LocalRepository) GetID() string {
+	return r.id
 }
 
 // Branch of a repository
@@ -363,7 +370,7 @@ func parseTreeEntry(s string) (TreeEntry, error) {
 	}, nil
 }
 
-// UploadPack is a hack...
+// UploadPack is a hack because we need r.path
 //  int32 exitCode - The commands exit-code
 //  error internalError - And internal error occured
 func (r *LocalRepository) UploadPack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error) {
@@ -382,14 +389,10 @@ func (r *LocalRepository) UploadPack(ctx context.Context, stdin io.Reader, stdou
 		return 0, fmt.Errorf("cmd.Start: %v", err)
 	}
 
-	if err := cmd.Wait(); err != nil {
-		return 1, nil
-	}
-
-	return 0, nil
+	return exitStatus(cmd.Wait())
 }
 
-// ReceivePack is a hack...
+// ReceivePack is a hack because we need r.path
 //  int32 exitCode - The commands exit-code
 //  error internalError - And internal error occured
 func (r *LocalRepository) ReceivePack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error) {
@@ -408,9 +411,20 @@ func (r *LocalRepository) ReceivePack(ctx context.Context, stdin io.Reader, stdo
 		return 0, fmt.Errorf("cmd.Start: %v", err)
 	}
 
-	if err := cmd.Wait(); err != nil {
-		return 1, nil
-	}
+	return exitStatus(cmd.Wait())
+}
 
+// Thankfully borrowed from https://github.com/gliderlabs/sshfront/blob/ff9cab19386c1b3bcdf1d574c5cbaf8bd046fc12/handlers.go#L25-L37
+func exitStatus(err error) (int32, error) {
+	if err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			// There is no platform independent way to retrieve
+			// the exit code, but the following will work on Unix
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				return int32(status.ExitStatus()), nil
+			}
+		}
+		return 0, err
+	}
 	return 0, nil
 }
