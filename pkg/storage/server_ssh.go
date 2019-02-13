@@ -52,11 +52,9 @@ func (s sshService) UploadPack(stream SSH_UploadPackServer) error {
 			return request.GetStdin(), err
 		}),
 		streamio.NewWriter(func(p []byte) error {
-			span.LogEvent(string(p))
 			return stream.Send(&GREResponse{Stdout: p})
 		}),
 		streamio.NewWriter(func(p []byte) error {
-			span.LogEvent(string(p))
 			return stream.Send(&GREResponse{Stderr: p})
 		}),
 	)
@@ -82,15 +80,12 @@ func (s sshService) ReceivePack(stream SSH_ReceivePackServer) error {
 	ec, err := repo.ReceivePack(ctx,
 		streamio.NewReader(func() ([]byte, error) {
 			request, err := stream.Recv()
-			span.LogEvent("stdin: " + string(request.GetStdin()))
 			return request.GetStdin(), err
 		}),
 		streamio.NewWriter(func(p []byte) error {
-			span.LogEvent("stdout: " + string(p))
 			return stream.Send(&GREResponse{Stdout: p})
 		}),
 		streamio.NewWriter(func(p []byte) error {
-			span.LogEvent("stderr: " + string(p))
 			return stream.Send(&GREResponse{Stderr: p})
 		}),
 	)
