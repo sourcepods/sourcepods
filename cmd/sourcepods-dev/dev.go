@@ -63,6 +63,11 @@ var (
 			Usage: "Storage's root to write to",
 			Value: "./dev/storage-data",
 		},
+		cli.StringFlag{
+			Name:  "ssh-addr",
+			Usage: "The address to run ssh on",
+			Value: ":2222",
+		},
 		// UI
 		cli.StringFlag{
 			Name:  "ui",
@@ -91,6 +96,9 @@ func devAction(c *cli.Context) error {
 	// Storage
 	storageAddrFlag := c.String("storage-addr")
 	storageRootFlag := c.String("storage-root")
+
+	// SSH
+	sshAddrFlag := c.String("ssh-addr")
 
 	// UI
 	uiModeFlag := c.String("ui")
@@ -141,7 +149,7 @@ func devAction(c *cli.Context) error {
 	})
 
 	sshRunner := NewRunner("ssh", []string{
-		fmt.Sprintf("%s=%s", cmd.EnvSSHAddr, ":2222"),
+		fmt.Sprintf("%s=%s", cmd.EnvSSHAddr, sshAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvSSHHostKeyPath, "./dev/keys/"),
 		fmt.Sprintf("%s=%s", cmd.EnvStorageGRPCURL, "localhost:3033"),
 		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
