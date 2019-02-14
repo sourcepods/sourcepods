@@ -10,11 +10,12 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 )
 
+// logHandler logs connections, and injects `span-ctx` and `logger` into the context.
 func logHandler(next ssh.Handler, logger log.Logger) ssh.Handler {
 	return func(s ssh.Session) {
 		sessID := s.Context().(ssh.Context).SessionID()
 		defer s.Close()
-		span, spanCtx := opentracing.StartSpanFromContext(s.Context(), "ssh.MainHandler")
+		span, spanCtx := opentracing.StartSpanFromContext(s.Context(), "ssh.Handler")
 		s.Context().(ssh.Context).SetValue("span-ctx", spanCtx)
 		span.SetTag("remote-addr", s.RemoteAddr().String())
 		span.SetTag("user", s.User())

@@ -67,7 +67,7 @@ func windowsSucks(command []string) []string {
 
 func storageHandler(cli *storage.Client, s ssh.Session) {
 	ctx := s.Context().Value("span-ctx").(context.Context)
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ssh.StorageHandler")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ssh.Handler.Storage")
 	defer span.Finish()
 
 	command := windowsSucks(s.Command())
