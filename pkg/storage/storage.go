@@ -379,7 +379,7 @@ func (r *LocalRepository) UploadPack(ctx context.Context, stdin io.Reader, stdou
 	span.SetTag("repo_path", r.path)
 	defer span.Finish()
 
-	cmd := exec.CommandContext(ctx, "/usr/bin/git", "upload-pack", r.path)
+	cmd := exec.CommandContext(ctx, "/usr/bin/git", "upload-pack", "--strict", r.path)
 	span.LogEvent(fmt.Sprintf("%v", cmd.Args))
 
 	cmd.Stdin = stdin
@@ -401,7 +401,7 @@ func (r *LocalRepository) ReceivePack(ctx context.Context, stdin io.Reader, stdo
 	span.SetTag("repo_path", r.path)
 	defer span.Finish()
 
-	cmd := exec.CommandContext(ctx, "/usr/bin/git", "receive-pack", r.path)
+	cmd := exec.CommandContext(ctx, "/usr/bin/git", "receive-pack", "--strict", r.path)
 	span.LogEvent(fmt.Sprintf("%v", cmd.Args))
 
 	cmd.Stdin = stdin
