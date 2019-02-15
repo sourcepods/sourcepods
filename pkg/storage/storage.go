@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"github.com/sourcepods/sourcepods/pkg/command"
 )
 
 var (
@@ -61,27 +63,44 @@ func NewLocalStorage(root string) (*LocalStorage, error) {
 
 func (s *LocalStorage) repoPath(id string) string {
 	id = strings.Replace(id, "-", "", -1)
-	return filepath.Join(s.root, id[:2], id[2:2], id[4:])
+	return filepath.Join(s.root, id[:2], id[2:4], id[4:])
 }
 
 // Create a new repository
 func (s *LocalStorage) Create(ctx context.Context, id string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalStorage.Create")
+	span.SetTag("repo_path", id)
+	defer span.Finish()
 	dir := s.repoPath(id)
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to repository directory: %s", dir)
 	}
 
-	cmd := exec.CommandContext(ctx, s.git, "init", "--bare")
-	cmd.Dir = dir
+	errBuf := &bytes.Buffer{}
+	cmd, err := command.New(ctx, nil, nil, errBuf, dir, s.git, "init", "--bare")
+	if err != nil {
+		span.SetTag("error", true)
+		span.LogKV(
+			"event", "error",
+			"message", err,
+		)
+	}
 
-	//TODO: Don't throw away stdout/err...
-	return cmd.Run()
+	err = cmd.Wait()
+	if err != nil {
+		span.SetTag("error", true)
+		span.LogKV("event", "error", "message", errBuf.Bytes())
+	}
+	return err
 }
 
 // GetRepository from Storage
 // TODO: Cache these somehow?
 func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repository, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalStorage.GetRepository")
+	span.SetTag("repo_path", repoPath)
+	defer span.Finish()
 	dir := s.repoPath(repoPath)
 
 	cmd := exec.CommandContext(ctx, s.git, "config", "--null", "core.repositoryformatversion")
@@ -89,6 +108,8 @@ func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repo
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		span.SetTag("error", true)
+		span.LogKV("event", "error", "message", err)
 		return nil, ErrRepoNotValid
 	}
 	if strings.TrimSuffix(string(output), "\x00") != "0" {
@@ -113,22 +134,18 @@ func (r *LocalRepository) SetDescription(ctx context.Context, description string
 
 // ListBranches returns all branches of a given repository
 func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.ListBranches")
+	defer span.Finish()
 
+	errBuf := &bytes.Buffer{}
 	args := []string{"for-each-ref", "--format=%(objectname) %(objecttype) %(refname)", "refs/heads"}
-	cmd := exec.CommandContext(ctx, r.git, args...)
-	cmd.Dir = r.path
-	out, err := cmd.StdoutPipe()
+	cmd, err := command.New(ctx, nil, nil, errBuf, r.path, r.git, args...)
 	if err != nil {
-		return nil, err
-	}
-	if err = cmd.Start(); err != nil {
 		return nil, err
 	}
 
 	var bs []Branch
-	scanner := bufio.NewScanner(out)
+	scanner := bufio.NewScanner(cmd.Stdout())
 	for scanner.Scan() {
 		s := strings.Split(scanner.Text(), " ")
 
@@ -140,6 +157,8 @@ func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
 	}
 
 	if err := cmd.Wait(); err != nil {
+		span.SetTag("error", true)
+		span.LogKV("event", "error", "message", err, "stderr", errBuf.String())
 		return nil, err
 	}
 
@@ -159,28 +178,33 @@ type Commit struct {
 	Committer Signature
 }
 
+func injectError(span opentracing.Span, err error, stderr string) {
+	span.SetTag("error", true)
+	span.LogKV("event", "error", "message", err, "stderr", stderr)
+}
+
 // GetCommit returns a single Commit from a Repository
 func (r *LocalRepository) GetCommit(ctx context.Context, ref string) (Commit, error) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.GetCommit")
+	span.SetTag("ref", ref)
+	defer span.Finish()
 
+	errBuf := &bytes.Buffer{}
 	args := []string{"cat-file", "-p", ref}
-	cmd := exec.CommandContext(ctx, r.git, args...)
-	cmd.Dir = r.path
-	out, err := cmd.StdoutPipe()
+	cmd, err := command.New(ctx, nil, nil, errBuf, r.path, r.git, args...)
 	if err != nil {
-		return Commit{}, err
-	}
-	if err = cmd.Start(); err != nil {
+		injectError(span, err, errBuf.String())
 		return Commit{}, err
 	}
 
-	commit, err := parseCommit(out, ref)
+	commit, err := parseCommit(cmd.Stdout(), ref)
 	if err != nil {
+		injectError(span, err, errBuf.String())
 		return Commit{}, err
 	}
 
 	if err := cmd.Wait(); err != nil {
+		injectError(span, err, errBuf.String())
 		return Commit{}, err
 	}
 

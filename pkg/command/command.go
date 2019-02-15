@@ -11,6 +11,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+var wgAll sync.WaitGroup
+
+// WaitAll waits for all Commands to finish
+func WaitAll() {
+	wgAll.Wait()
+}
+
 // Command defines the interface for all shellouts
 type Command interface {
 	Stdout() io.Reader
@@ -19,8 +26,6 @@ type Command interface {
 
 	Wait() error
 }
-
-var wgAll sync.WaitGroup
 
 type command struct {
 	cmd    *exec.Cmd
@@ -31,14 +36,18 @@ type command struct {
 }
 
 // New creates a new Command
-func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, name string, args ...string) (*command, error) {
+func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, name string, args ...string) (Command, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "command.New")
+	span.SetTag("name", name)
 	span.SetTag("args", fmt.Sprintf("%v", args))
+	span.SetTag("dir", dir)
 	cmd := &command{
-		cmd: exec.CommandContext(ctx, name, args...),
+		cmd:  exec.CommandContext(ctx, name, args...),
+		span: span,
 	}
 	cmd.cmd.Dir = dir
-	cmd.cmd.Env = append(cmd.cmd.Env, fmt.Sprintf("GIT_DIR=%s", dir))
+	// NOTE: GIT_DIR requires abolute paths, and `dir` is relative for now...
+	//cmd.cmd.Env = append(cmd.cmd.Env, fmt.Sprintf("GIT_DIR=%s", dir))
 
 	if stdout == nil {
 		var err error
@@ -58,6 +67,15 @@ func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, na
 	} else {
 		cmd.cmd.Stderr = stderr
 	}
+	if stdin == nil {
+		var err error
+		cmd.stdin, err = cmd.cmd.StdinPipe()
+		if err != nil {
+			return nil, errors.Wrap(err, "StdinPipe")
+		}
+	} else {
+		cmd.cmd.Stdin = stdin
+	}
 
 	wgAll.Add(1)
 	return cmd, cmd.cmd.Start()
@@ -76,13 +94,13 @@ func (c *command) Stdin() io.Writer {
 }
 
 func (c *command) Wait() error {
-	err := c.cmd.Wait()
-	wgAll.Done()
-	c.span.Finish()
-	return err
-}
+	defer c.span.Finish()
+	defer wgAll.Done()
 
-// WaitAll waits for all Commands to finish
-func WaitAll() error {
-	wgAll.Wait()
+	err := c.cmd.Wait()
+	if err != nil {
+		c.span.SetTag("error", true)
+		c.span.LogKV("error", err)
+	}
+	return err
 }
