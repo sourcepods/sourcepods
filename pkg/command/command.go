@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -36,6 +37,17 @@ type command struct {
 	stderr io.ReadCloser
 	stdin  io.WriteCloser
 	span   opentracing.Span
+}
+
+// NewSimple is for when you would usually exec.Cmd.Run() something
+func NewSimple(ctx context.Context, dir, name string, args ...string) (string, error) {
+	buf := &bytes.Buffer{}
+	cmd, err := New(ctx, nil, buf, buf, dir, name, args...)
+	if err != nil {
+		return "", err
+	}
+	err = cmd.Wait()
+	return buf.String(), err
 }
 
 // New creates a new Command

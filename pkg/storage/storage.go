@@ -97,19 +97,14 @@ func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repo
 	defer span.Finish()
 	dir := s.repoPath(repoPath)
 
-	outBuf := &bytes.Buffer{}
-	cmd, err := command.New(ctx, nil, outBuf, outBuf, dir, s.git, "config", "--null", "core.repositoryformatversion")
+	out, err := command.NewSimple(ctx, dir, s.git, "config", "--null", "core.repositoryformatversion")
 	if err != nil {
-		injectError(span, err, "")
-		return nil, ErrRepoNotValid
-	}
-	if err := cmd.Wait(); err != nil {
-		injectError(span, err, outBuf.String())
+		injectError(span, err, out)
 		return nil, ErrRepoNotValid
 	}
 
-	if strings.TrimSuffix(outBuf.String(), "\x00") != "0" {
-		injectError(span, ErrRepoNotValid, outBuf.String())
+	if strings.TrimSuffix(out, "\x00") != "0" {
+		injectError(span, ErrRepoNotValid, out)
 		return nil, ErrRepoNotValid
 	}
 
