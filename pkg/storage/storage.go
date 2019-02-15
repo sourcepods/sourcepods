@@ -308,7 +308,7 @@ type TreeEntry struct {
 
 //Tree returns the files and folders at a given ref at a path in a repository
 func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.Tree")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.Tree")
 	span.SetTag("ref", ref)
 	span.SetTag("path", path)
 	defer span.Finish()
@@ -327,7 +327,7 @@ func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEnt
 }
 
 func (r *LocalRepository) tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.tree")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.tree")
 	span.SetTag("ref", ref)
 	span.SetTag("path", path)
 	defer span.Finish()
