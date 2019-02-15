@@ -39,15 +39,15 @@ type command struct {
 }
 
 // New creates a new Command
+//  The caller is required to call Wait() or Finish() for the tracing to work
 func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, name string, args ...string) (Command, error) {
-	// NOTE: This span is Finish()ed in Wait()...
+	// NOTE: This span is Finish()ed in Wait() or Finish()...
 	span, ctx := opentracing.StartSpanFromContext(ctx, "command.New")
 	span.SetTag("name", name)
 	span.SetTag("args", fmt.Sprintf("%v", args))
 	span.SetTag("dir", dir)
 	cmd := &command{
-		cmd:  exec.CommandContext(ctx, name, args...),
-		span: span,
+		cmd: exec.CommandContext(ctx, name, args...),
 	}
 	cmd.cmd.Dir = dir
 	// NOTE: GIT_DIR requires abolute paths, and `dir` is relative for now...
@@ -57,6 +57,9 @@ func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, na
 		var err error
 		cmd.stdout, err = cmd.cmd.StdoutPipe()
 		if err != nil {
+			span.SetTag("error", true)
+			span.LogKV("error", err)
+			span.Finish()
 			return nil, errors.Wrap(err, "StdoutPipe")
 		}
 	} else {
@@ -66,6 +69,9 @@ func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, na
 		var err error
 		cmd.stderr, err = cmd.cmd.StderrPipe()
 		if err != nil {
+			span.SetTag("error", true)
+			span.LogKV("error", err)
+			span.Finish()
 			return nil, errors.Wrap(err, "StderrPipe")
 		}
 	} else {
@@ -75,6 +81,9 @@ func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, na
 		var err error
 		cmd.stdin, err = cmd.cmd.StdinPipe()
 		if err != nil {
+			span.SetTag("error", true)
+			span.LogKV("error", err)
+			span.Finish()
 			return nil, errors.Wrap(err, "StdinPipe")
 		}
 	} else {
@@ -82,6 +91,7 @@ func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, na
 	}
 
 	wgAll.Add(1)
+	cmd.span = span
 	return cmd, cmd.cmd.Start()
 }
 
