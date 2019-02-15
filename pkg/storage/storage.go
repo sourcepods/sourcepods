@@ -401,7 +401,7 @@ func (r *LocalRepository) ReceivePack(ctx context.Context, stdin io.Reader, stdo
 	span.SetTag("repo_path", r.path)
 	defer span.Finish()
 
-	cmd := exec.CommandContext(ctx, "/usr/bin/git", "receive-pack", "--strict", r.path)
+	cmd := exec.CommandContext(ctx, "/usr/bin/git", "receive-pack", r.path)
 	span.LogEvent(fmt.Sprintf("%v", cmd.Args))
 
 	cmd.Stdin = stdin
