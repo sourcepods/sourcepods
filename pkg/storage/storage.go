@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-kit/kit/log"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 )
@@ -27,10 +28,13 @@ type (
 		GetRepository(ctx context.Context, id string) (Repository, error)
 	}
 
+	StorageOption func(Storage)
+
 	// LocalStorage implements Storage for Local disk-access
 	LocalStorage struct {
-		git  string
-		root string
+		git    string
+		root   string
+		logger log.Logger
 	}
 
 	// Repository is the interface for manipulating repos
@@ -48,15 +52,32 @@ type (
 	}
 )
 
+// LoggerOption injects a logger into LocalStorage
+func LoggerOption(logger log.Logger) StorageOption {
+	return func(s Storage) {
+		ls, ok := s.(*LocalStorage)
+		if !ok {
+			return
+		}
+		ls.logger = logger
+	}
+}
+
 // NewLocalStorage returns a LocalStorage in the given `root`
-func NewLocalStorage(root string) (*LocalStorage, error) {
+func NewLocalStorage(root string, opts ...StorageOption) (*LocalStorage, error) {
 	if err := os.MkdirAll(root, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create storage root: %s", root)
 	}
-	return &LocalStorage{
-		git:  "/usr/bin/git",
-		root: root,
-	}, nil
+	ls := &LocalStorage{
+		git:    "/usr/bin/git",
+		root:   root,
+		logger: log.NewNopLogger(),
+	}
+
+	for _, opt := range opts {
+		opt(ls)
+	}
+	return ls, nil
 }
 
 func (s *LocalStorage) repoPath(id string) string {
