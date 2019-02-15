@@ -44,7 +44,7 @@ func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, na
 	// NOTE: This span is Finish()ed in Wait() or Finish()...
 	span, ctx := opentracing.StartSpanFromContext(ctx, "command.New")
 	span.SetTag("name", name)
-	span.SetTag("args", fmt.Sprintf("%v", args))
+	span.SetTag("args", fmt.Sprintf("%q", args))
 	span.SetTag("dir", dir)
 	cmd := &command{
 		cmd: exec.CommandContext(ctx, name, args...),
