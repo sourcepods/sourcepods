@@ -24,6 +24,9 @@ type Command interface {
 	Stderr() io.Reader
 	Stdin() io.Writer
 
+	// Finish closes the Span
+	//  Note, run this is you never get to Wait() (e.g. on `return err`)
+	Finish()
 	Wait() error
 }
 
@@ -37,6 +40,7 @@ type command struct {
 
 // New creates a new Command
 func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, name string, args ...string) (Command, error) {
+	// NOTE: This span is Finish()ed in Wait()...
 	span, ctx := opentracing.StartSpanFromContext(ctx, "command.New")
 	span.SetTag("name", name)
 	span.SetTag("args", fmt.Sprintf("%v", args))
@@ -93,9 +97,19 @@ func (c *command) Stdin() io.Writer {
 	return c.stdin
 }
 
+// Finish ...
+//  is idempotent
+func (c *command) Finish() {
+	if c.span == nil {
+		return
+	}
+	c.span.Finish()
+	wgAll.Done()
+	c.span = nil
+}
+
 func (c *command) Wait() error {
-	defer c.span.Finish()
-	defer wgAll.Done()
+	defer c.Finish()
 
 	err := c.cmd.Wait()
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -80,17 +79,12 @@ func (s *LocalStorage) Create(ctx context.Context, id string) error {
 	errBuf := &bytes.Buffer{}
 	cmd, err := command.New(ctx, nil, nil, errBuf, dir, s.git, "init", "--bare")
 	if err != nil {
-		span.SetTag("error", true)
-		span.LogKV(
-			"event", "error",
-			"message", err,
-		)
+		injectError(span, err, "")
 	}
 
 	err = cmd.Wait()
 	if err != nil {
-		span.SetTag("error", true)
-		span.LogKV("event", "error", "message", errBuf.Bytes())
+		injectError(span, err, errBuf.String())
 	}
 	return err
 }
@@ -103,16 +97,19 @@ func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repo
 	defer span.Finish()
 	dir := s.repoPath(repoPath)
 
-	cmd := exec.CommandContext(ctx, s.git, "config", "--null", "core.repositoryformatversion")
-	cmd.Dir = dir
-
-	output, err := cmd.CombinedOutput()
+	outBuf := &bytes.Buffer{}
+	cmd, err := command.New(ctx, nil, outBuf, outBuf, dir, s.git, "config", "--null", "core.repositoryformatversion")
 	if err != nil {
-		span.SetTag("error", true)
-		span.LogKV("event", "error", "message", err)
+		injectError(span, err, "")
 		return nil, ErrRepoNotValid
 	}
-	if strings.TrimSuffix(string(output), "\x00") != "0" {
+	if err := cmd.Wait(); err != nil {
+		injectError(span, err, outBuf.String())
+		return nil, ErrRepoNotValid
+	}
+
+	if strings.TrimSuffix(outBuf.String(), "\x00") != "0" {
+		injectError(span, ErrRepoNotValid, outBuf.String())
 		return nil, ErrRepoNotValid
 	}
 
@@ -141,6 +138,7 @@ func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
 	args := []string{"for-each-ref", "--format=%(objectname) %(objecttype) %(refname)", "refs/heads"}
 	cmd, err := command.New(ctx, nil, nil, errBuf, r.path, r.git, args...)
 	if err != nil {
+		injectError(span, err, "")
 		return nil, err
 	}
 
@@ -157,8 +155,7 @@ func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
 	}
 
 	if err := cmd.Wait(); err != nil {
-		span.SetTag("error", true)
-		span.LogKV("event", "error", "message", err, "stderr", errBuf.String())
+		injectError(span, err, errBuf.String())
 		return nil, err
 	}
 
@@ -196,6 +193,7 @@ func (r *LocalRepository) GetCommit(ctx context.Context, ref string) (Commit, er
 		injectError(span, err, errBuf.String())
 		return Commit{}, err
 	}
+	defer cmd.Finish()
 
 	commit, err := parseCommit(cmd.Stdout(), ref)
 	if err != nil {
@@ -310,9 +308,6 @@ type TreeEntry struct {
 
 //Tree returns the files and folders at a given ref at a path in a repository
 func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.Tree")
 	span.SetTag("ref", ref)
 	span.SetTag("path", path)
@@ -324,6 +319,7 @@ func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEnt
 
 	treeEntries, err := r.tree(ctx, ref, path)
 	if err != nil {
+		injectError(span, err, "")
 		return nil, err
 	}
 
@@ -336,31 +332,31 @@ func (r *LocalRepository) tree(ctx context.Context, ref, path string) ([]TreeEnt
 	span.SetTag("path", path)
 	defer span.Finish()
 
+	errBuf := &bytes.Buffer{}
 	args := []string{"ls-tree", ref, path}
-	cmd := exec.CommandContext(ctx, r.git, args...)
-	cmd.Dir = r.path
-	out, err := cmd.StdoutPipe()
+	cmd, err := command.New(ctx, nil, nil, errBuf, r.path, r.git, args...)
 	if err != nil {
+		injectError(span, err, errBuf.String())
 		return nil, errors.Wrap(err, "failed to run git ls-tree")
 	}
-	if err = cmd.Start(); err != nil {
-		return nil, errors.Wrap(err, "failed to run git ls-tree")
-	}
+	defer cmd.Finish()
 
 	// TODO: The scanner takes unbounded inputs. This could cause OOMs
 
 	var treeEntries []TreeEntry
-	scanner := bufio.NewScanner(out)
+	scanner := bufio.NewScanner(cmd.Stdout())
 	for scanner.Scan() {
 		line := scanner.Text()
 		te, err := parseTreeEntry(line)
 		if err != nil {
+			injectError(span, err, "parseTreeEntry")
 			return treeEntries, errors.Wrap(err, "unable to parse tree entry line")
 		}
 		treeEntries = append(treeEntries, te)
 	}
 
 	if err := cmd.Wait(); err != nil {
+		injectError(span, err, errBuf.String())
 		return nil, errors.Wrap(err, "failed to wait for command to finish")
 	}
 
