@@ -62,7 +62,7 @@ func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, na
 		cmd: exec.CommandContext(ctx, name, args...),
 	}
 	cmd.cmd.Dir = dir
-	// NOTE: GIT_DIR requires abolute paths, and `dir` is relative for now...
+	// NOTE: GIT_DIR requires abolute paths, and `dir` can be relative for now...
 	//cmd.cmd.Env = append(cmd.cmd.Env, fmt.Sprintf("GIT_DIR=%s", dir))
 
 	if stdout == nil {
