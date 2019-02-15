@@ -28,6 +28,7 @@ type (
 		GetRepository(ctx context.Context, id string) (Repository, error)
 	}
 
+	// StorageOption is for injecting configuration into LocalStorage
 	StorageOption func(Storage)
 
 	// LocalStorage implements Storage for Local disk-access
@@ -47,8 +48,9 @@ type (
 
 	// LocalRepository implements Repository for Local disk-access
 	LocalRepository struct {
-		git  string
-		path string
+		git    string
+		path   string
+		logger log.Logger
 	}
 )
 
@@ -82,7 +84,7 @@ func NewLocalStorage(root string, opts ...StorageOption) (*LocalStorage, error) 
 
 func (s *LocalStorage) repoPath(id string) string {
 	id = strings.Replace(id, "-", "", -1)
-	return filepath.Join(s.root, id[:2], id[2:2], id[4:])
+	return filepath.Join(s.root, id[:2], id[2:4], id[4:])
 }
 
 // Create a new repository
@@ -116,7 +118,7 @@ func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repo
 		return nil, ErrRepoNotValid
 	}
 
-	return &LocalRepository{git: s.git, path: dir}, nil
+	return &LocalRepository{git: s.git, path: dir, logger: s.logger}, nil
 }
 
 // Branch of a repository
