@@ -52,6 +52,7 @@ func NewSimple(ctx context.Context, dir, name string, args ...string) (string, e
 
 // New creates a new Command
 //  The caller is required to call Wait() or Finish() for the tracing to work
+//  when `stdin`/`stdout`/`stderr` is `nil`, a Pipe will be setup. Use `Stdin()` etc to get them.
 func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, name string, args ...string) (Command, error) {
 	// NOTE: This span is Finish()ed in Wait() or Finish()...
 	span, ctx := opentracing.StartSpanFromContext(ctx, "command.New")
