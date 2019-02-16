@@ -77,7 +77,7 @@ func (s *LocalStorage) Create(ctx context.Context, id string) error {
 	}
 
 	errBuf := &bytes.Buffer{}
-	cmd, err := command.New(ctx, nil, nil, errBuf, dir, s.git, "init", "--bare")
+	cmd, err := command.New(ctx, dir, s.git, []string{"init", "--bare"}, command.StderrWriter(errBuf))
 	if err != nil {
 		injectError(span, err, "")
 	}
@@ -131,7 +131,7 @@ func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
 
 	errBuf := &bytes.Buffer{}
 	args := []string{"for-each-ref", "--format=%(objectname) %(objecttype) %(refname)", "refs/heads"}
-	cmd, err := command.New(ctx, nil, nil, errBuf, r.path, r.git, args...)
+	cmd, err := command.New(ctx, r.path, r.git, args, command.StderrWriter(errBuf), command.StdoutPipe)
 	if err != nil {
 		injectError(span, err, "")
 		return nil, err
@@ -183,7 +183,7 @@ func (r *LocalRepository) GetCommit(ctx context.Context, ref string) (Commit, er
 
 	errBuf := &bytes.Buffer{}
 	args := []string{"cat-file", "-p", ref}
-	cmd, err := command.New(ctx, nil, nil, errBuf, r.path, r.git, args...)
+	cmd, err := command.New(ctx, r.path, r.git, args, command.StderrWriter(errBuf), command.StdoutPipe)
 	if err != nil {
 		injectError(span, err, errBuf.String())
 		return Commit{}, err
@@ -329,7 +329,7 @@ func (r *LocalRepository) tree(ctx context.Context, ref, path string) ([]TreeEnt
 
 	errBuf := &bytes.Buffer{}
 	args := []string{"ls-tree", ref, path}
-	cmd, err := command.New(ctx, nil, nil, errBuf, r.path, r.git, args...)
+	cmd, err := command.New(ctx, r.path, r.git, args, command.StderrWriter(errBuf), command.StdoutPipe)
 	if err != nil {
 		injectError(span, err, errBuf.String())
 		return nil, errors.Wrap(err, "failed to run git ls-tree")
