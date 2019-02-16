@@ -19,30 +19,34 @@ func WaitAll() {
 	wgAll.Wait()
 }
 
-// Command defines the interface for all shellouts
-type Command interface {
-	Stdout() io.Reader
-	Stderr() io.Reader
-	Stdin() io.Writer
+type (
+	// Command defines the interface for all shellouts
+	Command interface {
+		Stdout() io.Reader
+		Stderr() io.Reader
+		Stdin() io.Writer
 
-	// Finish closes the Span
-	//  Note, run this is you never get to Wait() (e.g. on `return err`)
-	Finish()
-	Wait() error
-}
+		// Finish closes the Span
+		//  Note, run this is you never get to Wait() (e.g. on `return err`)
+		Finish()
+		Wait() error
+	}
 
-type command struct {
-	cmd    *exec.Cmd
-	stdout io.ReadCloser
-	stderr io.ReadCloser
-	stdin  io.WriteCloser
-	span   opentracing.Span
-}
+	command struct {
+		cmd    *exec.Cmd
+		stdout io.ReadCloser
+		stderr io.ReadCloser
+		stdin  io.WriteCloser
+		span   opentracing.Span
+	}
+
+	Option func(*command) error
+)
 
 // NewSimple is for when you would usually exec.Cmd.Run() something
 func NewSimple(ctx context.Context, dir, name string, args ...string) (string, error) {
 	buf := &bytes.Buffer{}
-	cmd, err := New(ctx, nil, buf, buf, dir, name, args...)
+	cmd, err := New(ctx, dir, name, args, StdoutWriter(buf), StderrWriter(buf))
 	if err != nil {
 		return "", err
 	}
@@ -52,8 +56,7 @@ func NewSimple(ctx context.Context, dir, name string, args ...string) (string, e
 
 // New creates a new Command
 //  The caller is required to call Wait() or Finish() for the tracing to work
-//  when `stdin`/`stdout`/`stderr` is `nil`, a Pipe will be setup. Use `Stdin()` etc to get them.
-func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, name string, args ...string) (Command, error) {
+func New(ctx context.Context, dir, name string, args []string, opts ...Option) (Command, error) {
 	// NOTE: This span is Finish()ed in Wait() or Finish()...
 	span, ctx := opentracing.StartSpanFromContext(ctx, "command.New")
 	span.SetTag("name", name)
@@ -66,41 +69,13 @@ func New(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, dir, na
 	// NOTE: GIT_DIR requires abolute paths, and `dir` can be relative for now...
 	//cmd.cmd.Env = append(cmd.cmd.Env, fmt.Sprintf("GIT_DIR=%s", dir))
 
-	if stdout == nil {
-		var err error
-		cmd.stdout, err = cmd.cmd.StdoutPipe()
-		if err != nil {
+	for _, opt := range opts {
+		if err := opt(cmd); err != nil {
 			span.SetTag("error", true)
 			span.LogKV("error", err)
 			span.Finish()
 			return nil, errors.Wrap(err, "StdoutPipe")
 		}
-	} else {
-		cmd.cmd.Stdout = stdout
-	}
-	if stderr == nil {
-		var err error
-		cmd.stderr, err = cmd.cmd.StderrPipe()
-		if err != nil {
-			span.SetTag("error", true)
-			span.LogKV("error", err)
-			span.Finish()
-			return nil, errors.Wrap(err, "StderrPipe")
-		}
-	} else {
-		cmd.cmd.Stderr = stderr
-	}
-	if stdin == nil {
-		var err error
-		cmd.stdin, err = cmd.cmd.StdinPipe()
-		if err != nil {
-			span.SetTag("error", true)
-			span.LogKV("error", err)
-			span.Finish()
-			return nil, errors.Wrap(err, "StdinPipe")
-		}
-	} else {
-		cmd.cmd.Stdin = stdin
 	}
 
 	wgAll.Add(1)
