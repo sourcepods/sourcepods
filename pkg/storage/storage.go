@@ -8,8 +8,10 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/go-kit/kit/log"
 	"github.com/opentracing/opentracing-go"
@@ -41,16 +43,20 @@ type (
 
 	// Repository is the interface for manipulating repos
 	Repository interface {
+		GetID() string
 		SetDescription(ctx context.Context, description string) error
 		ListBranches(ctx context.Context) ([]Branch, error)
 		GetCommit(ctx context.Context, ref string) (Commit, error)
 		Tree(ctx context.Context, ref, path string) ([]TreeEntry, error)
+		UploadPack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error)
+		ReceivePack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error)
 	}
 
 	// LocalRepository implements Repository for Local disk-access
 	LocalRepository struct {
 		git    string
 		path   string
+		id     string
 		logger log.Logger
 	}
 )
@@ -85,7 +91,7 @@ func NewLocalStorage(root string, opts ...StorageOption) (*LocalStorage, error) 
 
 func (s *LocalStorage) repoPath(id string) string {
 	id = strings.Replace(id, "-", "", -1)
-	return filepath.Join(s.root, id[:2], id[2:4], id[4:])
+	return filepath.Join(s.root, id[0:2], id[2:4], id[4:])
 }
 
 // Create a new repository
@@ -131,7 +137,12 @@ func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repo
 		return nil, ErrRepoNotValid
 	}
 
-	return &LocalRepository{git: s.git, path: dir, logger: s.logger}, nil
+	return &LocalRepository{git: s.git, path: dir, id: repoPath, logger: s.logger}, nil
+}
+
+// GetID returns the repos ID
+func (r *LocalRepository) GetID() string {
+	return r.id
 }
 
 // Branch of a repository
@@ -397,4 +408,63 @@ func parseTreeEntry(s string) (TreeEntry, error) {
 		Object: spaces[2],
 		Path:   tabs[1],
 	}, nil
+}
+
+// UploadPack is a hack because we need r.path
+//  int32 exitCode - The commands exit-code
+//  error internalError - And internal error occured
+func (r *LocalRepository) UploadPack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Repository.UploadPack")
+	span.SetTag("repo_path", r.path)
+	defer span.Finish()
+
+	cmd := exec.CommandContext(ctx, "/usr/bin/git", "upload-pack", "--strict", r.path)
+	span.LogEvent(fmt.Sprintf("%v", cmd.Args))
+
+	cmd.Stdin = stdin
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	if err := cmd.Start(); err != nil {
+		return 0, fmt.Errorf("cmd.Start: %v", err)
+	}
+
+	return exitStatus(cmd.Wait())
+}
+
+// ReceivePack is a hack because we need r.path
+//  int32 exitCode - The commands exit-code
+//  error internalError - And internal error occured
+func (r *LocalRepository) ReceivePack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Repository.ReceivePack")
+	span.SetTag("repo_path", r.path)
+	defer span.Finish()
+
+	cmd := exec.CommandContext(ctx, "/usr/bin/git", "receive-pack", r.path)
+	span.LogEvent(fmt.Sprintf("%v", cmd.Args))
+
+	cmd.Stdin = stdin
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	if err := cmd.Start(); err != nil {
+		return 0, fmt.Errorf("cmd.Start: %v", err)
+	}
+
+	return exitStatus(cmd.Wait())
+}
+
+// Thankfully borrowed from https://github.com/gliderlabs/sshfront/blob/ff9cab19386c1b3bcdf1d574c5cbaf8bd046fc12/handlers.go#L25-L37
+func exitStatus(err error) (int32, error) {
+	if err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			// There is no platform independent way to retrieve
+			// the exit code, but the following will work on Unix
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				return int32(status.ExitStatus()), nil
+			}
+		}
+		return 0, err
+	}
+	return 0, nil
 }

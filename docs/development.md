@@ -66,7 +66,7 @@ After running server application you can sign to UI via entered email and passwo
 
 To make life easier when developing on an application that is composed of multiple components,
 we have created a wrapper to run all components of SourcePods at once.
-This will start `dev/api`, `dev/storage`, `dev/ui` (by default it start the UI in docker though)
+This will start `dev/api`, `dev/storage`, `dev/ssh`, `dev/ui` (by default it start the UI in docker though)
 and Caddy as reverse proxy in front of it all.
 Once you Ctrl+C and quite the command, it will gracefully shut down all components.
 

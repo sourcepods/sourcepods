@@ -63,6 +63,11 @@ var (
 			Usage: "Storage's root to write to",
 			Value: "./dev/storage-data",
 		},
+		cli.StringFlag{
+			Name:  "ssh-addr",
+			Usage: "The address to run ssh on",
+			Value: ":3022",
+		},
 		// UI
 		cli.StringFlag{
 			Name:  "ui",
@@ -92,6 +97,9 @@ func devAction(c *cli.Context) error {
 	storageAddrFlag := c.String("storage-addr")
 	storageRootFlag := c.String("storage-root")
 
+	// SSH
+	sshAddrFlag := c.String("ssh-addr")
+
 	// UI
 	uiModeFlag := c.String("ui")
 	uiAddrFlag := c.String("ui-addr")
@@ -101,13 +109,15 @@ func devAction(c *cli.Context) error {
 		tracingURL = "localhost:6831"
 	}
 
-	exists, err := exists("./dev")
-	if err != nil {
-		return err
-	}
-	if !exists {
-		color.HiRed("Development folder ./dev doesn't exists. Run `sourcepods-dev setup` first")
-		return nil
+	for _, dir := range []string{"./dev", "./dev/keys"} {
+		exists, err := exists(dir)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			color.HiRed("Development folder %s doesn't exists. Run `sourcepods-dev setup` first", dir)
+			return nil
+		}
 	}
 
 	uiRunner := NewRunner("ui", []string{
@@ -138,11 +148,20 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
 	})
 
+	sshRunner := NewRunner("ssh", []string{
+		fmt.Sprintf("%s=%s", cmd.EnvSSHAddr, sshAddrFlag),
+		fmt.Sprintf("%s=%s", cmd.EnvSSHHostKeyPath, "./dev/keys/"),
+		fmt.Sprintf("%s=%s", cmd.EnvStorageGRPCURL, "localhost:3033"),
+		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
+		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
+		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
+	})
+
 	caddy := CaddyRunner{}
 
 	if watchFlag {
 		watcher := &FileWatcher{}
-		watcher.Add(uiRunner, apiRunner, storageRunner)
+		watcher.Add(uiRunner, apiRunner, storageRunner, sshRunner)
 
 		go watcher.Watch()
 	}
@@ -174,6 +193,15 @@ func devAction(c *cli.Context) error {
 		}, func(err error) {
 			color.HiYellow("stopping storage")
 			storageRunner.Shutdown()
+		})
+	}
+	{
+		g.Add(func() error {
+			color.HiGreen("starting ssh")
+			return sshRunner.Run()
+		}, func(err error) {
+			color.HiYellow("stopping ssh")
+			sshRunner.Shutdown()
 		})
 	}
 	{

@@ -37,9 +37,15 @@ const (
 )
 
 func devSetupAction(c *cli.Context) error {
-	color.Blue("Create ./dev/")
-	if err := os.MkdirAll("./dev", 0755); err != nil {
-		return errors.Wrap(err, "failed to create ./dev/ for development")
+	for _, dir := range []string{"./dev", "./dev/keys"} {
+		color.Blue("Create %s", dir)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return errors.Wrap(err, fmt.Sprintf("failed to create %s for development", dir))
+		}
+	}
+
+	if err := genKeys(); err != nil {
+		return err
 	}
 
 	if err := setupCockroach(); err != nil {
@@ -55,6 +61,33 @@ func devSetupAction(c *cli.Context) error {
 		return err
 	}
 
+	return nil
+}
+func genKeys() error {
+	runCmd := func(cmd string, args ...string) error {
+		c := exec.Command(cmd, args...)
+		if err := c.Run(); err != nil {
+			b, _ := c.CombinedOutput()
+			return errors.Wrap(err, string(b))
+		}
+		return nil
+	}
+
+	if _, err := os.Stat("./dev/keys/ssh_host_rsa_key"); os.IsNotExist(err) {
+		if err := runCmd("ssh-keygen", "-f", "./dev/keys/ssh_host_rsa_key", "-N", "", "-t", "rsa"); err != nil {
+			return errors.Wrap(err, "can't generate rsa-key")
+		}
+	}
+	if _, err := os.Stat("./dev/keys/ssh_host_dsa_key"); os.IsNotExist(err) {
+		if err := runCmd("ssh-keygen", "-f", "./dev/keys/ssh_host_dsa_key", "-N", "", "-t", "dsa"); err != nil {
+			return errors.Wrap(err, "can't generate dsa-key")
+		}
+	}
+	if _, err := os.Stat("./dev/keys/ssh_host_ecdsa_key"); os.IsNotExist(err) {
+		if err := runCmd("ssh-keygen", "-f", "./dev/keys/ssh_host_ecdsa_key", "-N", "", "-t", "ecdsa", "-b", "521"); err != nil {
+			return errors.Wrap(err, "can't generate ecdsa-key")
+		}
+	}
 	return nil
 }
 

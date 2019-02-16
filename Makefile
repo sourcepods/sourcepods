@@ -50,12 +50,12 @@ test:
 	$(GOTEST) test -coverprofile coverage.out -race -v ./...
 
 .PHONY: build
-build: dev/api dev/sourcepods-dev dev/storage dev/ui
+build: dev/api dev/sourcepods-dev dev/storage dev/ui dev/ssh
 
 dev/api: cmd/api $(GO_PKG_FILES)
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/api ./cmd/api
 
-dev/sourcepods-dev: cmd/sourcepods-dev $(GO_PKG_FILES)
+dev/sourcepods-dev: cmd/sourcepods-dev/* $(GO_PKG_FILES)
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/sourcepods-dev ./cmd/sourcepods-dev
 
 dev/storage: cmd/storage $(GO_PKG_FILES) pkg/storage/storage.pb.go
@@ -64,6 +64,9 @@ dev/storage: cmd/storage $(GO_PKG_FILES) pkg/storage/storage.pb.go
 dev/ui: cmd/ui $(GO_PKG_FILES) ui/build dev/packr
 	./dev/packr
 	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/ui ./cmd/ui
+
+dev/ssh: cmd/ssh $(GO_PKG_FILES)
+	$(GO) build -v -ldflags '-w -extldflags '-static'' -o ./dev/ssh ./cmd/ssh
 
 ui/build: $(DARTFILES)
 	cd ui && webdev build
