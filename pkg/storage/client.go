@@ -7,6 +7,7 @@ import (
 
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
 	"gitlab.com/gitlab-org/gitaly/streamio"
 	"google.golang.org/grpc"
 )
@@ -182,9 +183,7 @@ func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, std
 		close(errC)
 	}(errC)
 
-	var (
-		resp *GREResponse
-	)
+	var resp *GREResponse
 	for ; err == nil; resp, err = stream.Recv() {
 		if resp.GetExitCode() != nil {
 			return resp.GetExitCode().GetExitCode(), nil
@@ -240,9 +239,7 @@ func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, st
 		close(errC)
 	}(errC)
 
-	var (
-		resp *GREResponse
-	)
+	var resp *GREResponse
 	for ; err == nil; resp, err = stream.Recv() {
 		if resp.GetExitCode() != nil {
 			return resp.GetExitCode().GetExitCode(), nil
@@ -261,6 +258,7 @@ func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, st
 	for errIn := range errC {
 		span.SetTag("error", true)
 		span.LogKV("event", "error", "message", errIn)
+		err = errors.Wrap(err, errIn.Error())
 	}
 
 	return 0, err

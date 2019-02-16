@@ -64,6 +64,15 @@ func devSetupAction(c *cli.Context) error {
 	return nil
 }
 func genKeys() error {
+	runCmd := func(cmd string, args ...string) error {
+		c := exec.Command(cmd, args...)
+		if err := c.Run(); err != nil {
+			b, _ := c.CombinedOutput()
+			return errors.Wrap(err, string(b))
+		}
+		return nil
+	}
+
 	if _, err := os.Stat("./dev/keys/ssh_host_rsa_key"); os.IsNotExist(err) {
 		if err := runCmd("ssh-keygen", "-f", "./dev/keys/ssh_host_rsa_key", "-N", "", "-t", "rsa"); err != nil {
 			return errors.Wrap(err, "can't generate rsa-key")
@@ -78,15 +87,6 @@ func genKeys() error {
 		if err := runCmd("ssh-keygen", "-f", "./dev/keys/ssh_host_ecdsa_key", "-N", "", "-t", "ecdsa", "-b", "521"); err != nil {
 			return errors.Wrap(err, "can't generate ecdsa-key")
 		}
-	}
-	return nil
-}
-
-func runCmd(cmd string, args ...string) error {
-	c := exec.Command(cmd, args...)
-	if err := c.Run(); err != nil {
-		b, _ := c.CombinedOutput()
-		return errors.Wrap(err, string(b))
 	}
 	return nil
 }

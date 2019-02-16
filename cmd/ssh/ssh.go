@@ -19,12 +19,11 @@ import (
 )
 
 type sshConf struct {
-	SSHAddr        string
 	HostKeyPath    string
-	StorageGRPCURL string
-	HTTPAddr       string
 	LogJSON        bool
 	LogLevel       string
+	SSHAddr        string
+	StorageGRPCURL string
 	TracingURL     string
 }
 
@@ -65,13 +64,6 @@ var (
 			Destination: &sshConfig.LogLevel,
 		},
 		cli.StringFlag{
-			Name:        cmd.FlagHTTPAddr,
-			EnvVar:      cmd.EnvHTTPAddr,
-			Usage:       "The address SourcePods runs a http server on",
-			Value:       ":3021",
-			Destination: &sshConfig.HTTPAddr,
-		},
-		cli.StringFlag{
 			Name:        cmd.FlagTracingURL,
 			EnvVar:      cmd.EnvTracingURL,
 			Usage:       "The url to send spans for tracing to",
@@ -83,9 +75,6 @@ var (
 func sshAction(c *cli.Context) error {
 	if sshConfig.StorageGRPCURL == "" {
 		return errors.New("the storage grpc url can not be empty")
-	}
-	if sshConfig.HTTPAddr == "" {
-		return errors.New("the http address can not be empty")
 	}
 
 	logger := cmd.NewLogger(sshConfig.LogJSON, sshConfig.LogLevel)
@@ -139,7 +128,7 @@ func sshAction(c *cli.Context) error {
 		})
 	}
 	{
-		ss := gitssh.NewSSHServer(sshConfig.SSHAddr, sshConfig.HostKeyPath, logger, storageClient)
+		ss := gitssh.NewServer(sshConfig.SSHAddr, sshConfig.HostKeyPath, logger, storageClient)
 		gr.Add(func() error {
 			level.Info(logger).Log(
 				"msg", "starting SourcePods git-ssh server",
@@ -147,7 +136,6 @@ func sshAction(c *cli.Context) error {
 			)
 			return ss.ListenAndServe()
 		}, func(err error) {
-			// TODO: Make deadline configurable?
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			ss.Shutdown(ctx)

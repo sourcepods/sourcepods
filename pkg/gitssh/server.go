@@ -15,12 +15,17 @@ import (
 	"github.com/sourcepods/sourcepods/pkg/storage"
 )
 
-// NewSSHServer returns a *grpc.Server serving SSH
+// NewServer returns a *grpc.Server serving SSH
 //  is no `hostKeyPath` is given, random hostkeys will be generated...
-func NewSSHServer(addr, hostKeyPath string, logger log.Logger, cli *storage.Client) *ssh.Server {
+func NewServer(addr, hostKeyPath string, logger log.Logger, cli *storage.Client) *ssh.Server {
 	s := &ssh.Server{
-		Addr:    addr,
-		Handler: logHandler(mainHandler(cli), logger),
+		Addr: addr,
+		Handler: tracingHandler(
+			logHandler(
+				mainHandler(cli),
+				logger,
+			),
+		),
 		PublicKeyHandler: func(ssh.Context, ssh.PublicKey) bool {
 			// TODO: This needs to be implemented :D
 			return true
@@ -56,8 +61,9 @@ func mainHandler(cli *storage.Client) ssh.Handler {
 	}
 }
 
-// NOTE: Windows sucks... sends "git upload-pack 'path/to/repo.git'" instead of "git-upload-pack 'path/to/repo.git'"
-func windowsSucks(command []string) []string {
+// Because Windows sends "git upload-pack 'path/to/repo.git'" instead of
+// "git-upload-pack 'path/to/repo.git'", we need to reformat it
+func reformatWindowsCommand(command []string) []string {
 	if command[0] == "git" {
 		command[0] = fmt.Sprintf("%s-%s", command[0], command[1])
 		return append(command[0:1], command[2:]...)
@@ -70,7 +76,7 @@ func storageHandler(cli *storage.Client, s ssh.Session) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "ssh.Handler.Storage")
 	defer span.Finish()
 
-	command := windowsSucks(s.Command())
+	command := reformatWindowsCommand(s.Command())
 
 	id := command[1]
 
