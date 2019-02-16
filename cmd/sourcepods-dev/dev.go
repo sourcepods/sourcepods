@@ -66,7 +66,7 @@ var (
 		cli.StringFlag{
 			Name:  "ssh-addr",
 			Usage: "The address to run ssh on",
-			Value: ":2222",
+			Value: ":3022",
 		},
 		// UI
 		cli.StringFlag{

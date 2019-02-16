@@ -33,7 +33,7 @@ var (
 		cli.StringFlag{
 			Name:        cmd.FlagSSHAddr,
 			EnvVar:      cmd.EnvSSHAddr,
-			Value:       ":22",
+			Value:       ":3022",
 			Usage:       "The SSH address to listen on",
 			Destination: &sshConfig.SSHAddr,
 		},
