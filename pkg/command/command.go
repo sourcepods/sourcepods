@@ -15,6 +15,9 @@ import (
 var wgAll sync.WaitGroup
 
 // WaitAll waits for all Commands to finish
+// TODO: This waits for all commands to run to completion
+//   This is so we don't kill any stray "git merge" or other
+//   writing commands, which could leave things corrupt
 func WaitAll() {
 	wgAll.Wait()
 }
@@ -40,6 +43,7 @@ type (
 		span   opentracing.Span
 	}
 
+	// Option ...
 	Option func(*command) error
 )
 
