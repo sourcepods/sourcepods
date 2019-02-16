@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -53,9 +54,9 @@ type (
 
 	// LocalRepository implements Repository for Local disk-access
 	LocalRepository struct {
-		git  string
-		path string
-		id   string
+		git    string
+		path   string
+		id     string
 		logger log.Logger
 	}
 )
@@ -89,7 +90,7 @@ func NewLocalStorage(root string, opts ...StorageOption) (*LocalStorage, error) 
 }
 
 func (s *LocalStorage) repoPath(id string) string {
-  id = strings.Replace(id, "-", "", -1)
+	id = strings.Replace(id, "-", "", -1)
 	return filepath.Join(s.root, id[0:2], id[2:4], id[4:])
 }
 
@@ -136,7 +137,7 @@ func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repo
 		return nil, ErrRepoNotValid
 	}
 
-  return &LocalRepository{git: s.git, path: dir, id: repoPath, logger: s.logger}, nil
+	return &LocalRepository{git: s.git, path: dir, id: repoPath, logger: s.logger}, nil
 }
 
 // GetID returns the repos ID
