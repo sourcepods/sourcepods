@@ -11,7 +11,7 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/oklog/run"
 	"github.com/sourcepods/sourcepods/cmd"
-	"github.com/sourcepods/sourcepods/pkg/gitssh"
+	"github.com/sourcepods/sourcepods/pkg/ssh"
 	"github.com/sourcepods/sourcepods/pkg/storage"
 	jaeger "github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
@@ -128,7 +128,7 @@ func sshAction(c *cli.Context) error {
 		})
 	}
 	{
-		ss := gitssh.NewServer(sshConfig.SSHAddr, sshConfig.HostKeyPath, logger, storageClient)
+		ss := ssh.NewServer(sshConfig.SSHAddr, sshConfig.HostKeyPath, logger, storageClient)
 		gr.Add(func() error {
 			level.Info(logger).Log(
 				"msg", "starting SourcePods git-ssh server",
