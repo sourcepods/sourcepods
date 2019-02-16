@@ -118,7 +118,7 @@ func storageAction(c *cli.Context) error {
 		root = filepath.Join(wd, root)
 	}
 
-	gitStorage, err := storage.NewLocalStorage(storageConfig.Root)
+	gitStorage, err := storage.NewLocalStorage(storageConfig.Root, storage.LoggerOption(logger))
 	if err != nil {
 		return err
 	}
