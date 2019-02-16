@@ -200,6 +200,9 @@ func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, std
 	}
 
 	for errIn := range errC {
+		if errIn == io.EOF {
+			continue
+		}
 		span.SetTag("error", true)
 		span.LogKV("event", "error", "message", errIn)
 	}
@@ -256,6 +259,9 @@ func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, st
 	}
 
 	for errIn := range errC {
+		if errIn == io.EOF {
+			continue
+		}
 		span.SetTag("error", true)
 		span.LogKV("event", "error", "message", errIn)
 		err = errors.Wrap(err, errIn.Error())
