@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"io"
-	"sync"
 	"time"
 
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
@@ -168,20 +167,20 @@ func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, std
 		return 0, nil
 	}
 
-	wg := sync.WaitGroup{}
-
+	errC := make(chan error, 1)
 	// Go-routine for sending stdin
-	wg.Add(1)
-	go func() {
+	go func(errC chan error) {
 		in := streamio.NewWriter(func(p []byte) error {
 			return stream.Send(&GRERequest{Stdin: p})
 		})
-		// _, err := io.Copy(in, stdin)
-		io.Copy(in, stdin)
-		stream.CloseSend()
-		// Handle err...
-		wg.Done()
-	}()
+		if _, err := io.Copy(in, stdin); err != nil {
+			errC <- err
+		}
+		if err := stream.CloseSend(); err != nil {
+			errC <- err
+		}
+		close(errC)
+	}(errC)
 
 	var (
 		resp *GREResponse
@@ -201,7 +200,10 @@ func (c *Client) UploadPack(ctx context.Context, id string, stdin io.Reader, std
 		err = nil
 	}
 
-	wg.Wait()
+	for errIn := range errC {
+		span.SetTag("error", true)
+		span.LogKV("event", "error", "message", errIn)
+	}
 
 	return 0, err
 }
@@ -223,20 +225,20 @@ func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, st
 		return 0, nil
 	}
 
-	wg := sync.WaitGroup{}
-
+	errC := make(chan error, 1)
 	// Go-routine for sending stdin
-	wg.Add(1)
-	go func() {
+	go func(errC chan error) {
 		in := streamio.NewWriter(func(p []byte) error {
 			return stream.Send(&GRERequest{Stdin: p})
 		})
-		// _, err := io.Copy(in, stdin)
-		io.Copy(in, stdin)
-		stream.CloseSend()
-		// Handle err...
-		wg.Done()
-	}()
+		if _, err := io.Copy(in, stdin); err != nil {
+			errC <- err
+		}
+		if err := stream.CloseSend(); err != nil {
+			errC <- err
+		}
+		close(errC)
+	}(errC)
 
 	var (
 		resp *GREResponse
@@ -246,21 +248,20 @@ func (c *Client) ReceivePack(ctx context.Context, id string, stdin io.Reader, st
 			return resp.GetExitCode().GetExitCode(), nil
 		}
 		if len(resp.GetStderr()) > 0 {
-			if _, err = stderr.Write(resp.GetStderr()); err != nil {
-				break
-			}
+			stderr.Write(resp.GetStderr())
 		}
 		if len(resp.GetStdout()) > 0 {
-			if _, err = stdout.Write(resp.GetStdout()); err != nil {
-				break
-			}
+			stdout.Write(resp.GetStdout())
 		}
 	}
 	if err == io.EOF {
 		err = nil
 	}
 
-	wg.Wait()
+	for errIn := range errC {
+		span.SetTag("error", true)
+		span.LogKV("event", "error", "message", errIn)
+	}
 
 	return 0, err
 }
