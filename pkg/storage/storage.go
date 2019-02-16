@@ -2,18 +2,20 @@ package storage
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
 
+	"github.com/go-kit/kit/log"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"github.com/sourcepods/sourcepods/pkg/command"
 )
 
 var (
@@ -28,10 +30,14 @@ type (
 		GetRepository(ctx context.Context, id string) (Repository, error)
 	}
 
+	// StorageOption is for injecting configuration into LocalStorage
+	StorageOption func(Storage)
+
 	// LocalStorage implements Storage for Local disk-access
 	LocalStorage struct {
-		git  string
-		root string
+		git    string
+		root   string
+		logger log.Logger
 	}
 
 	// Repository is the interface for manipulating repos
@@ -50,57 +56,87 @@ type (
 		git  string
 		path string
 		id   string
+		logger log.Logger
 	}
 )
 
+// LoggerOption injects a logger into LocalStorage
+func LoggerOption(logger log.Logger) StorageOption {
+	return func(s Storage) {
+		ls, ok := s.(*LocalStorage)
+		if !ok {
+			return
+		}
+		ls.logger = logger
+	}
+}
+
 // NewLocalStorage returns a LocalStorage in the given `root`
-func NewLocalStorage(root string) (*LocalStorage, error) {
+func NewLocalStorage(root string, opts ...StorageOption) (*LocalStorage, error) {
 	if err := os.MkdirAll(root, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create storage root: %s", root)
 	}
-	return &LocalStorage{
-		git:  "/usr/bin/git",
-		root: root,
-	}, nil
+	ls := &LocalStorage{
+		git:    "/usr/bin/git",
+		root:   root,
+		logger: log.NewNopLogger(),
+	}
+
+	for _, opt := range opts {
+		opt(ls)
+	}
+	return ls, nil
 }
 
 func (s *LocalStorage) repoPath(id string) string {
-	id = strings.Replace(id, "-", "", -1)
+  id = strings.Replace(id, "-", "", -1)
 	return filepath.Join(s.root, id[0:2], id[2:4], id[4:])
 }
 
 // Create a new repository
 func (s *LocalStorage) Create(ctx context.Context, id string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalStorage.Create")
+	span.SetTag("repo_path", id)
+	defer span.Finish()
 	dir := s.repoPath(id)
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to repository directory: %s", dir)
 	}
 
-	cmd := exec.CommandContext(ctx, s.git, "init", "--bare")
-	cmd.Dir = dir
+	errBuf := &bytes.Buffer{}
+	cmd, err := command.New(ctx, dir, s.git, []string{"init", "--bare"}, command.StderrWriter(errBuf))
+	if err != nil {
+		injectError(span, err, "")
+	}
 
-	//TODO: Don't throw away stdout/err...
-	return cmd.Run()
+	err = cmd.Wait()
+	if err != nil {
+		injectError(span, err, errBuf.String())
+	}
+	return err
 }
 
 // GetRepository from Storage
 // TODO: Cache these somehow?
 func (s *LocalStorage) GetRepository(ctx context.Context, repoPath string) (Repository, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalStorage.GetRepository")
+	span.SetTag("repo_path", repoPath)
+	defer span.Finish()
 	dir := s.repoPath(repoPath)
 
-	cmd := exec.CommandContext(ctx, s.git, "config", "--null", "core.repositoryformatversion")
-	cmd.Dir = dir
-
-	output, err := cmd.CombinedOutput()
+	out, err := command.NewSimple(ctx, dir, s.git, "config", "--null", "core.repositoryformatversion")
 	if err != nil {
-		return nil, ErrRepoNotValid
-	}
-	if strings.TrimSuffix(string(output), "\x00") != "0" {
+		injectError(span, err, out)
 		return nil, ErrRepoNotValid
 	}
 
-	return &LocalRepository{git: s.git, path: dir, id: repoPath}, nil
+	if strings.TrimSuffix(out, "\x00") != "0" {
+		injectError(span, ErrRepoNotValid, out)
+		return nil, ErrRepoNotValid
+	}
+
+  return &LocalRepository{git: s.git, path: dir, id: repoPath, logger: s.logger}, nil
 }
 
 // GetID returns the repos ID
@@ -123,22 +159,19 @@ func (r *LocalRepository) SetDescription(ctx context.Context, description string
 
 // ListBranches returns all branches of a given repository
 func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.ListBranches")
+	defer span.Finish()
 
+	errBuf := &bytes.Buffer{}
 	args := []string{"for-each-ref", "--format=%(objectname) %(objecttype) %(refname)", "refs/heads"}
-	cmd := exec.CommandContext(ctx, r.git, args...)
-	cmd.Dir = r.path
-	out, err := cmd.StdoutPipe()
+	cmd, err := command.New(ctx, r.path, r.git, args, command.StderrWriter(errBuf), command.StdoutPipe)
 	if err != nil {
-		return nil, err
-	}
-	if err = cmd.Start(); err != nil {
+		injectError(span, err, "")
 		return nil, err
 	}
 
 	var bs []Branch
-	scanner := bufio.NewScanner(out)
+	scanner := bufio.NewScanner(cmd.Stdout())
 	for scanner.Scan() {
 		s := strings.Split(scanner.Text(), " ")
 
@@ -150,6 +183,7 @@ func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
 	}
 
 	if err := cmd.Wait(); err != nil {
+		injectError(span, err, errBuf.String())
 		return nil, err
 	}
 
@@ -169,28 +203,34 @@ type Commit struct {
 	Committer Signature
 }
 
+func injectError(span opentracing.Span, err error, stderr string) {
+	span.SetTag("error", true)
+	span.LogKV("event", "error", "message", err, "stderr", stderr)
+}
+
 // GetCommit returns a single Commit from a Repository
 func (r *LocalRepository) GetCommit(ctx context.Context, ref string) (Commit, error) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.GetCommit")
+	span.SetTag("ref", ref)
+	defer span.Finish()
 
+	errBuf := &bytes.Buffer{}
 	args := []string{"cat-file", "-p", ref}
-	cmd := exec.CommandContext(ctx, r.git, args...)
-	cmd.Dir = r.path
-	out, err := cmd.StdoutPipe()
+	cmd, err := command.New(ctx, r.path, r.git, args, command.StderrWriter(errBuf), command.StdoutPipe)
 	if err != nil {
+		injectError(span, err, errBuf.String())
 		return Commit{}, err
 	}
-	if err = cmd.Start(); err != nil {
-		return Commit{}, err
-	}
+	defer cmd.Finish()
 
-	commit, err := parseCommit(out, ref)
+	commit, err := parseCommit(cmd.Stdout(), ref)
 	if err != nil {
+		injectError(span, err, errBuf.String())
 		return Commit{}, err
 	}
 
 	if err := cmd.Wait(); err != nil {
+		injectError(span, err, errBuf.String())
 		return Commit{}, err
 	}
 
@@ -296,10 +336,7 @@ type TreeEntry struct {
 
 //Tree returns the files and folders at a given ref at a path in a repository
 func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.Tree")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.Tree")
 	span.SetTag("ref", ref)
 	span.SetTag("path", path)
 	defer span.Finish()
@@ -310,6 +347,7 @@ func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEnt
 
 	treeEntries, err := r.tree(ctx, ref, path)
 	if err != nil {
+		injectError(span, err, "")
 		return nil, err
 	}
 
@@ -317,36 +355,36 @@ func (r *LocalRepository) Tree(ctx context.Context, ref, path string) ([]TreeEnt
 }
 
 func (r *LocalRepository) tree(ctx context.Context, ref, path string) ([]TreeEntry, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Server.tree")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.tree")
 	span.SetTag("ref", ref)
 	span.SetTag("path", path)
 	defer span.Finish()
 
+	errBuf := &bytes.Buffer{}
 	args := []string{"ls-tree", ref, path}
-	cmd := exec.CommandContext(ctx, r.git, args...)
-	cmd.Dir = r.path
-	out, err := cmd.StdoutPipe()
+	cmd, err := command.New(ctx, r.path, r.git, args, command.StderrWriter(errBuf), command.StdoutPipe)
 	if err != nil {
+		injectError(span, err, errBuf.String())
 		return nil, errors.Wrap(err, "failed to run git ls-tree")
 	}
-	if err = cmd.Start(); err != nil {
-		return nil, errors.Wrap(err, "failed to run git ls-tree")
-	}
+	defer cmd.Finish()
 
 	// TODO: The scanner takes unbounded inputs. This could cause OOMs
 
 	var treeEntries []TreeEntry
-	scanner := bufio.NewScanner(out)
+	scanner := bufio.NewScanner(cmd.Stdout())
 	for scanner.Scan() {
 		line := scanner.Text()
 		te, err := parseTreeEntry(line)
 		if err != nil {
+			injectError(span, err, "parseTreeEntry")
 			return treeEntries, errors.Wrap(err, "unable to parse tree entry line")
 		}
 		treeEntries = append(treeEntries, te)
 	}
 
 	if err := cmd.Wait(); err != nil {
+		injectError(span, err, errBuf.String())
 		return nil, errors.Wrap(err, "failed to wait for command to finish")
 	}
 
