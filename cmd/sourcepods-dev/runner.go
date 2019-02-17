@@ -50,11 +50,9 @@ func (r *Runner) Run() error {
 			}
 
 			go func() {
-				r.cmd = exec.Command("./dev/" + r.name)
+				r.cmd = exec.Command("./dev/"+r.name, r.args...)
 				r.cmd.Env = r.env
-				r.cmd.Args = r.args
-
-				color.HiGreen("%s %s\n", r.cmd.Path, strings.Join(r.cmd.Args, " "))
+				color.HiGreen("%s\n", strings.Join(r.cmd.Args, " "))
 
 				stdout, err := r.cmd.StdoutPipe()
 				if err != nil {
