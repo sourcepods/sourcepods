@@ -120,41 +120,40 @@ func devAction(c *cli.Context) error {
 		}
 	}
 
-	uiRunner := NewRunner("ui", []string{
-		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, uiAddrFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvAPIURL, "http://localhost:3000/api"), // TODO
-		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
-		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
-		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
+	uiRunner := NewRunner("ui", []string{}, []string{
+		fmt.Sprintf("--%s=%s", cmd.FlagAPIURL, "http://localhost:3000/api"), // TODO
+		fmt.Sprintf("--%s=%s", cmd.FlagHTTPAddr, uiAddrFlag),
+		fmt.Sprintf("--%s=%s", cmd.FlagLogLevel, loglevelFlag),
+		fmt.Sprintf("--%s=%s", cmd.FlagTracingURL, tracingURL),
+		fmt.Sprintf("--%s=%v", cmd.FlagLogJSON, logJSONFlag),
 	})
 
 	apiRunner := NewRunner("api", []string{
-		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, apiAddrFlag),
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSNFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvMigrationsPath, "./schema/postgres"),
-		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
-		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvSecret, "secret"),
-		fmt.Sprintf("%s=%s", cmd.EnvStorageGRPCURL, "localhost:3033"),
-		fmt.Sprintf("%s=%s", cmd.EnvStorageHTTPURL, "http://localhost:3030"),
-		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
+	}, []string{
+		fmt.Sprintf("--%s=%s", cmd.FlagHTTPAddr, apiAddrFlag),
+		fmt.Sprintf("--%s=%s", cmd.FlagLogLevel, loglevelFlag),
+		fmt.Sprintf("--%s=%s", cmd.FlagStorageGRPCURL, "localhost:3033"),
+		fmt.Sprintf("--%s=%s", cmd.FlagStorageHTTPURL, "http://localhost:3030"),
+		fmt.Sprintf("--%s=%s", cmd.FlagTracingURL, tracingURL),
+		fmt.Sprintf("--%s=%v", cmd.FlagLogJSON, logJSONFlag),
 	})
 
-	storageRunner := NewRunner("storage", []string{
-		fmt.Sprintf("%s=%s", cmd.EnvHTTPAddr, storageAddrFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
-		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvRoot, storageRootFlag),
-		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
+	storageRunner := NewRunner("storage", []string{}, []string{
+		fmt.Sprintf("--%s=%s", cmd.FlagHTTPAddr, storageAddrFlag),
+		fmt.Sprintf("--%s=%s", cmd.FlagLogLevel, loglevelFlag),
+		fmt.Sprintf("--%s=%s", cmd.FlagRoot, storageRootFlag),
+		fmt.Sprintf("--%s=%s", cmd.FlagTracingURL, tracingURL),
+		fmt.Sprintf("--%s=%v", cmd.FlagLogJSON, logJSONFlag),
 	})
 
-	sshRunner := NewRunner("ssh", []string{
-		fmt.Sprintf("%s=%s", cmd.EnvSSHAddr, sshAddrFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvSSHHostKeyPath, "./dev/keys/"),
-		fmt.Sprintf("%s=%s", cmd.EnvStorageGRPCURL, "localhost:3033"),
-		fmt.Sprintf("%s=%s", cmd.EnvLogLevel, loglevelFlag),
-		fmt.Sprintf("%s=%v", cmd.EnvLogJSON, logJSONFlag),
-		fmt.Sprintf("%s=%v", cmd.EnvTracingURL, tracingURL),
+	sshRunner := NewRunner("ssh", []string{}, []string{
+		fmt.Sprintf("--%s=%s", cmd.FlagLogLevel, loglevelFlag),
+		fmt.Sprintf("--%s=%s", cmd.FlagSSHAddr, sshAddrFlag),
+		fmt.Sprintf("--%s=%s", cmd.FlagSSHHostKeyPath, "./dev/keys/"),
+		fmt.Sprintf("--%s=%s", cmd.FlagStorageGRPCURL, "localhost:3033"),
+		fmt.Sprintf("--%s=%s", cmd.FlagTracingURL, tracingURL),
+		fmt.Sprintf("--%s=%v", cmd.FlagLogJSON, logJSONFlag),
 	})
 
 	caddy := CaddyRunner{}

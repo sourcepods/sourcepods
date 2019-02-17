@@ -30,7 +30,6 @@ var (
 	usersFlags = []cli.Flag{
 		cli.StringFlag{
 			Name:        cmd.FlagDatabaseDriver,
-			EnvVar:      cmd.EnvDatabaseDriver,
 			Usage:       "The database driver to use: postgres",
 			Value:       "postgres",
 			Destination: &usersConfig.DatabaseDriver,

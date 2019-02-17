@@ -16,22 +16,27 @@ import (
 type Runner struct {
 	name    string
 	env     []string
+	args    []string
 	cmd     *exec.Cmd
 	restart chan bool
 }
 
-func NewRunner(name string, env []string) *Runner {
+//NewRunner creates a Runner that can be restarted
+func NewRunner(name string, env []string, args []string) *Runner {
 	return &Runner{
 		name:    name,
 		env:     env,
+		args:    args,
 		restart: make(chan bool, 16),
 	}
 }
 
+//Name of the Runner
 func (r *Runner) Name() string {
 	return r.name
 }
 
+//Run the command
 func (r *Runner) Run() error {
 	if err := r.Build(); err == nil {
 		r.restart <- true
@@ -45,8 +50,10 @@ func (r *Runner) Run() error {
 			}
 
 			go func() {
-				r.cmd = exec.Command("./dev/" + r.name)
+				r.cmd = exec.Command("./dev/"+r.name, r.args...)
 				r.cmd.Env = r.env
+				color.HiGreen("%s\n", strings.Join(r.cmd.Args, " "))
+
 				stdout, err := r.cmd.StdoutPipe()
 				if err != nil {
 					return
@@ -78,6 +85,7 @@ func (r *Runner) Run() error {
 	}
 }
 
+//Stop the command and process
 func (r *Runner) Stop() {
 	if r.cmd == nil || r.cmd.Process == nil {
 		return
@@ -85,6 +93,7 @@ func (r *Runner) Stop() {
 	r.cmd.Process.Kill()
 }
 
+//Build the binary to be run afterwards. Example: make dev/api
 func (r *Runner) Build() error {
 	cmd := exec.Command("make", "dev/"+r.name)
 	cmd.Stdin = os.Stdin
@@ -96,10 +105,12 @@ func (r *Runner) Build() error {
 	return cmd.Run()
 }
 
+//Restart the program by signaling via restart channel
 func (r *Runner) Restart() {
 	r.restart <- true
 }
 
+//Shutdown the program by closing the restart channel and stopping the process
 func (r *Runner) Shutdown() {
 	close(r.restart)
 	r.Stop()
@@ -110,6 +121,7 @@ type CaddyRunner struct {
 	cmd *exec.Cmd
 }
 
+//Run Caddy and print its output
 func (r *CaddyRunner) Run() error {
 	r.cmd = exec.Command(filepath.Join(".", "dev", "caddy"), "-conf", "./dev/Caddyfile")
 	stdout, err := r.cmd.StdoutPipe()
@@ -136,6 +148,7 @@ func (r *CaddyRunner) Run() error {
 	return r.cmd.Wait()
 }
 
+//Stop Caddy server
 func (r *CaddyRunner) Stop() {
 	if r.cmd == nil || r.cmd.Process == nil {
 		return
