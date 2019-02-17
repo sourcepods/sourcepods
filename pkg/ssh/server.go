@@ -1,31 +1,33 @@
 package ssh
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 
-	"github.com/opentracing/opentracing-go"
-
 	"github.com/gliderlabs/ssh"
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
+	"github.com/sourcepods/sourcepods/pkg/ssh/mux"
 	"github.com/sourcepods/sourcepods/pkg/storage"
 )
 
 // NewServer returns a *grpc.Server serving SSH
-//  is no `hostKeyPath` is given, random hostkeys will be generated...
+//  if no `hostKeyPath` is given, random hostkeys will be generated...
 func NewServer(addr, hostKeyPath string, logger log.Logger, cli *storage.Client) *ssh.Server {
+	gs := &gitStorage{client: cli}
+
+	m := mux.New()
+	m.Use(mux.RecoverWare(logger))
+	m.Use(tracingHandler())
+	m.Use(logHandler(logger))
+
+	m.AddHandler("^git[ -]receive-pack ([0-9a-f/-]+)$", "ssh.Handler.ReceivePack", mux.HandlerFunc(gs.ReceivePack))
+	m.AddHandler("^git[ -]upload-pack ([0-9a-f/-]+)$", "ssh.Handler.UploadPack", mux.HandlerFunc(gs.UploadPack))
+
 	s := &ssh.Server{
-		Addr: addr,
-		Handler: tracingHandler(
-			logHandler(
-				mainHandler(cli),
-				logger,
-			),
-		),
+		Addr:    addr,
+		Handler: m.Handle(),
 		PublicKeyHandler: func(ssh.Context, ssh.PublicKey) bool {
 			// TODO: This needs to be implemented :D
 			return true
@@ -42,76 +44,6 @@ func NewServer(addr, hostKeyPath string, logger log.Logger, cli *storage.Client)
 	}
 
 	return s
-}
-
-func mainHandler(cli *storage.Client) ssh.Handler {
-	return func(s ssh.Session) {
-		cmd := s.Command()
-		if len(cmd) < 1 {
-			fmt.Fprintf(s, "Welcome to SourcePods, %s\n", s.User())
-			return
-		}
-		switch cmd[0] {
-		case "git", "git-upload-pack", "git-receive-pack":
-			storageHandler(cli, s)
-		default:
-			fmt.Fprintf(s, "unknown command given\n")
-			s.Exit(1)
-		}
-	}
-}
-
-// Because Windows sends "git upload-pack 'path/to/repo.git'" instead of
-// "git-upload-pack 'path/to/repo.git'", we need to reformat it
-func reformatWindowsCommand(command []string) []string {
-	if command[0] == "git" {
-		command[0] = fmt.Sprintf("%s-%s", command[0], command[1])
-		return append(command[0:1], command[2:]...)
-	}
-	return command
-}
-
-func storageHandler(cli *storage.Client, s ssh.Session) {
-	ctx := s.Context().Value("span-ctx").(context.Context)
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ssh.Handler.Storage")
-	defer span.Finish()
-
-	command := reformatWindowsCommand(s.Command())
-
-	id := command[1]
-
-	span.SetTag("repo_path", id)
-
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	switch command[0] {
-	case "git-upload-pack":
-		ec, err := cli.UploadPack(ctx, id, s, s, s.Stderr())
-		if err != nil {
-			logger := s.Context().Value("logger").(log.Logger)
-			level.Error(logger).Log(
-				"msg", "upload-pack failed",
-				"err", err.Error(),
-			)
-			s.Exit(1)
-		}
-		s.Exit(int(ec))
-	case "git-receive-pack":
-		ec, err := cli.ReceivePack(ctx, id, s, s, s.Stderr())
-		if err != nil {
-			logger := s.Context().Value("logger").(log.Logger)
-			level.Error(logger).Log(
-				"msg", "recieve-pack failed",
-				"err", err.Error(),
-			)
-			s.Exit(1)
-		}
-		s.Exit(int(ec))
-	default:
-		fmt.Fprintf(s, "unknown command given\n")
-		s.Exit(1)
-	}
 }
 
 func loadHostKeys(dir string) ([]ssh.Option, error) {

@@ -1,52 +1,45 @@
 package ssh
 
 import (
-	"fmt"
+	"context"
+	"net"
 	"time"
 
 	"github.com/gliderlabs/ssh"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/sourcepods/sourcepods/pkg/ssh/mux"
 )
 
-// tracingHandler traces connections, and injects
-func tracingHandler(next ssh.Handler) ssh.Handler {
-	return func(s ssh.Session) {
-		sessID := s.Context().(ssh.Context).SessionID()
+type contextType string
 
-		span, spanCtx := opentracing.StartSpanFromContext(s.Context(), "ssh.Handler")
-		s.Context().(ssh.Context).SetValue("span-ctx", spanCtx)
-		span.SetTag("remote-addr", s.RemoteAddr().String())
-		span.SetTag("user", s.User())
-		span.SetTag("session-id", sessID)
-		defer span.Finish()
-
-		next(s)
-	}
-}
+var contextLogger = contextType("logger")
 
 // logHandler logs connections, and injects `logger` into the context.
-func logHandler(next ssh.Handler, logger log.Logger) ssh.Handler {
-	return func(s ssh.Session) {
-		sessID := s.Context().(ssh.Context).SessionID()
+func logHandler(logger log.Logger) mux.MiddlewareFunc {
+	return func(ctx context.Context, next mux.HandlerFunc, sess ssh.Session) error {
+		sessID := ctx.Value(ssh.ContextKeySessionID).(string)
 		start := time.Now()
 
 		level.Debug(logger).Log(
 			"msg", "new session",
-			"user", s.User(),
+			"user", sess.User(),
 			"session-id", sessID,
-			"remote-addr", s.RemoteAddr().String(),
-			"command", fmt.Sprintf("%v", s.Command()),
+			"remote-addr", sess.RemoteAddr().String(),
+			"remote-addr", ctx.Value(ssh.ContextKeyRemoteAddr).(net.Addr).String(),
+			"cmd", ctx.Value(mux.ContextCmd).(string),
 		)
-		s.Context().(ssh.Context).SetValue("logger", logger)
+		ctx = context.WithValue(ctx, contextLogger, logger)
 
-		next(s)
+		err := next(ctx, sess)
 
 		level.Debug(logger).Log(
+			"err", err,
 			"msg", "session closed",
-			"user", s.User(),
+			"user", sess.User(),
 			"session-length", time.Now().Sub(start),
 		)
+		return err
 	}
+
 }
