@@ -130,7 +130,6 @@ func devAction(c *cli.Context) error {
 
 	apiRunner := NewRunner("api", []string{
 		fmt.Sprintf("%s=%s", cmd.EnvDatabaseDSN, databaseDSNFlag),
-		fmt.Sprintf("%s=%s", cmd.EnvSecret, "secret"),
 	}, []string{
 		fmt.Sprintf("--%s=%s", cmd.FlagHTTPAddr, apiAddrFlag),
 		fmt.Sprintf("--%s=%s", cmd.FlagLogLevel, loglevelFlag),

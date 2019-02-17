@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -41,7 +40,6 @@ type apiConf struct {
 	DatabaseDSN     string
 	LogJSON         bool
 	LogLevel        string
-	Secret          string
 	StorageGRPCURL  string
 	StorageHTTPURL  string
 	TracingURL      string
@@ -93,12 +91,6 @@ var (
 			Destination: &apiConfig.LogLevel,
 		},
 		cli.StringFlag{
-			Name:        cmd.FlagSecret,
-			EnvVar:      cmd.EnvSecret,
-			Usage:       "This secret is going to be used to generate cookies",
-			Destination: &apiConfig.Secret,
-		},
-		cli.StringFlag{
 			Name:        cmd.FlagStorageGRPCURL,
 			Usage:       "The storage's gprc url to connect with",
 			Destination: &apiConfig.StorageGRPCURL,
@@ -117,10 +109,6 @@ var (
 )
 
 func apiAction(c *cli.Context) error {
-	if apiConfig.Secret == "" {
-		return errors.New("the secret for the api can't be empty")
-	}
-
 	logger := cmd.NewLogger(apiConfig.LogJSON, apiConfig.LogLevel)
 	logger = log.WithPrefix(logger, "app", c.App.Name)
 

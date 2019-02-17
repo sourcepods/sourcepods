@@ -20,15 +20,14 @@ const (
 	FlagLogLevel        = "log-level"
 	FlagMigrationsPath  = "migrations-path"
 	FlagRoot            = "root"
-	FlagSecret          = "secret"
 	FlagSSHAddr         = "ssh-addr"
 	FlagSSHHostKeyPath  = "ssh-host-key"
 	FlagStorageGRPCURL  = "storage-grpc-url"
 	FlagStorageHTTPURL  = "storage-http-url"
 	FlagTracingURL      = "tracing-url"
 
+	//EnvDatabaseDSN is the data source name string to connect to the database with
 	EnvDatabaseDSN = "GITPODS_DATABASE_DSN"
-	EnvSecret      = "GITPODS_SECRET"
 )
 
 func NewLogger(json bool, loglevel string) log.Logger {
