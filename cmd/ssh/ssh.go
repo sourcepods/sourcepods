@@ -32,40 +32,34 @@ var (
 	sshFlags  = []cli.Flag{
 		cli.StringFlag{
 			Name:        cmd.FlagSSHAddr,
-			EnvVar:      cmd.EnvSSHAddr,
 			Value:       ":3022",
 			Usage:       "The SSH address to listen on",
 			Destination: &sshConfig.SSHAddr,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagSSHHostKeyPath,
-			EnvVar:      cmd.EnvSSHHostKeyPath,
 			Value:       "/etc/ssh/",
 			Usage:       "The path to looks for ssh host-keys in",
 			Destination: &sshConfig.HostKeyPath,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagStorageGRPCURL,
-			EnvVar:      cmd.EnvStorageGRPCURL,
 			Usage:       "The storage's grpc url to connect with",
 			Destination: &sshConfig.StorageGRPCURL,
 		},
 		cli.BoolFlag{
 			Name:        cmd.FlagLogJSON,
-			EnvVar:      cmd.EnvLogJSON,
 			Usage:       "The logger will log json lines",
 			Destination: &sshConfig.LogJSON,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagLogLevel,
-			EnvVar:      cmd.EnvLogLevel,
 			Usage:       "The log level to filter logs with before printing",
 			Value:       "info",
 			Destination: &sshConfig.LogLevel,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagTracingURL,
-			EnvVar:      cmd.EnvTracingURL,
 			Usage:       "The url to send spans for tracing to",
 			Destination: &sshConfig.TracingURL,
 		},

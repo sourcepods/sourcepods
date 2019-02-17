@@ -23,7 +23,6 @@ var (
 	dbFlags = []cli.Flag{
 		cli.StringFlag{
 			Name:        cmd.FlagDatabaseDriver,
-			EnvVar:      cmd.EnvDatabaseDriver,
 			Usage:       "The database driver to use: memory & postgres",
 			Value:       "postgres",
 			Destination: &dbConfig.DatabaseDriver,
@@ -36,7 +35,6 @@ var (
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagMigrationsPath,
-			EnvVar:      cmd.EnvMigrationsPath,
 			Usage:       "The path to the folder containing all migrations",
 			Destination: &dbConfig.MigrationsPath,
 		},

@@ -36,38 +36,32 @@ var (
 	storageFlags = []cli.Flag{
 		cli.StringFlag{
 			Name:        cmd.FlagGRPCAddr,
-			EnvVar:      cmd.EnvGRPCAddr,
 			Value:       ":3033",
 			Destination: &storageConfig.GRPCAddr,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagHTTPAddr,
-			EnvVar:      cmd.EnvHTTPAddr,
 			Value:       ":3030",
 			Destination: &storageConfig.HTTPAddr,
 		},
 		cli.BoolFlag{
 			Name:        cmd.FlagLogJSON,
-			EnvVar:      cmd.EnvLogJSON,
 			Usage:       "The logger will log json lines",
 			Destination: &storageConfig.LogJSON,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagLogLevel,
-			EnvVar:      cmd.EnvLogLevel,
 			Usage:       "The log level to filter logs with before printing",
 			Value:       "info",
 			Destination: &storageConfig.LogLevel,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagRoot,
-			EnvVar:      cmd.EnvRoot,
 			Usage:       "The root folder to store all git repositories in",
 			Destination: &storageConfig.Root,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagTracingURL,
-			EnvVar:      cmd.EnvTracingURL,
 			Usage:       "The url to send spans for tracing to",
 			Destination: &storageConfig.TracingURL,
 		},

@@ -16,14 +16,16 @@ import (
 type Runner struct {
 	name    string
 	env     []string
+	args    []string
 	cmd     *exec.Cmd
 	restart chan bool
 }
 
-func NewRunner(name string, env []string) *Runner {
+func NewRunner(name string, env []string, args []string) *Runner {
 	return &Runner{
 		name:    name,
 		env:     env,
+		args:    args,
 		restart: make(chan bool, 16),
 	}
 }
@@ -47,6 +49,10 @@ func (r *Runner) Run() error {
 			go func() {
 				r.cmd = exec.Command("./dev/" + r.name)
 				r.cmd.Env = r.env
+				r.cmd.Args = r.args
+
+				color.HiGreen("%s %s\n", r.cmd.Path, strings.Join(r.cmd.Args, " "))
+
 				stdout, err := r.cmd.StdoutPipe()
 				if err != nil {
 					return

@@ -26,27 +26,23 @@ var (
 	uiFlags = []cli.Flag{
 		cli.StringFlag{
 			Name:        cmd.FlagAPIURL,
-			EnvVar:      cmd.EnvAPIURL,
 			Usage:       "The address SourcePods API runs on",
 			Value:       ":3020",
 			Destination: &uiConfig.AddrAPI,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagHTTPAddr,
-			EnvVar:      cmd.EnvHTTPAddr,
 			Usage:       "The address SourcePods UI runs on",
 			Value:       ":3010",
 			Destination: &uiConfig.Addr,
 		},
 		cli.BoolFlag{
 			Name:        cmd.FlagLogJSON,
-			EnvVar:      cmd.EnvLogJSON,
 			Usage:       "The logger will log json lines",
 			Destination: &uiConfig.LogJson,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagLogLevel,
-			EnvVar:      cmd.EnvLogLevel,
 			Usage:       "The log level to filter logs with before printing",
 			Value:       "info",
 			Destination: &uiConfig.LogLevel,

@@ -53,14 +53,12 @@ var (
 	apiFlags = []cli.Flag{
 		cli.StringFlag{
 			Name:        cmd.FlagAPIPrefix,
-			EnvVar:      cmd.EnvAPIPrefix,
 			Usage:       "The prefix the api is serving from, default: /",
 			Value:       "/",
 			Destination: &apiConfig.APIPrefix,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagDatabaseDriver,
-			EnvVar:      cmd.EnvDatabaseDriver,
 			Usage:       "The database driver to use: memory & postgres",
 			Value:       "postgres",
 			Destination: &apiConfig.DatabaseDriver,
@@ -73,27 +71,23 @@ var (
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagHTTPAddr,
-			EnvVar:      cmd.EnvHTTPAddr,
 			Usage:       "The address SourcePods API runs on",
 			Value:       ":3020",
 			Destination: &apiConfig.HTTPAddr,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagHTTPPrivateAddr,
-			EnvVar:      cmd.EnvHTTPPrivateAddr,
 			Usage:       "The address SourcePods runs a http server only for internal access",
 			Value:       ":3021",
 			Destination: &apiConfig.HTTPPrivateAddr,
 		},
 		cli.BoolFlag{
 			Name:        cmd.FlagLogJSON,
-			EnvVar:      cmd.EnvLogJSON,
 			Usage:       "The logger will log json lines",
 			Destination: &apiConfig.LogJSON,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagLogLevel,
-			EnvVar:      cmd.EnvLogLevel,
 			Usage:       "The log level to filter logs with before printing",
 			Value:       "info",
 			Destination: &apiConfig.LogLevel,
@@ -106,19 +100,16 @@ var (
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagStorageGRPCURL,
-			EnvVar:      cmd.EnvStorageGRPCURL,
 			Usage:       "The storage's gprc url to connect with",
 			Destination: &apiConfig.StorageGRPCURL,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagStorageHTTPURL,
-			EnvVar:      cmd.EnvStorageHTTPURL,
 			Usage:       "The storage's http url to proxy to",
 			Destination: &apiConfig.StorageHTTPURL,
 		},
 		cli.StringFlag{
 			Name:        cmd.FlagTracingURL,
-			EnvVar:      cmd.EnvTracingURL,
 			Usage:       "The url to send spans for tracing to",
 			Destination: &apiConfig.TracingURL,
 		},
