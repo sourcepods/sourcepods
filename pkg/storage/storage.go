@@ -418,15 +418,13 @@ func (r *LocalRepository) UploadPack(ctx context.Context, stdin io.Reader, stdou
 	span.SetTag("repo_path", r.path)
 	defer span.Finish()
 
-	cmd := exec.CommandContext(ctx, "/usr/bin/git", "upload-pack", "--strict", r.path)
-	span.LogEvent(fmt.Sprintf("%v", cmd.Args))
-
-	cmd.Stdin = stdin
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-
-	if err := cmd.Start(); err != nil {
-		return 0, fmt.Errorf("cmd.Start: %v", err)
+	cmd, err := command.New(ctx, r.path, r.git, []string{"upload-pack", "--strict", "."},
+		command.StdinWriter(stdin),
+		command.StdoutWriter(stdout),
+		command.StderrWriter(stderr),
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "command failed")
 	}
 
 	return exitStatus(cmd.Wait())
@@ -440,15 +438,13 @@ func (r *LocalRepository) ReceivePack(ctx context.Context, stdin io.Reader, stdo
 	span.SetTag("repo_path", r.path)
 	defer span.Finish()
 
-	cmd := exec.CommandContext(ctx, "/usr/bin/git", "receive-pack", r.path)
-	span.LogEvent(fmt.Sprintf("%v", cmd.Args))
-
-	cmd.Stdin = stdin
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-
-	if err := cmd.Start(); err != nil {
-		return 0, fmt.Errorf("cmd.Start: %v", err)
+	cmd, err := command.New(ctx, r.path, r.git, []string{"receive-pack", "."},
+		command.StdinWriter(stdin),
+		command.StdoutWriter(stdout),
+		command.StderrWriter(stderr),
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "command failed")
 	}
 
 	return exitStatus(cmd.Wait())
