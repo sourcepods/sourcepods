@@ -12,17 +12,17 @@ import (
 	"github.com/sourcepods/sourcepods/pkg/ssh/mux"
 )
 
-type NopLogger struct {
+type TestLogger struct {
 	kvs []interface{}
 }
 
-func (n *NopLogger) Log(kvs ...interface{}) error {
+func (n *TestLogger) Log(kvs ...interface{}) error {
 	n.kvs = append(n.kvs, kvs...)
 	return nil
 }
 
 func TestRecoverWare(t *testing.T) {
-	nLogger := &NopLogger{}
+	nLogger := &TestLogger{}
 	rw := mux.RecoverWare(nLogger)
 
 	noPanic := mux.HandlerFunc(func(context.Context, ssh.Session) error {
