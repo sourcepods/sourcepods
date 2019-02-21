@@ -8,8 +8,8 @@ import (
 	"github.com/sourcepods/sourcepods/pkg/ssh/mux"
 )
 
-// tracingHandler traces connections, and injects
-func tracingHandler() mux.MiddlewareFunc {
+// tracerWare traces connections, and injects
+func tracerWare() mux.MiddlewareFunc {
 	return func(ctx context.Context, next mux.HandlerFunc, sess ssh.Session) error {
 		sessID := sess.Context().(ssh.Context).SessionID()
 

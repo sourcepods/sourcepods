@@ -15,8 +15,8 @@ type contextType string
 
 var contextLogger = contextType("logger")
 
-// logHandler logs connections, and injects `logger` into the context.
-func logHandler(logger log.Logger) mux.MiddlewareFunc {
+// loggerWare logs connections, and injects `logger` into the context.
+func loggerWare(logger log.Logger) mux.MiddlewareFunc {
 	return func(ctx context.Context, next mux.HandlerFunc, sess ssh.Session) error {
 		sessID := ctx.Value(ssh.ContextKeySessionID).(string)
 		start := time.Now()

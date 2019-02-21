@@ -19,8 +19,8 @@ func NewServer(addr, hostKeyPath string, logger log.Logger, cli *storage.Client)
 
 	m := mux.New()
 	m.Use(mux.RecoverWare(logger))
-	m.Use(tracingHandler())
-	m.Use(logHandler(logger))
+	m.Use(tracerWare())
+	m.Use(loggerWare(logger))
 
 	m.AddHandler("^git[ -]receive-pack ([0-9a-f/-]+)$", "ssh.Handler.ReceivePack", mux.HandlerFunc(gs.ReceivePack))
 	m.AddHandler("^git[ -]upload-pack ([0-9a-f/-]+)$", "ssh.Handler.UploadPack", mux.HandlerFunc(gs.UploadPack))
