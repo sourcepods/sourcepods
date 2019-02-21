@@ -130,6 +130,46 @@ depends_on:
 
 ---
 kind: pipeline
+name: ssh
+
+platform:
+  os: linux
+  arch: amd64
+
+workspace:
+  base: /go
+  path: src/github.com/sourcepods/sourcepods
+
+steps:
+- name: binary
+  image: golang:1.11.4
+  commands:
+  - make dev/ssh
+
+- name: docker
+  image: plugins/docker:17.12
+  pull: always
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    dockerfile: cmd/storage/Dockerfile
+    repo: quay.io/sourcepods/ssh
+    registry: quay.io
+    tag:
+    - latest
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+depends_on:
+- testing
+
+---
+kind: pipeline
 name: ui
 
 platform:
