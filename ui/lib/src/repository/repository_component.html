@@ -4,7 +4,7 @@
     <div class="repository-nav">
         <div class="uk-container">
             <div uk-grid>
-                <div style="margin-left: -40px;">
+                <div>
                     <h3><span uk-icon="icon: lock"></span></h3>
                 </div>
 
@@ -19,10 +19,12 @@
                         </a>
                     </h3>
 
-                    <span *ngIf="repository.description != ''">{{repository.description}}</span>
-                    <span *ngIf="repository.description != '' && repository.website != ''"> - </span>
-                    <span *ngIf="repository.website != ''">
-                        <a href="{{repository.website}}">{{repository.website}}</a>
+                    <span style="margin-left: -35px;">
+                        <span *ngIf="repository.description != ''">{{repository.description}}</span>
+                        <span *ngIf="repository.description != '' && repository.website != ''"> - </span>
+                        <span *ngIf="repository.website != ''">
+                            <a href="{{repository.website}}">{{repository.website}}</a>
+                        </span>
                     </span>
                 </div>
             </div>
