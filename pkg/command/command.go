@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"sync"
 
@@ -32,15 +33,17 @@ type (
 		// Finish closes the Span
 		//  Note, run this is you never get to Wait() (e.g. on `return err`)
 		Finish()
+		Interrupt() error
 		Wait() error
 	}
 
 	command struct {
-		cmd    *exec.Cmd
-		stdout io.ReadCloser
-		stderr io.ReadCloser
-		stdin  io.WriteCloser
-		span   opentracing.Span
+		cmd         *exec.Cmd
+		stdout      io.ReadCloser
+		stderr      io.ReadCloser
+		stdin       io.WriteCloser
+		span        opentracing.Span
+		interrupted bool
 	}
 
 	// Option ...
@@ -99,6 +102,31 @@ func (c *command) Stdin() io.Writer {
 	return c.stdin
 }
 
+func (c *command) Interrupt() error {
+	proc := c.cmd.Process
+	if err := proc.Signal(os.Interrupt); err != nil {
+		return c.injector(errors.Wrap(err, "proc.Signal"))
+	}
+
+	_, err := proc.Wait()
+	if err != nil {
+		return c.injector(errors.Wrap(err, "proc.Wait"))
+	}
+
+	c.interrupted = true
+
+	c.Finish()
+	return nil
+}
+
+func (c *command) injector(err error) error {
+	if c.span != nil {
+		c.span.SetTag("error", true)
+		c.span.LogKV("error", err)
+	}
+	return err
+}
+
 // Finish ...
 //  is idempotent
 func (c *command) Finish() {
@@ -113,10 +141,10 @@ func (c *command) Finish() {
 func (c *command) Wait() error {
 	defer c.Finish()
 
-	err := c.cmd.Wait()
-	if err != nil {
-		c.span.SetTag("error", true)
-		c.span.LogKV("error", err)
+	if !c.interrupted {
+		if err := c.cmd.Wait(); err != nil {
+			return c.injector(err)
+		}
 	}
-	return err
+	return nil
 }
