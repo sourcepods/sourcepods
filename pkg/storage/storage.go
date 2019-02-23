@@ -195,7 +195,7 @@ func (r *LocalRepository) ListBranches(ctx context.Context) ([]Branch, error) {
 type Commit struct {
 	Hash    string
 	Tree    string
-	Parent  string
+	Parents []string
 	Message string
 	Body    string
 
@@ -294,7 +294,8 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 	}
 
 	if strings.HasPrefix(line, parentPrefix) {
-		c.Parent = strings.TrimPrefix(line, parentPrefix)
+		parent := strings.TrimPrefix(line, parentPrefix)
+		c.Parents = append(c.Parents, parent)
 		return false, nil
 	}
 

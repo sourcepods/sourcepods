@@ -85,7 +85,7 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 	return &CommitResponse{
 		Hash:           c.Hash,
 		Tree:           c.Tree,
-		Parent:         c.Parent,
+		Parents:        c.Parents,
 		Message:        c.Message,
 		Author:         c.Author.Name,
 		AuthorEmail:    c.Author.Email,

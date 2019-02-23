@@ -72,7 +72,7 @@ message CommitRequest {
 message CommitResponse {
     string Hash = 1;
     string Tree = 2;
-    string Parent = 3;
+    repeated string Parents = 3;
     string Message = 4;
     string Author = 5;
     string AuthorEmail = 6;

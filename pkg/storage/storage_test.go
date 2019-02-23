@@ -41,9 +41,9 @@ awesome
 
 body`
 	expected := Commit{
-		Hash:   "99cc2f794893815dfc69ab1ba3370ef3e7a9fed2",
-		Tree:   "40279100b292dd26bfda150adf1c4fd5a4e52ffe",
-		Parent: "ae51e9d1b987f9086cbc65e694f06759bc62e743",
+		Hash:    "99cc2f794893815dfc69ab1ba3370ef3e7a9fed2",
+		Tree:    "40279100b292dd26bfda150adf1c4fd5a4e52ffe",
+		Parents: []string{"ae51e9d1b987f9086cbc65e694f06759bc62e743"},
 		Author: Signature{
 			Name:  "First Lastname",
 			Email: "first.lastname@example.com",

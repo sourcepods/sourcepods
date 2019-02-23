@@ -104,7 +104,7 @@ func (c *Client) Commit(ctx context.Context, id, ref string) (Commit, error) {
 	return Commit{
 		Hash:    res.GetHash(),
 		Tree:    res.GetTree(),
-		Parent:  res.GetParent(),
+		Parents: res.GetParents(),
 		Message: res.GetMessage(),
 		Author: Signature{
 			Name:  res.GetAuthor(),
