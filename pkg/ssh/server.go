@@ -17,6 +17,8 @@ import (
 func NewServer(addr, hostKeyPath string, logger log.Logger, cli *storage.Client) *ssh.Server {
 	gs := &gitStorage{client: cli}
 
+	as := &apiStorage{client: nil}
+
 	m := mux.New()
 	m.Use(mux.RecoverWare(logger))
 	m.Use(tracerWare())
@@ -24,6 +26,8 @@ func NewServer(addr, hostKeyPath string, logger log.Logger, cli *storage.Client)
 
 	m.AddHandler("^git[ -]receive-pack ([0-9a-f/-]+)$", "ssh.Handler.ReceivePack", mux.HandlerFunc(gs.ReceivePack))
 	m.AddHandler("^git[ -]upload-pack ([0-9a-f/-]+)$", "ssh.Handler.UploadPack", mux.HandlerFunc(gs.UploadPack))
+	m.AddHandler("^git-lfs-authenticate ([0-9a-f/-]+) download", "ssh.Handler.LFSDownload", mux.HandlerFunc(as.LFSDownload))
+	m.AddHandler("^git-lfs-authenticate ([0-9a-f/-]+) upload", "ssh.Handler.LFSUpload", mux.HandlerFunc(as.LFSUpload))
 
 	s := &ssh.Server{
 		Addr:    addr,

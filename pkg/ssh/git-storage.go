@@ -13,7 +13,7 @@ type gitStorage struct {
 	client *storage.Client
 }
 
-func (gs gitStorage) parsePath(ctx context.Context) (string, error) {
+func parsePath(ctx context.Context) (string, error) {
 	args, ok := ctx.Value(mux.ContextArguments).([]string)
 	if !ok || len(args) < 1 || len(args[0]) == 0 {
 		return "", errors.New("no path given")
@@ -22,7 +22,7 @@ func (gs gitStorage) parsePath(ctx context.Context) (string, error) {
 }
 
 func (gs *gitStorage) UploadPack(ctx context.Context, sess ssh.Session) error {
-	path, err := gs.parsePath(ctx)
+	path, err := parsePath(ctx)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func (gs *gitStorage) UploadPack(ctx context.Context, sess ssh.Session) error {
 }
 
 func (gs *gitStorage) ReceivePack(ctx context.Context, sess ssh.Session) error {
-	path, err := gs.parsePath(ctx)
+	path, err := parsePath(ctx)
 	if err != nil {
 		return err
 	}
