@@ -151,7 +151,7 @@ func (s *loggingService) Commit(ctx context.Context, owner string, name string, 
 	return commit, err
 }
 
-func (s *loggingService) ListCommits(ctx context.Context, owner string, name string, rev string, limit, skip int64) ([]storage.Commit, error) {
+func (s *loggingService) ListCommits(ctx context.Context, owner, name, rev string, limit, skip int64) ([]storage.Commit, error) {
 	start := time.Now()
 
 	commits, err := s.service.ListCommits(ctx, owner, name, rev, limit, skip)
