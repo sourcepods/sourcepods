@@ -1,3 +1,24 @@
+<sourcepods-loading *ngIf="loading"></sourcepods-loading>
+
 <div class="uk-container">
     <h3>Commits</h3>
+    <table class="uk-table uk-table-small uk-table-divider uk-table-hover">
+        <thead>
+        <tr>
+            <!--th class="uk-table-shrink" style="width: 32px;"></th-->
+            <th>SHA</th>
+            <th>Message</th>
+            <th>Author</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let commit of commits">
+            <!--a [routerLink]="changePath(entry.path)">{{ filename(entry.path) }}/</a-->
+            <td>{{commit.hash}}</td>
+            <td>{{commit.message}}</td>
+            <td>{{commit.author}}</td>
+        </tr>
+ 
+        </tbody>
+    </table>
 </div>

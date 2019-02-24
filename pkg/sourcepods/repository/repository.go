@@ -19,4 +19,5 @@ type Branch struct {
 	Sha1      string
 	Type      string
 	Protected bool
+	Commits   int64
 }

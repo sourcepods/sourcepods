@@ -15,12 +15,38 @@ service Branch {
 }
 
 service Commit {
+    rpc Count(CommitCountRequest) returns (CommitCountResponse);
+    rpc List(CommitListRequest) returns (stream CommitListResponse);
     rpc Get(CommitRequest) returns (CommitResponse);
 }
 
 service SSH {
     rpc UploadPack(stream GRERequest) returns (stream GREResponse);
     rpc ReceivePack(stream GRERequest) returns (stream GREResponse);
+}
+
+message CommitCountRequest {
+    // Respository ID
+    string id = 1;
+    string ref = 2;
+}
+
+message CommitListRequest {
+    // Respository ID
+    string id = 1;
+    string ref = 2;
+    // limit amount of commits returned
+    int64 limit = 3;
+    // skip N*limit commits
+    int64 skip = 4;
+}
+
+message CommitListResponse {
+    repeated CommitResponse commits = 1;
+}
+
+message CommitCountResponse {
+    int64 count = 1;
 }
 
 // GRE == gRPC Remote Execution

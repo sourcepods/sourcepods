@@ -90,7 +90,8 @@ func (r *Runner) Stop() {
 	if r.cmd == nil || r.cmd.Process == nil {
 		return
 	}
-	r.cmd.Process.Kill()
+	r.cmd.Process.Signal(os.Interrupt)
+	r.cmd.Process.Wait()
 }
 
 //Build the binary to be run afterwards. Example: make dev/api

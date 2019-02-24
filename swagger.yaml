@@ -183,6 +183,42 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/error'
+  /repositories/{owner}/{name}/commits:
+    get:
+      summary: Get the commits for a repository
+      operationId: getRepositoryCommits
+      tags:
+        - repositories
+      parameters:
+        - in: path
+          name: owner
+          type: string
+          required: true
+          description: The owner's username
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: The repository's name
+        - in: query
+          name: ref
+          type: string
+          description: The ref for the commits
+      responses:
+        200:
+          description: The repository's commits
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/commit'
+        404:
+          description: The owner and name combination could not be found
+          schema:
+            $ref: '#/definitions/error'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
   /users:
     get:
       summary: List all users
@@ -289,6 +325,8 @@ definitions:
         type: string
       type:
         type: string
+      commits:
+        type: integer
   repository:
     type: object
     required:
@@ -355,6 +393,34 @@ definitions:
       updated_at:
         type: string
         format: 'date-time'
+  commit:
+    type: object
+    required:
+      - hash
+      - tree
+      - parent
+      - message
+      - author
+      - author_email
+      - committer
+      - committer_email
+    properties:
+      hash:
+        type: string
+      tree:
+        type: string
+      parent:
+        type: string
+      message:
+        type: string
+      author:
+        type: string
+      author_email:
+        type: string
+      committer:
+        type: string
+      committer_email:
+        type: string
   validationError:
     type: object
     required:

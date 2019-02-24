@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
@@ -82,6 +83,62 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 		return nil, grpc.Errorf(codes.Internal, "%v", err)
 	}
 
+	return commitToResponse(c), nil
+
+}
+
+func (s *commitServer) Count(ctx context.Context, req *CommitCountRequest) (*CommitCountResponse, error) {
+	if len(req.GetRef()) == 0 {
+		return nil, status.Errorf(codes.FailedPrecondition, "no ref given")
+	}
+	repo, err := s.storage.GetRepository(ctx, req.GetId())
+	if err != nil {
+		return nil, grpc.Errorf(codes.NotFound, "%v", err)
+	}
+	count, err := repo.CountCommits(ctx, req.GetRef())
+	if err != nil {
+		return nil, grpc.Errorf(codes.Internal, "%v", err)
+	}
+
+	return &CommitCountResponse{Count: count}, nil
+}
+
+func validateCommitListRequest(req *CommitListRequest) error {
+	if len(req.GetRef()) == 0 {
+		return status.Errorf(codes.FailedPrecondition, "no ref given")
+	}
+	if req.GetLimit() == 0 {
+		return status.Errorf(codes.InvalidArgument, "limit can not be 0")
+	}
+
+	return nil
+}
+
+func (s *commitServer) List(req *CommitListRequest, stream Commit_ListServer) error {
+	ctx := stream.Context()
+	if err := validateCommitListRequest(req); err != nil {
+		return err
+	}
+	repo, err := s.storage.GetRepository(ctx, req.GetId())
+	if err != nil {
+		return status.Errorf(codes.NotFound, "%v", err)
+	}
+	commits, err := repo.ListCommits(ctx, req.GetRef(), req.GetLimit(), req.GetSkip())
+	if err != nil {
+		return status.Errorf(codes.Internal, "%v", err)
+	}
+	commitResp := make([]*CommitResponse, len(commits), len(commits))
+	for i, commit := range commits {
+		commitResp[i] = commitToResponse(commit)
+	}
+	if err = stream.Send(&CommitListResponse{Commits: commitResp}); err != nil {
+		return status.Errorf(codes.Internal, "stream.Send: %v", err)
+	}
+
+	return nil
+}
+
+func commitToResponse(c Commit) *CommitResponse {
 	return &CommitResponse{
 		Hash:           c.Hash,
 		Tree:           c.Tree,
@@ -93,8 +150,7 @@ func (s *commitServer) Get(ctx context.Context, req *CommitRequest) (*CommitResp
 		Committer:      c.Committer.Name,
 		CommitterEmail: c.Committer.Email,
 		CommitterDate:  c.Committer.Date.Unix(),
-	}, nil
-
+	}
 }
 
 func (s *repositoryServer) Tree(ctx context.Context, req *TreeRequest) (*TreeResponse, error) {

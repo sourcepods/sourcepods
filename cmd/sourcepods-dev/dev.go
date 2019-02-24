@@ -124,7 +124,7 @@ func devAction(c *cli.Context) error {
 		fmt.Sprintf("--%s=%s", cmd.FlagAPIURL, "http://localhost:3000/api"), // TODO
 		fmt.Sprintf("--%s=%s", cmd.FlagHTTPAddr, uiAddrFlag),
 		fmt.Sprintf("--%s=%s", cmd.FlagLogLevel, loglevelFlag),
-		fmt.Sprintf("--%s=%s", cmd.FlagTracingURL, tracingURL),
+		// fmt.Sprintf("--%s=%s", cmd.FlagTracingURL, tracingURL),
 		fmt.Sprintf("--%s=%v", cmd.FlagLogJSON, logJSONFlag),
 	})
 

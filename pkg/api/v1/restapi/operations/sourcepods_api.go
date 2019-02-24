@@ -52,6 +52,9 @@ func NewSourcepodsAPI(spec *loads.Document) *SourcepodsAPI {
 		RepositoriesGetRepositoryBranchesHandler: repositories.GetRepositoryBranchesHandlerFunc(func(params repositories.GetRepositoryBranchesParams) middleware.Responder {
 			return middleware.NotImplemented("operation RepositoriesGetRepositoryBranches has not yet been implemented")
 		}),
+		RepositoriesGetRepositoryCommitsHandler: repositories.GetRepositoryCommitsHandlerFunc(func(params repositories.GetRepositoryCommitsParams) middleware.Responder {
+			return middleware.NotImplemented("operation RepositoriesGetRepositoryCommits has not yet been implemented")
+		}),
 		RepositoriesGetRepositoryTreeHandler: repositories.GetRepositoryTreeHandlerFunc(func(params repositories.GetRepositoryTreeParams) middleware.Responder {
 			return middleware.NotImplemented("operation RepositoriesGetRepositoryTree has not yet been implemented")
 		}),
@@ -106,6 +109,8 @@ type SourcepodsAPI struct {
 	RepositoriesGetRepositoryHandler repositories.GetRepositoryHandler
 	// RepositoriesGetRepositoryBranchesHandler sets the operation handler for the get repository branches operation
 	RepositoriesGetRepositoryBranchesHandler repositories.GetRepositoryBranchesHandler
+	// RepositoriesGetRepositoryCommitsHandler sets the operation handler for the get repository commits operation
+	RepositoriesGetRepositoryCommitsHandler repositories.GetRepositoryCommitsHandler
 	// RepositoriesGetRepositoryTreeHandler sets the operation handler for the get repository tree operation
 	RepositoriesGetRepositoryTreeHandler repositories.GetRepositoryTreeHandler
 	// UsersGetUserHandler sets the operation handler for the get user operation
@@ -193,6 +198,10 @@ func (o *SourcepodsAPI) Validate() error {
 
 	if o.RepositoriesGetRepositoryBranchesHandler == nil {
 		unregistered = append(unregistered, "repositories.GetRepositoryBranchesHandler")
+	}
+
+	if o.RepositoriesGetRepositoryCommitsHandler == nil {
+		unregistered = append(unregistered, "repositories.GetRepositoryCommitsHandler")
 	}
 
 	if o.RepositoriesGetRepositoryTreeHandler == nil {
@@ -332,6 +341,11 @@ func (o *SourcepodsAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/repositories/{owner}/{name}/branches"] = repositories.NewGetRepositoryBranches(o.context, o.RepositoriesGetRepositoryBranchesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/repositories/{owner}/{name}/commits"] = repositories.NewGetRepositoryCommits(o.context, o.RepositoriesGetRepositoryCommitsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

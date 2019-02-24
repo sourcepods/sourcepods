@@ -70,6 +70,19 @@ func (s *tracingService) Commit(ctx context.Context, owner string, name string, 
 	return s.service.Commit(ctx, owner, name, rev)
 }
 
+func (s *tracingService) ListCommits(ctx context.Context, owner, name, ref string, limit, skip int64) ([]storage.Commit, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Service.ListCommits")
+	span.SetTag("request", s.requestID(ctx))
+	span.SetTag("owner", owner)
+	span.SetTag("name", name)
+	span.SetTag("ref", ref)
+	span.SetTag("limit", limit)
+	span.SetTag("skip", skip)
+	defer span.Finish()
+
+	return s.service.ListCommits(ctx, owner, name, ref, limit, skip)
+}
+
 func (s *tracingService) Tree(ctx context.Context, owner, name, rev, path string) ([]storage.TreeEntry, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.Service.Tree")
 	span.SetTag("request", s.requestID(ctx))

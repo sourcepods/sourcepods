@@ -228,6 +228,60 @@ func init() {
         }
       }
     },
+    "/repositories/{owner}/{name}/commits": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get the commits for a repository",
+        "operationId": "getRepositoryCommits",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The ref for the commits",
+            "name": "ref",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository's commits",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/commit"
+              }
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/repositories/{owner}/{name}/tree": {
       "get": {
         "tags": [
@@ -439,6 +493,9 @@ func init() {
     "branch": {
       "type": "object",
       "properties": {
+        "commits": {
+          "type": "integer"
+        },
         "name": {
           "type": "string"
         },
@@ -446,6 +503,45 @@ func init() {
           "type": "string"
         },
         "type": {
+          "type": "string"
+        }
+      }
+    },
+    "commit": {
+      "type": "object",
+      "required": [
+        "hash",
+        "tree",
+        "parent",
+        "message",
+        "author",
+        "author_email",
+        "committer",
+        "committer_email"
+      ],
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "author_email": {
+          "type": "string"
+        },
+        "committer": {
+          "type": "string"
+        },
+        "committer_email": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "parent": {
+          "type": "string"
+        },
+        "tree": {
           "type": "string"
         }
       }
@@ -792,6 +888,60 @@ func init() {
         }
       }
     },
+    "/repositories/{owner}/{name}/commits": {
+      "get": {
+        "tags": [
+          "repositories"
+        ],
+        "summary": "Get the commits for a repository",
+        "operationId": "getRepositoryCommits",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The owner's username",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The repository's name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The ref for the commits",
+            "name": "ref",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository's commits",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/commit"
+              }
+            }
+          },
+          "404": {
+            "description": "The owner and name combination could not be found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/repositories/{owner}/{name}/tree": {
       "get": {
         "tags": [
@@ -1003,6 +1153,9 @@ func init() {
     "branch": {
       "type": "object",
       "properties": {
+        "commits": {
+          "type": "integer"
+        },
         "name": {
           "type": "string"
         },
@@ -1010,6 +1163,45 @@ func init() {
           "type": "string"
         },
         "type": {
+          "type": "string"
+        }
+      }
+    },
+    "commit": {
+      "type": "object",
+      "required": [
+        "hash",
+        "tree",
+        "parent",
+        "message",
+        "author",
+        "author_email",
+        "committer",
+        "committer_email"
+      ],
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "author_email": {
+          "type": "string"
+        },
+        "committer": {
+          "type": "string"
+        },
+        "committer_email": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "parent": {
+          "type": "string"
+        },
+        "tree": {
           "type": "string"
         }
       }

@@ -151,6 +151,34 @@ func (s *loggingService) Commit(ctx context.Context, owner string, name string, 
 	return commit, err
 }
 
+func (s *loggingService) ListCommits(ctx context.Context, owner, name, rev string, limit, skip int64) ([]storage.Commit, error) {
+	start := time.Now()
+
+	commits, err := s.service.ListCommits(ctx, owner, name, rev, limit, skip)
+
+	logger := log.With(s.logger,
+		"request", s.requestID(ctx),
+		"method", "Commit",
+		"owner", owner,
+		"name", name,
+		"rev", rev,
+		"limit", limit,
+		"skip", skip,
+		"duration", time.Since(start),
+	)
+
+	if err != nil {
+		level.Warn(logger).Log(
+			"msg", "failed to get the commit for repository",
+			"err", err,
+		)
+	} else {
+		level.Debug(logger).Log()
+	}
+
+	return commits, err
+}
+
 func (s *loggingService) Tree(ctx context.Context, owner, name, rev, path string) ([]storage.TreeEntry, error) {
 	start := time.Now()
 
