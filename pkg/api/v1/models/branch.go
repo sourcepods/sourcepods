@@ -15,6 +15,9 @@ import (
 // swagger:model branch
 type Branch struct {
 
+	// commits
+	Commits int64 `json:"commits,omitempty"`
+
 	// name
 	Name string `json:"name,omitempty"`
 

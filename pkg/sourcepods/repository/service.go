@@ -32,6 +32,8 @@ type (
 		SetDescription(ctx context.Context, id, description string) error
 		Branches(ctx context.Context, id string) ([]storage.Branch, error)
 		Commit(ctx context.Context, id, rev string) (storage.Commit, error)
+		CommitCount(ctx context.Context, id, ref string) (int64, error)
+		ListCommits(ctx context.Context, id, ref string, limit, skip int64) ([]storage.Commit, error)
 		Tree(ctx context.Context, id, rev, path string) ([]storage.TreeEntry, error)
 	}
 
@@ -42,6 +44,7 @@ type (
 		Create(ctx context.Context, owner string, repository *Repository) (*Repository, error)
 		Branches(ctx context.Context, owner, name string) ([]*Branch, error)
 		Commit(ctx context.Context, owner, name, rev string) (storage.Commit, error)
+		ListCommits(ctx context.Context, owner, name, ref string, limit, skip int64) ([]storage.Commit, error)
 		Tree(ctx context.Context, owner, name, rev, path string) ([]storage.TreeEntry, error)
 	}
 
@@ -103,14 +106,31 @@ func (s *service) Branches(ctx context.Context, owner, name string) ([]*Branch, 
 
 	var branches []*Branch
 	for _, b := range bs {
+		var count int64
+		// if b.Name == "master" {
+		// 	count, err = s.storage.CommitCount(ctx, r.ID, b.Sha1)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// }
 		branches = append(branches, &Branch{
-			Name: b.Name,
-			Sha1: b.Sha1,
-			Type: b.Type,
+			Name:    b.Name,
+			Sha1:    b.Sha1,
+			Type:    b.Type,
+			Commits: count,
 		})
 	}
 
 	return branches, nil
+}
+
+func (s *service) ListCommits(ctx context.Context, owner, name, ref string, limit, skip int64) ([]storage.Commit, error) {
+	r, _, err := s.repositories.Find(ctx, owner, name)
+	if err != nil { // This includes ErrRepositoryNotFound
+		return nil, err
+	}
+
+	return s.storage.ListCommits(ctx, r.ID, ref, limit, skip)
 }
 
 func (s *service) Commit(ctx context.Context, owner, name, rev string) (storage.Commit, error) {

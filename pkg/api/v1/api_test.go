@@ -35,6 +35,10 @@ func (repositoryTestService) Commit(ctx context.Context, owner string, name stri
 	panic("implement me")
 }
 
+func (repositoryTestService) ListCommits(ctx context.Context, owner string, name string, rev string, limit, skip int64) ([]storage.Commit, error) {
+	panic("implement me")
+}
+
 func (repositoryTestService) Tree(ctx context.Context, owner string, name string, rev string, path string) ([]storage.TreeEntry, error) {
 	panic("implement me")
 }

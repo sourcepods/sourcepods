@@ -39,6 +39,7 @@ func New(rs repository.Service, us user.Service) (*API, error) {
 	sourcepodsAPI.RepositoriesGetRepositoryBranchesHandler = GetRepositoryBranchesHandler(rs)
 	sourcepodsAPI.RepositoriesGetRepositoryHandler = GetRepositoryHandler(rs)
 	sourcepodsAPI.RepositoriesGetRepositoryTreeHandler = GetRepositoryTreeHandler(rs)
+	sourcepodsAPI.RepositoriesGetRepositoryCommitsHandler = GetRepositoryCommitsHandler(rs)
 	sourcepodsAPI.UsersGetUserHandler = GetUserHandler(us)
 	sourcepodsAPI.UsersGetUserMeHandler = GetUserMeHandler(us)
 	sourcepodsAPI.UsersListUsersHandler = ListUsersHandler(us)
@@ -138,9 +139,10 @@ func GetRepositoryBranchesHandler(rs repository.Service) repositories.GetReposit
 
 		for _, b := range branches {
 			payload = append(payload, &models.Branch{
-				Name: b.Name,
-				Sha1: b.Sha1,
-				Type: b.Type,
+				Name:    b.Name,
+				Sha1:    b.Sha1,
+				Type:    b.Type,
+				Commits: b.Commits,
 			})
 		}
 
@@ -208,6 +210,50 @@ func GetRepositoryTreeHandler(rs repository.Service) repositories.GetRepositoryT
 		}
 
 		return repositories.NewGetRepositoryTreeOK().WithPayload(payload)
+	}
+}
+
+//GetRepositoryCommitsHandler gets a repository's commits for a given rev and path
+func GetRepositoryCommitsHandler(rs repository.Service) repositories.GetRepositoryCommitsHandlerFunc {
+	return func(params repositories.GetRepositoryCommitsParams) middleware.Responder {
+		rev := "master" // TODO: lookup default branch in database
+		if params.Ref != nil {
+			rev = *params.Ref
+		}
+
+		commits, err := rs.ListCommits(
+			params.HTTPRequest.Context(),
+			params.Owner,
+			params.Name,
+			rev,
+			30, // TODO: Limits...
+			0,  // TODO: skip
+		)
+		if err != nil {
+			if err == repository.ErrRepositoryNotFound {
+				message := "repository not found"
+				return repositories.NewGetRepositoryCommitsNotFound().WithPayload(&models.Error{
+					Message: &message,
+				})
+			}
+			return repositories.NewGetRepositoryCommitsDefault(http.StatusInternalServerError)
+		}
+
+		var payload []*models.Commit
+		for _, commit := range commits {
+			commit := commit
+			payload = append(payload, &models.Commit{
+				Hash:           &commit.Hash,
+				Tree:           &commit.Tree,
+				Message:        &commit.Message,
+				Author:         &commit.Author.Name,
+				AuthorEmail:    &commit.Author.Email,
+				Committer:      &commit.Committer.Name,
+				CommitterEmail: &commit.Committer.Email,
+			})
+		}
+
+		return repositories.NewGetRepositoryCommitsOK().WithPayload(payload)
 	}
 }
 

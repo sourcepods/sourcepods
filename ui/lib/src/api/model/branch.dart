@@ -10,11 +10,14 @@ class Branch {
 
   String type = null;
   
+
+  int commits = null;
+  
   Branch();
 
   @override
   String toString() {
-    return 'Branch[name=$name, sha1=$sha1, type=$type, ]';
+    return 'Branch[name=$name, sha1=$sha1, type=$type, commits=$commits, ]';
   }
 
   Branch.fromJson(Map<String, dynamic> json) {
@@ -28,13 +31,17 @@ class Branch {
     type =
         json['type']
     ;
+    commits =
+        json['commits']
+    ;
   }
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
       'sha1': sha1,
-      'type': type
+      'type': type,
+      'commits': commits
      };
   }
 

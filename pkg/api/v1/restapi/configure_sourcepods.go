@@ -47,6 +47,9 @@ func configureAPI(api *operations.SourcepodsAPI) http.Handler {
 	api.RepositoriesGetRepositoryBranchesHandler = repositories.GetRepositoryBranchesHandlerFunc(func(params repositories.GetRepositoryBranchesParams) middleware.Responder {
 		return middleware.NotImplemented("operation repositories.GetRepositoryBranches has not yet been implemented")
 	})
+	api.RepositoriesGetRepositoryCommitsHandler = repositories.GetRepositoryCommitsHandlerFunc(func(params repositories.GetRepositoryCommitsParams) middleware.Responder {
+		return middleware.NotImplemented("operation repositories.GetRepositoryCommits has not yet been implemented")
+	})
 	api.RepositoriesGetRepositoryTreeHandler = repositories.GetRepositoryTreeHandlerFunc(func(params repositories.GetRepositoryTreeParams) middleware.Responder {
 		return middleware.NotImplemented("operation repositories.GetRepositoryTree has not yet been implemented")
 	})

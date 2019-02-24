@@ -17,6 +17,7 @@ part 'api/repositories_api.dart';
 part 'api/users_api.dart';
 
 part 'model/branch.dart';
+part 'model/commit.dart';
 part 'model/error.dart';
 part 'model/new_repository.dart';
 part 'model/repository.dart';
