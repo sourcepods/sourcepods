@@ -16,9 +16,11 @@ type apiStorage struct {
 }
 
 type lfsPayload struct {
-	Href      string            `json:"href"`
-	Headers   map[string]string `json:"headers"`
-	ExpiresAt string            `json:"expires_at"`
+	Href    string `json:"href"`
+	Headers struct {
+		Authorization string `json:"Authorization"`
+	} `json:"headers"`
+	ExpiresAt string `json:"expires_at"`
 }
 
 func (s *apiStorage) LFSUpload(ctx context.Context, sess ssh.Session) error {
@@ -27,15 +29,16 @@ func (s *apiStorage) LFSUpload(ctx context.Context, sess ssh.Session) error {
 		return err
 	}
 
+	// Token is fetched based on the PK...
 	token := "foobar"
-	foo := lfsPayload{
+
+	payload := lfsPayload{
 		Href:      fmt.Sprintf("https://example.com/%s/info/lfs/", path),
-		Headers:   make(map[string]string),
 		ExpiresAt: time.Now().Add(5 * time.Minute).Format(time.RFC3339),
 	}
-	foo.Headers["Authorization"] = fmt.Sprintf("Bearer %s", token)
+	payload.Headers.Authorization = fmt.Sprintf("Bearer %s", token)
 
-	b, err := json.Marshal(foo)
+	b, err := json.Marshal(payload)
 	if err != nil {
 		return errors.Wrap(err, "json.Marshal")
 	}
