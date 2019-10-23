@@ -84,6 +84,64 @@ func (c *Client) Branches(ctx context.Context, id string) ([]Branch, error) {
 	return branches, err
 }
 
+// CommitCount returns the number of commits that any given `ref` points to
+func (c *Client) CommitCount(ctx context.Context, id, ref string) (int64, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.CommitCount")
+	span.SetTag("id", id)
+	span.SetTag("ref", ref)
+	defer span.Finish()
+
+	req := &CommitCountRequest{
+		Id:  id,
+		Ref: ref,
+	}
+
+	resp, err := c.commits.Count(ctx, req)
+
+	return resp.GetCount(), err
+}
+
+// ListCommits returns all commits pointerd to by any given `ref`.
+// `limit` sets the max amount of commits to be returned. Can not be 0.
+// `skip` N*`limit` commits. Useful for pagination
+func (c *Client) ListCommits(ctx context.Context, id, ref string, limit, skip int64) ([]Commit, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.ListCommits")
+	span.SetTag("id", id)
+	span.SetTag("ref", ref)
+	span.SetTag("limit", limit)
+	span.SetTag("skip", skip)
+	defer span.Finish()
+
+	req := &CommitListRequest{
+		Id:    id,
+		Ref:   ref,
+		Limit: limit,
+		Skip:  skip,
+	}
+
+	var commits []Commit
+
+	stream, err := c.commits.List(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	var resp *CommitListResponse
+	for err == nil {
+		resp, err = stream.Recv()
+		if err != nil {
+			break
+		}
+		for _, commit := range resp.GetCommits() {
+			commits = append(commits, commitFromResponse(commit))
+		}
+	}
+
+	if err == io.EOF {
+		err = nil
+	}
+	return commits, err
+}
+
 // Commit returns a single commit from a given repository
 func (c *Client) Commit(ctx context.Context, id, ref string) (Commit, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.Client.Commit")
@@ -101,22 +159,26 @@ func (c *Client) Commit(ctx context.Context, id, ref string) (Commit, error) {
 		return Commit{}, err
 	}
 
+	return commitFromResponse(res), nil
+}
+
+func commitFromResponse(resp *CommitResponse) Commit {
 	return Commit{
-		Hash:    res.GetHash(),
-		Tree:    res.GetTree(),
-		Parent:  res.GetParent(),
-		Message: res.GetMessage(),
+		Hash:    resp.GetHash(),
+		Tree:    resp.GetTree(),
+		Parent:  resp.GetParent(),
+		Message: resp.GetMessage(),
 		Author: Signature{
-			Name:  res.GetAuthor(),
-			Email: res.GetAuthorEmail(),
-			Date:  time.Unix(res.GetAuthorDate(), 0),
+			Name:  resp.GetAuthor(),
+			Email: resp.GetAuthorEmail(),
+			Date:  time.Unix(resp.GetAuthorDate(), 0),
 		},
 		Committer: Signature{
-			Name:  res.GetCommitter(),
-			Email: res.GetCommitterEmail(),
-			Date:  time.Unix(res.GetCommitterDate(), 0),
+			Name:  resp.GetCommitter(),
+			Email: resp.GetCommitterEmail(),
+			Date:  time.Unix(resp.GetCommitterDate(), 0),
 		},
-	}, nil
+	}
 }
 
 //Tree returns the files and folders at a given ref at a path in a repository

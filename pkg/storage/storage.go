@@ -46,6 +46,8 @@ type (
 		GetID() string
 		SetDescription(ctx context.Context, description string) error
 		ListBranches(ctx context.Context) ([]Branch, error)
+		ListCommits(ctx context.Context, ref string, limit, skip int64) ([]Commit, error)
+		CountCommits(ctx context.Context, ref string) (int64, error)
 		GetCommit(ctx context.Context, ref string) (Commit, error)
 		Tree(ctx context.Context, ref, path string) ([]TreeEntry, error)
 		UploadPack(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) (int32, error)
@@ -209,6 +211,139 @@ func injectError(span opentracing.Span, err error, stderr string) {
 	span.LogKV("event", "error", "message", err, "stderr", stderr)
 }
 
+// CountCommits returns the amount of commits in a given ref
+// TODO: This needs to be cached. 75k commits takes about 600ms on my SSD // BKC
+//  Caching should not be that hard...
+//  - get hash from ref
+//  - if has(hash) return count
+//  - else return early, count and store in background...
+func (r *LocalRepository) CountCommits(ctx context.Context, ref string) (int64, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.CountCommits")
+	span.SetTag("repo_path", r.path)
+	span.SetTag("ref", ref)
+	defer span.Finish()
+
+	args := []string{"rev-list", ref, "--count"}
+	out, err := command.NewSimple(ctx, r.path, r.git, args...)
+	if err != nil {
+		injectError(span, err, out)
+		return 0, err
+	}
+
+	var count int64
+	_, err = fmt.Sscanf(out, "%d\n", &count)
+	if err != nil {
+		injectError(span, err, "")
+		return 0, err
+	}
+
+	return count, nil
+}
+
+// ListCommits pointed to by a `ref`. Only return `limit` amount of commits. `skip` N*`limit` commits.
+func (r *LocalRepository) ListCommits(ctx context.Context, ref string, limit, skip int64) ([]Commit, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.ListCommits")
+	span.SetTag("repo_path", r.path)
+	span.SetTag("ref", ref)
+	span.SetTag("limit", limit)
+	span.SetTag("skip", skip)
+	defer span.Finish()
+
+	errBuf := &bytes.Buffer{}
+	args := []string{"rev-list", ref}
+	cmd, err := command.New(ctx, r.path, r.git, args, command.StdoutPipe, command.StderrWriter(errBuf))
+	if err != nil {
+		return nil, errors.Wrap(err, "git-rev-list.New")
+	}
+	defer cmd.Finish()
+
+	var hashes []string
+
+	// NOTE: only reason I'm not just Seeking 41*limit*skip, is because git is moving away from SHA1-hashes
+	inScanner := bufio.NewScanner(cmd.Stdout())
+	for i := int64(0); i < skip*limit; i++ {
+		if ok := inScanner.Scan(); !ok {
+			return nil, nil
+		}
+	}
+	for inScanner.Scan() {
+		if len(hashes) >= int(limit) {
+			cmd.Interrupt()
+			break
+		}
+		hashes = append(hashes, strings.TrimSuffix(inScanner.Text(), "\n"))
+	}
+	if err := cmd.Wait(); err != nil && err.Error() != os.Interrupt.String() {
+		return nil, errors.Wrap(err, "cmd.Wait")
+	}
+
+	args = []string{"cat-file", "--batch"}
+	cmd2, err := command.New(ctx, r.path, r.git, args, command.StdoutPipe, command.StderrWriter(errBuf), command.StdinPipe)
+	if err != nil {
+		return nil, errors.Wrap(err, "git-cat-file.New")
+	}
+	defer cmd2.Finish()
+
+	retCommits, err := parseCommits(cmd.Stdin(), cmd.Stdout(), hashes)
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd2.Interrupt(); err != nil {
+		return nil, err
+	}
+
+	return retCommits, nil
+}
+
+func parseCatFileBatchLine(in io.Reader, hash string) (int64, error) {
+	var (
+		inHash, inType string
+		inSize         int64
+	)
+	// Parse output
+	_, err := fmt.Fscanf(in, "%s %s %d", &inHash, &inType, &inSize)
+	if err != nil {
+		return 0, errors.Wrap(err, "fscanf")
+	}
+	if inHash != hash {
+		return 0, fmt.Errorf("%s != %s", inHash, hash)
+	}
+	if inType != "commit" {
+		return 0, fmt.Errorf("%s != commit", inType)
+	}
+	return inSize, nil
+}
+
+// in    : stdin hooked into `git cat-file --batch`
+// out   : stdout from above command
+// hashes: the hashes to ask for
+func parseCommits(in io.Writer, out io.Reader, hashes []string) ([]Commit, error) {
+	var commits []Commit
+	for _, hash := range hashes {
+
+		// Ask cat-file for hash
+		fmt.Fprintf(in, "%s\n", hash)
+
+		inSize, err := parseCatFileBatchLine(out, hash)
+		if err != nil {
+			return nil, err
+		}
+		// Since Stdout is shared, we need to limit how much we read to inSize+newline. Hence LimitReader
+		commitReader := io.LimitReader(out, inSize+1)
+		commit, err := parseCommit(commitReader, hash)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, err
+		}
+
+		commits = append(commits, commit)
+	}
+
+	return commits, nil
+}
+
 // GetCommit returns a single Commit from a Repository
 func (r *LocalRepository) GetCommit(ctx context.Context, ref string) (Commit, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "storage.LocalRepository.GetCommit")
@@ -225,7 +360,7 @@ func (r *LocalRepository) GetCommit(ctx context.Context, ref string) (Commit, er
 	defer cmd.Finish()
 
 	commit, err := parseCommit(cmd.Stdout(), ref)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		injectError(span, err, errBuf.String())
 		return Commit{}, err
 	}
@@ -273,7 +408,7 @@ func parseCommit(r io.Reader, hash string) (Commit, error) {
 	// Trim excessive stringing new lines
 	c.Body = strings.TrimLeft(c.Body, "\n")
 
-	return c, nil
+	return c, scanner.Err()
 }
 
 // returns true when it's passed the header
@@ -323,6 +458,14 @@ func parseCommitHeader(c *Commit, line string) (bool, error) {
 		return false, nil
 	}
 
+	split := strings.Split(line, " ")
+	if len(split) == 3 {
+		// This is a batched call...
+		if split[1] == "commit" {
+			return false, nil
+		}
+	}
+
 	// skip any excessive header-lines
 	return false, nil
 }
@@ -360,7 +503,6 @@ func (r *LocalRepository) tree(ctx context.Context, ref, path string) ([]TreeEnt
 	span.SetTag("ref", ref)
 	span.SetTag("path", path)
 	defer span.Finish()
-
 	errBuf := &bytes.Buffer{}
 	args := []string{"ls-tree", ref, path}
 	cmd, err := command.New(ctx, r.path, r.git, args, command.StderrWriter(errBuf), command.StdoutPipe)
